@@ -102,7 +102,7 @@ class GraphMC:
         if not self.isStateOK(ssP):
             return neighbours
         ssPPs = []
-        for combination in powerset(ssP.getActive()):
+        for combination in powerset(run):
             current = ssP.getTerminationTransition(set(combination), self.taskSet.getX(), self.taskSet.getC(), self.taskSet.getT())
             if self.isStateOK(current):
                 ssPPs.append(current)
@@ -132,7 +132,7 @@ class GraphMC:
 
 
 t1 = Task(0,50,50,1,[30,30])
-t2 = Task(0,100,100,2,[10,101])
+t2 = Task(0,100,100,2,[10,100])
 ts = TaskSet([t1,t2])
 
 
