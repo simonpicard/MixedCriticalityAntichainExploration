@@ -35,9 +35,9 @@ class Scheduler:
         minDL = 9999999999
         for it in active:
             if self.taskSet.getX()[it] == 2:
-                deadline = systemState.at[it] + self.taskSet.getTask(it).D*relativity
+                deadline = systemState.getRelativeDeadline(self.taskSet.getTask(it).D*relativity, self.taskSet.getTask(it).T, it)
             else: 
-                deadline = systemState.at[it] + self.taskSet.getTask(it).D
+                deadline = systemState.getRelativeDeadline(self.taskSet.getTask(it).D, self.taskSet.getTask(it).T, it)
             if deadline < minDL:
                 minDL = deadline
                 toRun = it

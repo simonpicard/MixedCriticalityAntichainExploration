@@ -31,6 +31,7 @@
 \newtheorem{defin}{Définition}
 \newtheorem{exem}{Exemple}
 \newtheorem{theo}{Théorème}
+\newtheorem{lem}{Lemme}
 
 \title{Préparation au mémoire --- MEMO-F-403\\Ordonnancement de systèmes à criticité mixte et méthodes formelles}
 \author{Simon \textsc{Picard}}
@@ -825,6 +826,203 @@ Cette transition met à jour la criticité du système et augmente les temps res
 \subsection{Modèle sous forme d'automate}
 
 
+\begin{defin}[État du système]
+Soit $\tau = \tau_1, \tau_2, \tau_3 ...$ un ensemble de tâches périodiques en criticité mixte, l'état du système de $\tau$ est le tuple $S = (nat_S, rct_S, done_S, crit_S)$ avec
+
+\begin{itemize}
+\item $nat_S$, une fonction représentant le temps d'arrivée du prochain travail d'une tâche au plus tôt : $\tau \rightarrow \mathbb{N},\ at_S(\tau_i) \leq R_{max}$ avec $R_{max} = max(max_i\ (T_i),\ max_i\ (O_i))$
+\item $rct_S$, le temps de calcul restant du travail généré par une tâche : $ \tau \rightarrow \mathbb{N},\ 0 \leq rct_S(\tau_i) \leq C_{max}$ avec $C_{max} = max_{i,j}\ C_i(j)$
+\item $done_S$, la complétion d'un travail : $ \tau \rightarrow \{0,1\}$
+\item $crit_S$, le niveau de criticité actuel du scénario, $ \in \mathbb{N},\ 0 \leq crit_S \leq K$
+
+\end{itemize}
+
+\end{defin}
+
+\begin{defin}[Tâches actives]
+
+$Active(S) = \{\tau_i | !done_S(\tau_i)\}$
+\end{defin}
+
+
+\begin{defin}[Tâche implicitement terminée]
+
+$ImplicitelyDone(S) = \{\tau_i | rct_S(\tau_i) == 0 \wedge\ !done_S(\tau_i)\wedge crit_S=\chi_i\}$\\
+\end{defin}
+
+
+\begin{defin}[Tâche éligible à la submission d'un travail]
+
+$Eligibile(S) = \{\tau_i | rct_S(\tau_i) == 0 \wedge\ nat_S(\tau_i) \leq 0 \wedge\ done_S(\tau_i)\wedge\ crit_S\geq\chi_i\}$\\
+\end{defin}
+
+
+\begin{defin}[Criticité d'un état]
+La criticité réelle d'un état $S$ est celle de l'état si aucune tâche n'a été exécutée complètement sans avoir signalé sa complétion, celle de l'état incrémentée d'un sinon.
+$$
+Critical_S = \left\{
+    \begin{array}{ll}
+        crit_S+1 & \exists \tau_i \in Active(S)\ tq\ rct_S(\tau_i) == 0 \\
+        crit_S & \mbox{sinon.}
+    \end{array}
+\right.
+$$
+\end{defin}
+
+\begin{defin}[Laxité]
+La laxité d'une tâche $\tau_i$ dans l'état $S$ est :
+
+$Laxity_S(\tau_i) = nat_S(\tau_i) -T_i + D_i - rct_S(\tau_i)$\\
+
+La laxité d'une tâche est donc le nombre d'unités de temps où la tâche peut être oisive avant de manquer son échéance. Dès lors, si la laxité d'une des tâches d'un état est négative, une tâche manquera son échéance. Cette définition permet de donner celle des états erronés.
+\end{defin}
+
+\begin{defin}[États erronés]
+Un état $S$ est erroné si l'une des laxités des tâches est négative, on obtient alors l'ensemble :
+
+$Fail_\tau = \{S|\exists \tau_i \in \tau : Laxity_S(\tau_i) < 0  \}$\\
+\end{defin}
+
+Grâce à ces états erronés, nous pouvons à présent borner inférieurement $at_S$. En effet, puisque dès que la laxité d'un état est négative, il est érroné, il n'est pas nécéssaire d'inclure dans l'automate les état où $\exists\ \tau_i \in \tau\ tq\ Laxity_S(\tau_i) < -1$.\\
+Dés lors : $nat_S(\tau_i) -T_{min} + D_{max} - rct_S(\tau_i) \geq -1$\\
+d'où $nat_S(\tau_i) \geq rct_S(\tau_i) - (D_{max}+1) + T_{min} \geq T_{min}-(D_{max}+1)$\\
+et donc $T_{min}-(D_{max}+1) \leq nat_S(\tau_i) \leq R_{max}$\\
+avec $D_{max} = max_i\ D_i$ et $R_{max} = max(max_i\ (T_i),\ max_i\ (O_i))$\\
+
+Nous pouvons à présent définir les transitions de l'automate. Pour ce faire nous devons choisir un $ordonnanceur$, une fonction sur un état vers une tâche à ordonnancer.
+
+\begin{defin}[Ordonnanceur]
+Un $ordonnanceur$ monoprocesseur pour $\tau$ est une fonction $Run : State(\tau) \rightarrow \tau$ telle que $Run(S) \subseteq Active(S)$ et $0 \leq |Run(S)| \leq 1$.
+De plus :
+\begin{itemize}
+\item $Run$ est $work-conserving$ ssi pour $S$ : $ |Run(S)| = min\{1, |Exectuable(S)|\}$
+\item $Run$ est $sans\ memoire$ ssi pour $S_1,S_2$ avec $Active(S_1) == Active(S_2)$:
+$\forall \tau_i \in Active(S_1) : (nat_{S_1} == nat_{S_2} \wedge rct_{S_1} == rct_{S_2} done_{S_1} == done_{S_2} \wedge crit_{S_1} == crit_{S_2} )$ implique $Run(S_1) == Run(S_2)$
+\end{itemize}
+
+\end{defin}
+
+\begin{defin}[Transition d'exécution]
+Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $Run$ un $ordonnanceur$ pour $\tau$. On dit que l'état du système $S^+ = (nat_S^+, rct_S^+, done_S^+, crit_S^+)$ est un $successeur\ horloge$ de $S$ avec $Run$, noté $S\xrightarrow{Run}S^+$ ssi:
+\begin{itemize}
+\item Pour tout $\tau_i \in Run(S) : rct_S^+(\tau_i) = rct_S(\tau_i)-1$\\
+\item Pour tout $\tau_i \not \in Run(S) : rct_S^+(\tau_i) = rct_S(\tau_i)$\\
+\item Pour tout $\tau_i \in \tau :$
+$$ nat_S^+(\tau_i) = \left\{
+    \begin{array}{ll}
+        max(nat_S(\tau_i)-1, 0) & si\ done_S(\tau_i) \\
+        nat_S(\tau_i)-1 & si\ !done_S(\tau_i) \\
+    \end{array}
+\right.
+$$
+\begin{center}
+$done_{S}^{+}(\tau_i) = done_{S}(\tau_i)$
+
+\end{center}
+\item $crit_{S}^{+} = crit_{S}$
+
+\end{itemize}
+Cette transition permet à une tâche de profiter de la ressource partagée pendant un coup d'horloge, ce qui signifie que la tâche ordonnancée verra son temps restant d'exécution décrémentée d'une unité et le temps d'arrivé de toutes les tâches sera lui aussi décrémenté d'une unité, sauf pour les tâches qui ne sont plus considérées de par la criticité de l'état du système.
+\end{defin}
+
+\begin{defin}[Transition de terminaison]
+Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $\tau' \subseteq Run$ un ensemble de tâches actives pouvant signaler leur complétion. On dit que l'état du système $S' = (nat_S', rct_S', done_S', crit_S')$ est un $successeur\ \tau'-terminaison$ de $S$, noté $S\xrightarrow{\tau'}S'$ ssi:
+\begin{itemize}
+\item Pour tout $\tau_i \in \tau' \cup ImplicitelyDone(S)$ :\begin{itemize}
+\item $rct_{S'}(\tau_i) = 0$
+\item $nat_{S'}(\tau_i) = nat_{S}(\tau_i)$
+\item $done_{S'}(\tau_i) = True$
+\end{itemize}
+
+\item Pour tout $\tau_i\ not\ \in \tau' \cup ImplicitelyDone(S)$ :\begin{itemize}
+\item $rct_{S'}(\tau_i) = rct_{S}(\tau_i)$
+\item $nat_{S'}(\tau_i) = nat_{S}(\tau_i)$
+\item $done_{S'}(\tau_i) = done_{S}(\tau_i)$
+\end{itemize}
+\item $crit_{S'} = crit_{S}$
+
+\end{itemize}
+Cette transition représente les complétions signalée ou implicite de travaux de tâches.
+\end{defin}
+
+\begin{defin}[Transition critique]
+Soit $S = (at_S, rct_S, done_S, crit_S)$ un état du système. On dit que l'état du système $S^C = (at_S^C, rct_S^C, done_S^C, crit_S^C)$ est un $successeur\ critique$ de $S$, noté $S\xrightarrow{C}S^C$, ssi :
+\begin{itemize}
+\item $crit_S^C = Critical_S$
+\item Pour tout $\tau_i \in \tau :$
+$$ rct_S^C(\tau_i) = \left\{
+    \begin{array}{ll}
+        rct_S(\tau_i)+c_i(Critical_S)-c_i(crit_S) & si\ X_i\geq Critical_S \\
+        0 & \mbox{sinon.}
+    \end{array}
+\right.
+$$
+$$ nat_S^C(\tau_i) = \left\{
+    \begin{array}{ll}
+        nat_S(\tau_i) & si\ X_i\geq Critical_S \\
+        0 & \mbox{sinon.}
+    \end{array}
+\right.
+$$
+$$ done_S^C(\tau_i) = \left\{
+    \begin{array}{ll}
+        done_S(\tau_i) & si\ X_i\geq Critical_S \\
+        True & \mbox{sinon.}
+    \end{array}
+\right.
+$$\\
+\end{itemize}
+Cette transition met à jour la criticité du système et augmente les temps restants d'exécution si nécessaire. Si la criticité dépasse celle de certaines tâches, leur temps d'arrivé et leur temps d'exécution sont mis à zéro et rejoigne donc bien l'ensemble $Discarded(S^C)$.
+\end{defin}
+
+
+\begin{defin}[Transition de requête]
+Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $\tau' \subseteq Eligible(S)$ un ensemble de tâches eligible. On dit que l'état du système $S^R = (nat_S^R, rct_S^R, done_S^R, crit_S^R)$ est un $successeur\ \tau'-request$ de $S$, noté $S\xrightarrow{\tau'}S^R$ ssi:
+
+\begin{itemize}
+\item Pour tout $\tau_i \in \tau'$ :\begin{itemize}
+    \item $nat_S(\tau_i)+T_i \leq nat_S^R(\tau_i) \leq T_i$
+    \item $rct_S^R(\tau_i)=C_i(crit_S)$
+    \item $done_S^R(\tau_i) = False$
+\end{itemize}
+\item Pour tout $\tau_i\ not \in \tau'$ :\begin{itemize}
+    \item $nat_S^R(\tau_i)=nat_S(\tau_i)$
+    \item $rct_S^R(\tau_i)=rct_S(\tau_i)$
+    \item $done_S^R(\tau_i) = done_S(\tau_i)$
+\end{itemize}
+\item $crit_S^R = crit_S$
+\end{itemize}
+
+\end{defin}
+
+\begin{defin} Étant donné un ensemble de tâches $\tau$ et un ordonnanceur $Run$, l'automate $A(\tau,Run)$ est le tuple $(V, E, S_0, F)$ où:
+\begin{itemize}
+\item  $V=State(\tau)$
+\item $(S_1,S_2) \in E$ ssi il existe les états intermédiaires $S', S''$ et $S''' \in State(\tau)$ et $\tau' \subseteq Active(S') $ tel que : $S_1\xrightarrow{Run}S'\xrightarrow{\tau'}S''\xrightarrow{C}S_2$
+\item $S_0 = (at_{S_0}, rct_{S_0}, crit_{S_0})$ :\begin{itemize}
+\item $at_{S_0} = O_i\ \forall \tau_i \in \tau$
+\item $rct_{S_0} = C_i(1)\ \forall \tau_i \in \tau$
+\item $crit_{S_0} = 1$
+\end{itemize}
+\item $F = Fail_\tau$
+\end{itemize}
+
+\end{defin} 
+
+\subsection{Antichaine}
+
+\subsubsection{Simulation de tâche oisive}
+
+\begin{defin}[Simulation de tâche oisive]
+Soit $\tau$ un ensemble de tâche sporadique de criticité mixte. Le préordre de tâche oisive $\succeq_{idle} \subseteq State(\tau)\times State(\tau)$ est tel que pour tout $S_1, S_2 : S_1 \succeq_{idle}S_2$ ssi:
+\begin{itemize}
+\item $crit_{S_1} = crit_{S_2}$
+\item $done_{S_1} = done_{S_2}$
+\item $rct_{S_1} = rct_{S_2}$
+\item Pour tout $\tau_i$ tel que $done_{S_1} : nat_{S_1} \leq nat_{S_2}$
+\item Pour tout $\tau_i$ tel que $!done_{S_1} : nat_{S_1} = nat_{S_2}$
+\end{itemize}
+\end{defin}
 
 
 
