@@ -926,23 +926,25 @@ Cette transition permet à une tâche de profiter de la ressource partagée pend
 \end{defin}
 
 \begin{defin}[Transition de terminaison]
-Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $\tau' \subseteq Run$ un ensemble de tâches actives pouvant signaler leur complétion. On dit que l'état du système $S' = (nat_S', rct_S', done_S', crit_S')$ est un $successeur\ \tau'-terminaison$ de $S$, noté $S\xrightarrow{\tau'}S'$ ssi:
+Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $\tau^T \subseteq Run$ un ensemble de tâches actives pouvant signaler leur complétion. On dit que l'état du système $S^T = (nat_S^T, rct_S^T, done_S^T, crit_S^T)$ est un $successeur\ \tau^T-terminaison$ de $S$, noté $S\xrightarrow{\tau^T}S^T$ ssi:
 \begin{itemize}
-\item Pour tout $\tau_i \in \tau' \cup ImplicitelyDone(S)$ :\begin{itemize}
-\item $rct_{S'}(\tau_i) = 0$
-\item $nat_{S'}(\tau_i) = nat_{S}(\tau_i)$
-\item $done_{S'}(\tau_i) = True$
+\item Pour tout $\tau_i \in \tau^T \cup ImplicitelyDone(S)$ :\begin{itemize}
+\item $rct_{S}^T(\tau_i) = 0$
+\item $nat_{S}^T(\tau_i) = nat_{S}(\tau_i)$
+\item $done_{S}^T(\tau_i) = True$
 \end{itemize}
 
-\item Pour tout $\tau_i\ not\ \in \tau' \cup ImplicitelyDone(S)$ :\begin{itemize}
-\item $rct_{S'}(\tau_i) = rct_{S}(\tau_i)$
-\item $nat_{S'}(\tau_i) = nat_{S}(\tau_i)$
-\item $done_{S'}(\tau_i) = done_{S}(\tau_i)$
+\item Pour tout $\tau_i\ not\ \in \tau^T \cup ImplicitelyDone(S)$ :\begin{itemize}
+\item $rct_{S}^T(\tau_i) = rct_{S}(\tau_i)$
+\item $nat_{S}^T(\tau_i) = nat_{S}(\tau_i)$
+\item $done_{S}^T(\tau_i) = done_{S}(\tau_i)$
 \end{itemize}
-\item $crit_{S'} = crit_{S}$
+\item $crit_{S}^T = crit_{S}$
 
 \end{itemize}
 Cette transition représente les complétions signalée ou implicite de travaux de tâches.
+
+Pour un état $S$, on note l'ensemble de ses $successeur\ \tau^T-terminaison$ $S^{\tau^T}$
 \end{defin}
 
 \begin{defin}[Transition critique]
@@ -977,15 +979,15 @@ Cette transition met à jour la criticité du système et augmente les temps res
 
 
 \begin{defin}[Transition de requête]
-Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $\tau' \subseteq Eligible(S)$ un ensemble de tâches eligible. On dit que l'état du système $S^R = (nat_S^R, rct_S^R, done_S^R, crit_S^R)$ est un $successeur\ \tau'-request$ de $S$, noté $S\xrightarrow{\tau'}S^R$ ssi:
+Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $\tau^R \subseteq Eligible(S)$ un ensemble de tâches eligible. On dit que l'état du système $S^R = (nat_S^R, rct_S^R, done_S^R, crit_S^R)$ est un $successeur\ \tau^R-request$ de $S$, noté $S\xrightarrow{\tau^R}S^R$ ssi:
 
 \begin{itemize}
-\item Pour tout $\tau_i \in \tau'$ :\begin{itemize}
+\item Pour tout $\tau_i \in \tau^R$ :\begin{itemize}
     \item $nat_S(\tau_i)+T_i \leq nat_S^R(\tau_i) \leq T_i$
     \item $rct_S^R(\tau_i)=C_i(crit_S)$
     \item $done_S^R(\tau_i) = False$
 \end{itemize}
-\item Pour tout $\tau_i\ not \in \tau'$ :\begin{itemize}
+\item Pour tout $\tau_i\ not \in \tau^R$ :\begin{itemize}
     \item $nat_S^R(\tau_i)=nat_S(\tau_i)$
     \item $rct_S^R(\tau_i)=rct_S(\tau_i)$
     \item $done_S^R(\tau_i) = done_S(\tau_i)$
@@ -993,15 +995,18 @@ Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $\tau' \subset
 \item $crit_S^R = crit_S$
 \end{itemize}
 
+Pour un état $S$, on note l'ensemble de ses $successeur\ \tau^R-request$ $S^{\tau^R}$
+
 \end{defin}
 
 \begin{defin} Étant donné un ensemble de tâches $\tau$ et un ordonnanceur $Run$, l'automate $A(\tau,Run)$ est le tuple $(V, E, S_0, F)$ où:
 \begin{itemize}
 \item  $V=State(\tau)$
-\item $(S_1,S_2) \in E$ ssi il existe les états intermédiaires $S', S''$ et $S''' \in State(\tau)$ et $\tau' \subseteq Active(S') $ tel que : $S_1\xrightarrow{Run}S'\xrightarrow{\tau'}S''\xrightarrow{C}S_2$
-\item $S_0 = (at_{S_0}, rct_{S_0}, crit_{S_0})$ :\begin{itemize}
-\item $at_{S_0} = O_i\ \forall \tau_i \in \tau$
-\item $rct_{S_0} = C_i(1)\ \forall \tau_i \in \tau$
+\item $(S_1,S_2) \in E$ ssi il existe les états intermédiaires $S^{+}, S^{T}$ et $S^{C} \in State(\tau)$ et $\tau^T \subseteq Active(S^{+}),\tau^R \subseteq Eligilbe(S^{T}) $ tel que : \\$S_1\xrightarrow{Run}S^{+}\xrightarrow{\tau^T}S^{T}\xrightarrow{C}S^{C}\xrightarrow{\tau^R}S_2$
+\item $S_0 = (nat_{S_0}, rct_{S_0}, done_{S_0}, crit_{S_0})$ :\begin{itemize}
+\item $nat_{S_0}(\tau_i) = 0\ \forall \tau_i \in \tau$
+\item $rct_{S_0}(\tau_i) = 0\ \forall \tau_i \in \tau$
+\item $done_{S_0}(\tau_i) = True\ \forall \tau_i \in \tau$
 \item $crit_{S_0} = 1$
 \end{itemize}
 \item $F = Fail_\tau$
@@ -1022,9 +1027,55 @@ Soit $\tau$ un ensemble de tâche sporadique de criticité mixte. Le préordre d
 \item Pour tout $\tau_i$ tel que $done_{S_1} : nat_{S_1} \leq nat_{S_2}$
 \item Pour tout $\tau_i$ tel que $!done_{S_1} : nat_{S_1} = nat_{S_2}$
 \end{itemize}
+Cette relation est transitive et réflexive, il s'agit donc bien d'un préordre. La relation défini aussi un ordre partiel sur $Active(S)$ car celle ci est anti-symétrique.
+Remarquons que $Active(S_1) = Active (S_2)$ puisque $done_{S_1} = done_{S_2}$
 \end{defin}
 
+\begin{lem}
+Si $S_1$ et $S_2$ sont est états tel que $S_1 \succeq_{idle}S_2$ alors $Eligible(S_1) \supseteq Eligible(S_2)$.
+\end{lem}
+\begin{proof} Prouvons que toute tâche $\tau_i \in Eligible(S_2) \rightarrow \tau_i \in Eligible(S_1)$. Puisque $\tau_i \in Eligible(S_2)$, on a $done_{S_2}(\tau_i) = True$,  $crit_{S_2} \leq \chi_i$, et $nat_{S_2}(\tau_i) \leq 0$ par définition de $Eligible$. Donc, puisque $S_1 \succeq_{idle}S_2$, $done_{S_1}(\tau_i) = done_{S_2}(\tau_i) = True$,  $crit_{S_1} = crit_{S_2} \leq \chi_i$ et $nat_{S_1}(\tau_i) \leq nat_{S_2}(\tau_i) \leq 0$ par définition de $\succeq_{idle}$. D'où $\tau_i \in Eligible(S_1)$.
+\end{proof}
 
+\begin{defin}
+Soit $S_1$ et $S_2$ deux état tel que $S_1 \succeq_{idle}S_2$ et $\tau^R \subseteq Eligible(S_2)$. Alors, pour tout $\overline{S}_2\in S_2^{\tau^R}$, un état  $\overline{S}_1\in S_1^{\tau^R}$ est appelé $analogue\ \tau^R-oisif$ de $\overline{S}_2$ ssi:
+\begin{center}
+$\forall \tau_i \in \tau^R : nat_{\overline{S}_1}(\tau_i) = nat_{\overline{S}_2}(\tau_i) $
+\end{center}
+\end{defin}
+
+\begin{lem}
+Soit $S_1$ et $S_2$ deux états tel que $S_1 \succeq_{idle} S_2$, $\tau^R \subseteq Eligible(S_2)$ un sous-ensemble de tache. Alors, pour tout $\overline{S}_2 \in S_2^{\tau^R}$ il y a un $analogue\ \tau^R-oisif\ \overline{S}_1 \in S_1^{\tau^R}$ de $\overline{S}_2$.
+\end{lem}
+\begin{proof}
+Les définitions $X$ et $Y$ pose que pour tout $\tau_i \in \tau^R \subseteq Eligible(S_2)$ on a $nat_{S_1}(\tau_i) \leq nat_{S_2}(\tau_i) \leq 0$, $rct_{S_1}(\tau_i) = rct_{S_2}(\tau_i) = 0$, $done_{S_1}(\tau_i) = done_{S_2}(\tau_i) = True$ et que $crit_{S_1} = crit_{S_2}$. Par définition, tout $\overline{S}_2 \in S^{\tau^R}_2$ satisfait :
+\begin{center}
+$\forall \tau_i \in \tau^R : nat_{\overline{S}_2}(\tau_i) \in I^i_2=[nat_{S_2}(\tau_i)+T_i, T_i] $
+\end{center}
+De manière similaire, par définition $X$, pour tout vecteur $(k_1, k_2, ..., k_n)(ou\ n = |\tau^R|)$ tel que pour tout $1\leq i \leq n: k_i \in I^i_1=[nat_{S_1}(\tau_i)+T_i, T_i]$, il existe $\overline{S}_1\in S^{\tau^R}_1$ avec $nat_{\overline{S}_1}(\tau_i) = k_i$ pour tout $1\leq i \leq n$. C'est à dire qu'à chaque fois qu'un vecteur $(k_1, k_2, ..., k_n)$ de valeurs dans $I_1^1 \times I_1^2 \times ... \times I_1^n$ est fixé, il est possible de trouver un état $\overline{S}_1 \in S^{\tau^R}_1$ tel que le $nat$ de chaque tâche $\tau_i$ est exactement $k_i$. Cependant, comme $nat_{S_1}(\tau_i) \leq nat_{S_2}(\tau_i)$ pour tout $1\leq i \leq n$ on en conclu que $nat_{S_2}(\tau_i) \in I^i_2 \subseteq I^i_1$ pour tout $1\leq i \leq n$. Dés lors, le vecteur $nat_{\overline{S}_2}(\tau_1), nat_{\overline{S}_2}(\tau_2), ..., nat_{\overline{S}_2}(\tau_n)$ est dans $I_1^1 \times I_1^2 \times ... \times I_1^n$. D'où il existe $\overline{S}_1 \in S^{\tau^R}_1$ tel que pour tout $1\leq i \leq n : nat_{\overline{S}_1}(\tau_i) = nat_{\overline{S}_2}(\tau_i)$
+\end{proof}
+
+
+Prouvons maintenant que $\succeq_{idle}$ est bien une relation de simulation lors ce qu'on considère un ordonnanceur sans mémoire.
+
+\begin{theo}
+Soit $\tau$ un ensemble de tâche sporadique à mixité critique and $Run$ un ordonnanceur sans mémoire (déterminé) pour $\tau$ sur un processeur. Alors, $\succeq_{idle}$ est une relation de simulation pour $A(\tau, Run)$.
+\end{theo}
+
+\begin{proof}
+Soit $S_1, S'_1$ et $S_2$ trois état dans $States(\tau)$ tel que $(S_1, S_1') \in E$ et $S_2 \succeq_{idle}S_1$, montrons qu'il existe $S_2' \in States(\tau)$ avec $(S_2, S_2') \in E$ and $S_2' \succeq_{idle} S_1'$.\\
+
+Puisque $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Active(S^{+}_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1'$.\\
+
+Par définition $Z$, $S_2 \succeq_{idle} S_1$ implique que $Active(S_1) = Active(S_2)$. Soit $\tau_i$ un tâche faisant partie de $Active(S_1)$, d'où $done_{S_1}(\tau_i) = False$. Dans ce cas, et puisque $S_2 \succeq_{idle} S_1$, on en conclu que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$, $nat_{S_1}(\tau_i) = nat_{S_1}(\tau_i)$, $rct_{S_1}(\tau_i) = rct_{S_1}(\tau_i)$ et que $crit_{S_1} = crit_{S_2}$ pour tout $\tau_i \in Active(S_1)$. Donc, comme $Run$ est sans mémoire par hypothèse, $Run(S_1) = Run(S_2)$. Soit $S^+_1$ l'état unique tel que $S_1\xrightarrow{Run}S^{+}_1$, montrons qu'il existe $S^+_2$ tel que $S_2\xrightarrow{Run}S^{+}_2$ et que $S^+_2 \succeq_{idle} S^+_1$.
+\begin{enumerate}
+\item Puisque $S_2 \succeq_{idle} S_1$, on sait que $rct_{S_1}(\tau_i) = rct_{S_2}(\tau_i)$. Soit $\tau_i$, une tâche appartenant à $Run(S_1) = Run(S_2)$. Par définition $X$, $rct_{S_1}^+(\tau_i) = rct_{S_1}(\tau_i) -1$ et $rct_{S_2}^+(\tau_i) = rct_{S_2}(\tau_i) -1$. D'où $rct_{S_2}^+(\tau_i) = rct_{S_1}^+(\tau_i)$. Pour une tâche $\tau_1\ not\ \in Run(S_1) = Run(S_2)$, on a $rct_1^+(\tau_i) = rct_1(\tau_i)$ et $rct_2^+(\tau_i) = rct_2(\tau_i)$ à nouveau par définition $X$. D'où $rct_{S_2}^+(\tau_i) = rct_{S_1}^+(\tau_i)$. On en conclut alors que $rct_{S_2}^+(\tau_i) = rct_{S_1}^+(\tau_i)$ pour tout $\tau_i \in \tau$.
+\item Par définition $X$ $done_{S_1}^+(\tau_i) = done_{S_1}(\tau_i)$ et $done_{S_2}^+(\tau_i) = done_{S_2}(\tau_i)$ pour tout $\tau_i \in \tau$. Puisque $S_2 \succeq_{idle} S_1$, on a aussi que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$. On en conclu que $done_{S_1}^+(\tau_i) = done_{S_2}^+(\tau_i)$ pour tout $\tau_i \in \tau$.
+\item Par définition $X$ $crit_{S_1}^+ = crit_{S_1}$ et $crit_{S_2}^+ = crit_{S_2}$. Puisque $S_2 \succeq_{idle} S_1$, on a aussi que $crit_{S_1} = crit_{S_2}$. On en conclu que $crit_{S_1}^+ = crit_{S_2}^+$.
+\item Soit $tau_i$ un tâche tel que $done_{S_1}^+(\tau_i) = True$. Par définition $X$: $nat{S_1}^+ = max(nat_{S_1}(\tau_i)-1, 0)$ et $nat{S_2}^+ = max(nat_{S_2}(\tau_i)-1, 0)$. Cependant, comme $S_2 \succeq_{idle} S_1$, on sait que $nat_{S_2} \leq nat_{S_1}$. On en conclu que $nat_{S_2}^+ \leq nat_{S_1}^+$.
+\item Soit $\tau_i$ un tâche tel que $done_{S_1}^+(\tau_i) = False$. Par définition $X$: $nat{S_1}^+ = nat_{S_1}(\tau_i)-1$ et $nat{S_2}^+ = nat_{S_2}(\tau_i)-1$. Cependant, comme $S_2 \succeq_{idle} S_1$, on sait que $nat_{S_2} \leq nat_{S_1}$. On en conclu que $nat_{S_2}^+ \leq nat_{S_1}^+$. Comme $done_{S_1}^+(\tau_i) = False$, $done_{S_1}(\tau_i) = False$ aussi puisqu'une ne peut signaler sa complétion qu'après une exécution. Puisque $S_2 \succeq_{idle} S_1$, on a aussi que $nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$. On en conclu que $nat_{S_2}^+(\tau_i) = nat_{S_1}^+(\tau_i)$.
+\end{enumerate}
+\end{proof}
 
 
 %\nocite{*}
