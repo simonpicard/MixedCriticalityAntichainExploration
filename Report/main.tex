@@ -688,6 +688,25 @@ Ensuite, il faudra transformer les états de cet automate en antichaînes dans l
 Une fois la modélisation terminée, une implémentation logicielle du problème sera mise en place dans le but de tester l'efficacité de la résolution du problème de certification. Ceci sera accompagné de comparatifs entre la méthode de résolution avec antichaînes et sans.
 
 
+\chapter{Ordonnancement en Criticité Mixte}
+\section{Introduction}
+Les but de ce chapitre est de présenter différents algorithmes d'ordonnancement de système à criticité mixte. Cette approche est nécessaire est pour pouvoir les utiliser dans le futur modèle et surtout pour voir s'il est possible de trouver des conditions d'utilisation plus permissive que les présente.
+
+\section{WCR}
+WCR est l'abréviation de \textit{worst case reservation} ce qui signifie \textit{réservation du pire cas}. L'idée est de transformer les tâche-MC en tâche classique. Pour se faire on définit simplement la nouvelle tâche $\tau_j$ qui est l'aplanissement de la tâche-MC $\tau_i$ avec :
+\begin{itemize}
+\item $O_j = O_i$
+\item $T_j = T_i$
+\item $D_j = D_i$
+\item $C_j = C_i(\chi_i)$
+\end{itemize}
+On peut alors utiliser des algorithme d'ordonnancement qui ont été prouvé optimaux\cite{goossens2014os}, si le système de tâche est ordonançable avec ces derniers.
+\section{AMC-max}
+\section{EDF-VD}
+\section{OCBP}
+\section{WCR}
+
+
 \chapter{Test d'ordonnancement}
 \section{Tache Périodique}
 \subsection{Modèle sous forme d'automate}
@@ -1225,6 +1244,29 @@ Pour terminer la démonstration il reste à prouver que si $S_2 \succeq_{idle} S
 
 \end{proof}
 
+\chapter{resultat expérimentaux}
+
+\section{Génération d'ensemble de tâche}
+Un ensemble de tâche est généré\cite{ekberg2014bounding} en commençant avec un ensemble vide $\tau = \emptyset$ dans lequel des tâches aléatoires sont ajoutées. La génération des tâches est contrôlée par quatre paramètres :
+\begin{itemize}
+\item la probabilité $P_{HI}$ que la tâche soit fortement critique
+\item le ratio maximum $R_{HI}$ entre le temps d'exécution des tâches fortement critique et faiblement critique
+\item le temps d'execution maximum $C^{MAX}_{LO}$ pour les tâches faiblement critique
+\item et la période maximum $T^{MAX}$
+\end{itemize}
+Chaque nouvelle tâche $\tau_i$ est alors générée comme ceci :
+\begin{itemize}
+\item $\chi_i = HI$ avec une probabilité $P_{HI}$, $\chi_i = LO$ sinon
+\item $C_i(LO)$ est généré selon la distribution uniforme sur $\{1,2,...,C^{MAX}_{LO}\}$
+\item $C_i(HI)$ est généré selon la distribution uniforme sur $\{C^{MAX}_{LO},C^{MAX}_{LO}+1,...,R_{HI}*C^{MAX}_{LO}\}$ si $\chi_i = HI$. $C_i(HI) = C_i(LO)$ sinon.
+\item $T_i$ est généré selon la distribution uniforme sur $\{1,2,...,T^{MAX}\}$
+\item $D_i = T_i$ car les échéance se font sur requête.
+\end{itemize}
+
+Chaque ensemble de tâche est généré avec une utilisation objective $U*$. Comme il est compliqué d'obtenir une utilisation exacte en travaillant avec des valeurs entières, on autorise l'utilisation de l'ensemble de tâche à se trouvé entre $U_{min}* = U*-0.005$ et $U_{max}* = U*+0.005$.\\
+Tant que $U(\tau) < U_{min}*$, on continue d'ajouter des tâches dans l'ensemble. Si $U(\tau) > U_{max}*$ alors on vide l'ensemble et on en régénère un. Si un ensemble de tâche satisfait $U_{min}* \leq U(\tau) \leq  U_{min}*$, celui-ci est fini sauf si $\chi_i = \chi_j \forall \tau_i,\tau_j \in tau : t.q \tau_i != \tau_j$ ou $U_{HI} > 0.99$ ou $U_{LO} > 0.99$.
+
+Test avec : $P_{HI} = 0.5, R_{HI} = 4, C^{MAX}_{LO} = 10, T^{MAX} = 200$
 
 %\nocite{*}
 \bibliographystyle{unsrt}
