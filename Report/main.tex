@@ -692,18 +692,11 @@ Une fois la modélisation terminée, une implémentation logicielle du problème
 \section{Introduction}
 Les but de ce chapitre est de présenter différents algorithmes d'ordonnancement de système à criticité mixte. Cette approche est nécessaire est pour pouvoir les utiliser dans le futur modèle et surtout pour voir s'il est possible de trouver des conditions d'utilisation plus permissive que les présente.
 
-\section{WCR}
-WCR est l'abréviation de \textit{worst case reservation} ce qui signifie \textit{réservation du pire cas}. L'idée est de transformer les tâche-MC en tâche classique. Pour se faire on définit simplement la nouvelle tâche $\tau_j$ qui est l'aplanissement de la tâche-MC $\tau_i$ avec :
-\begin{itemize}
-\item $O_j = O_i$
-\item $T_j = T_i$
-\item $D_j = D_i$
-\item $C_j = C_i(\chi_i)$
-\end{itemize}
-On peut alors utiliser des algorithme d'ordonnancement qui ont été prouvé optimaux\cite{goossens2014os}, si le système de tâche est ordonançable avec ces derniers.
+\section{CAPA}
 \section{AMC-max}
 \section{EDF-VD}
 \section{OCBP}
+Dans cette algorithme, nous déterminons hors ligne une priorité pour chaque tâches, et à tout instant la tâche avec le plus grande priorité est exécutée.
 \section{WCR}
 
 
@@ -921,11 +914,20 @@ $Laxity_S(\tau_i) = nat_S(\tau_i) -T_i + D_i - rct_S(\tau_i)$\\
 La laxité d'une tâche est donc le nombre d'unités de temps où la tâche peut être oisive avant de manquer son échéance. Dès lors, si la laxité d'une des tâches d'un état est négative, une tâche manquera son échéance. Cette définition permet de donner celle des états erronés.
 \end{defin}
 
+\begin{defin}[Pire laxité]
+\label{laxity}
+La pire laxité d'une tâche $\tau_i$ dans l'état $S$ est :
+
+$WorstLaxity_S(\tau_i) = nat_S(\tau_i) -T_i + D_i - (rct_S(\tau_i) + (C_i(K)-C_i(crit_S))$\\
+
+La laxité d'une tâche est donc le nombre d'unités de temps où la tâche peut être oisive avant de manquer son échéance. Dès lors, si la laxité d'une des tâches d'un état est négative, une tâche manquera son échéance. Cette définition permet de donner celle des états erronés.
+\end{defin}
+
 \begin{defin}[États erronés]
 \label{failstate}
 Un état $S$ est erroné si l'une des laxités des tâches est négative, on obtient alors l'ensemble :
 
-$Fail_\tau = \{S|\exists \tau_i \in \tau : Laxity_S(\tau_i) < 0  \}$\\
+$Fail_\tau = \{S|\exists \tau_i \in \tau : WorstLaxity_S(\tau_i) < 0  \}$\\
 \end{defin}
 
 Grâce à ces états erronés, nous pouvons à présent borner inférieurement $at_S$. En effet, puisque dès que la laxité d'un état est négative, il est érroné, il n'est pas nécéssaire d'inclure dans l'automate les état où $\exists\ \tau_i \in \tau\ tq\ Laxity_S(\tau_i) < -1$.\\
@@ -1003,7 +1005,8 @@ Soit $S = (at_S, rct_S, done_S, crit_S)$ un état du système. On dit que l'éta
 \item Pour tout $\tau_i \in \tau :$
 $$ rct_S^C(\tau_i) = \left\{
     \begin{array}{ll}
-        rct_S(\tau_i)+c_i(Critical_S)-c_i(crit_S) & si\ X_i\geq Critical_S \\
+        rct_S(\tau_i)+c_i(Critical_S)-c_i(crit_S) & si\ X_i\geq Critical_S \wedge \tau_i \in Active(S)\\
+        rct_S(\tau_i) & si\ X_i\geq Critical_S \wedge \tau_i \notin Active(S)\\
         0 & \mbox{sinon.}
     \end{array}
 \right.
@@ -1068,6 +1071,263 @@ Pour un état $S$, on note l'ensemble de ses $successeur\ \tau^R-request$ $S^{\t
 
 \subsection{Antichaine}
 
+\subsubsection{Simulation de pire scénario}
+
+\begin{defin}[Simulation de pire scénario]
+\label{wcsim}
+Soit $\tau$ un ensemble de tâche sporadique de criticité mixte. Le préordre de pire scénario $\succeq_{worse} \subseteq State(\tau)\times State(\tau)$ est tel que pour tout $S_1, S_2 : S_1 \succeq_{worse}S_2$ ssi:
+\begin{itemize}
+\item $crit_{S_1} = crit_{S_2}$
+\item $done_{S_1} = done_{S_2}$
+\item $nat_{S_1} = nat_{S_2}$
+\item Pour tout $\tau_i$ tel que $done_{S_1}(\tau_i) \vee rct_{S_1}(\tau_i) = 0 : rct_{S_1}(\tau_i) = rct_{S_2}(\tau_i)$
+\item Pour tout $\tau_i$ tel que $!done_{S_1}(\tau_i) \wedge rct_{S_1}(\tau_i) > 0 : rct_{S_1}(\tau_i) \geq rct_{S_2}(\tau_i)$
+\end{itemize}
+Cette relation est transitive et réflexive, il s'agit donc bien d'un préordre.
+%La relation défini aussi un ordre partiel sur $Active(S)$ car celle ci est anti-symétrique.
+Remarquons que $Active(S_1) = Active (S_2)$ puisque $done_{S_1} = done_{S_2}$
+\end{defin}
+
+\begin{lem}
+\label{impdoneeqwc}
+Si $S_1$ et $S_2$ sont est états tel que $S_1 \succeq_{worse}S_2$ alors $ImplicitelyDone(S_1) = ImplicitelyDone(S_2)$.
+\end{lem}
+\begin{proof} Par \autoref{idlesim}: $S_2 \succeq_{worse} S_1$ implique que pour tout $\tau_i \in \tau$ tel que $ rct_{S_1}(\tau_i) = 0: done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$, $rct_{S_1}(\tau_i) = rct_{S_1}(\tau_i)$ et que $crit_{S_1} = crit_{S_2}$. D'où $ImplicitelyDone(S_1) = ImplicitelyDone(S_2)$.
+\end{proof}
+
+\begin{lem}
+\label{criteqwc}
+Si $S_1$ et $S_2$ sont est états tel que $S_1 \succeq_{idle} S_2$ alors $Critical_{S_1} = Critical_{S_2}$.
+\end{lem}
+\begin{proof} Par \autoref{wcsim}: $S_2 \succeq_{worse} S_1$ implique que $Active(S_1) = Active(S_2)$, $crit_{S_1} = crit_{S_2}$ et que $rct_{S_1}(\tau_i) = rct_{S_2}(\tau_i)$ pour tout $\tau_i \in \tau$ avec $rct_{S_1} = 0$. D'où $Critical_{S_1} = Critical_{S_2}$.
+\end{proof}
+
+
+\begin{lem}
+\label{elieqwc}
+Si $S_1$ et $S_2$ sont deux états tel que $S_1 \succeq_{worse}S_2$ alors $Eligible(S_1) = Eligible(S_2)$.
+\end{lem}
+\begin{proof}  Par \autoref{wcsim}: $S_2 \succeq_{worse} S_1$ implique que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$, $crit_{S_1} = crit_{S_2}$ et que $nat_{S_1}(\tau_i) = nat_{S_2}(\tau_i)$ pour tout $\tau_i \in \tau$. D'où $Critical_{S_1} = Critical_{S_2}$.
+\end{proof}
+
+\begin{defin}
+\label{reqanaloguewc}
+Soit $S_1$ et $S_2$ deux états tel que $S_1 \succeq_{worse}S_2$ et $\tau^R \subseteq Eligible(S_2)$. Alors, pour tout $\overline{S}_2\in S_2^{\tau^R}$, un état  $\overline{S}_1\in S_1^{\tau^R}$ est appelé $analogue\ \tau^R-oisif$ de $\overline{S}_2$ ssi:
+\begin{center}
+$\forall \tau_i \in \tau^R : nat_{\overline{S}_1}(\tau_i) = nat_{\overline{S}_2}(\tau_i) $
+\end{center}
+\end{defin}
+
+\begin{lem}
+\label{reqanalogueeqwc}
+Soit $S_1$ et $S_2$ deux états tel que $S_1 \succeq_{worse} S_2$ et $\tau^R \subseteq Eligible(S_2)$ un sous-ensemble de tache. Alors, pour tout $\overline{S}_2 \in S_2^{\tau^R}$ il y a un $analogue\ \tau^R-oisif\ \overline{S}_1 \in S_1^{\tau^R}$ de $\overline{S}_2$.
+\end{lem}
+\begin{proof}
+\autoref{treq}, \autoref{wcsim} et \autoref{elieqwc} pose que pour tout $\tau_i \in \tau^R \subseteq Eligible(S_1) = Eligible(S_2)$ on a $nat_{S_1}(\tau_i) = nat_{S_2}(\tau_i) \leq 0$, $rct_{S_1}(\tau_i) = rct_{S_2}(\tau_i) = 0$, $done_{S_1}(\tau_i) = done_{S_2}(\tau_i) = True$ et que $crit_{S_1} = crit_{S_2}$. Par définition, tout $\overline{S}_2 \in S^{\tau^R}_2$ satisfait :
+\begin{center}
+$\forall \tau_i \in \tau^R : nat_{\overline{S}_2}(\tau_i) \in I^i_2=[nat_{S_2}(\tau_i)+T_i, T_i] $
+\end{center}
+De manière similaire, par définition \autoref{treq}, pour tout vecteur $(k_1, k_2, ..., k_n)(ou\ n = |\tau^R|)$ tel que pour tout $1\leq i \leq n: k_i \in I^i_1=[nat_{S_1}(\tau_i)+T_i, T_i]$, il existe $\overline{S}_1\in S^{\tau^R}_1$ avec $nat_{\overline{S}_1}(\tau_i) = k_i$ pour tout $1\leq i \leq n$. C'est à dire qu'à chaque fois qu'un vecteur $(k_1, k_2, ..., k_n)$ de valeurs dans $I_1^1 \times I_1^2 \times ... \times I_1^n$ est fixé, il est possible de trouver un état $\overline{S}_1 \in S^{\tau^R}_1$ tel que le $nat$ de chaque tâche $\tau_i$ est exactement $k_i$. Comme $nat_{S_1}(\tau_i) = nat_{S_2}(\tau_i)$ pour tout $1\leq i \leq n$ on en conclu que $I^i_2 = I^i_1$ pour tout $1\leq i \leq n$. Dés lors, le vecteur $nat_{\overline{S}_2}(\tau_1), nat_{\overline{S}_2}(\tau_2), ..., nat_{\overline{S}_2}(\tau_n)$ est dans $I_1^1 \times I_1^2 \times ... \times I_1^n$. D'où il existe $\overline{S}_1 \in S^{\tau^R}_1$ tel que pour tout $1\leq i \leq n : nat_{\overline{S}_1}(\tau_i) = nat_{\overline{S}_2}(\tau_i)$
+\end{proof}
+
+
+\begin{defin}[Algorithme d'ordonnancement rct-cohérent]
+\label{rctcoherent}
+Un algorithme d'ordonnancement $Run$ est dit \textit{rct-cohérent} si pour tout état $S_1, S_2 \in state(\tau)$ tel que
+\begin{itemize}
+\item $crit_{S_1} = crit_{S_2}$
+\item $done_{S_1} = done_{S_2}$
+\item $nat_{S_1} = nat_{S_2}$
+\item $\forall \tau_i \notin Active(S_1) : rct_{S_1} = rct_{S_2}$
+\item $\forall \tau_i \in Active(S_1) : rct_{S_1} \geq rct_{S_2}$
+\end{itemize}
+
+On a $\forall \tau_i \in Run(S_2) : \tau_i \in Run(S_1) \vee rct_{S_2}(\tau_i) > rct_{S_1}(\tau_i)$.
+\end{defin}
+
+Cette définition signifie en faite qu'un algorithme d'ordonnancement qui favorise une tâche ayant un certain $rct$ sera aussi favorisé si celui-ci augmente.\todo{pas dingue + exemple}\\
+
+
+
+
+Prouvons maintenant que $\succeq_{worse}$ est bien une relation de simulation lors ce qu'on considère un ordonnanceur sans mémoire et \textit{rct-cohérent}.
+
+\begin{theo}
+Soit $\tau$ un ensemble de tâche sporadique à mixité critique and $Run$ un ordonnanceur sans mémoire (déterminé) et \textit{rct-cohérent} pour $\tau$ sur un processeur. Alors, $\succeq_{worse}$ est une relation de simulation pour $A(\tau, Run)$.
+\end{theo}
+
+\begin{proof}
+Soit $S_1, S'_1$ et $S_2$ trois état dans $States(\tau)$ tel que $(S_1, S_1') \in E$ et $S_2 \succeq_{worse}S_1$, montrons qu'il existe $S_2' \in States(\tau)$ avec $(S_2, S_2') \in E$ and $S_2' \succeq_{worse} S_1'$.\\
+
+Puisque $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Active(S^{+}_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1'$.\\
+
+Par \autoref{wcsim}, $S_2 \succeq_{worse} S_1$ implique que $Active(S_1) = Active(S_2)$. Soit $\tau_i$ un tâche faisant partie de $Active(S_1)$, d'où $done_{S_1}(\tau_i) = False$. Dans ce cas, et puisque $S_2 \succeq_{worse} S_1$, on en conclu que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$, $nat_{S_1}(\tau_i) = nat_{S_1}(\tau_i)$, $rct_{S_1}(\tau_i) \geq rct_{S_1}(\tau_i)$ et que $crit_{S_1} = crit_{S_2}$ pour tout $\tau_i \in Active(S_1)$. Donc $Run(S_1)$ n'est pas forcément égale à $Run(S_2)$.
+Soit $S^+_1$ l'état unique tel que $S_1\xrightarrow{Run}S^{+}_1$, montrons qu'il existe $S^+_2$ tel que $S_2\xrightarrow{Run}S^{+}_2$ et que $S^+_2 \succeq_{idle} S^+_1$.
+\begin{enumerate}
+
+\item Pour tout  $\tau_i \in \tau : done_{S_1}^+(\tau_i) = done_{S_1}(\tau_i), done_{S_2}^+(\tau_i) = done_{S_2}(\tau_i)$. Puisque $S_2 \succeq_{worse} S_1$, on a aussi que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$. On en conclu que $done_{S_1}^+ = done_{S_2}^+$.
+
+\item $crit_{S_1}^+ = crit_{S_1}, crit_{S_2}^+ = crit_{S_2}$. Puisque $S_2 \succeq_{worse} S_1$, on a aussi que $crit_{S_1} = crit_{S_2}$. On en conclu que $crit_{S_1}^+ = crit_{S_2}^+$.
+
+\item Pour tout $\tau_i$ un tâche tel que $done_{S_1}^+(\tau_i) = True : nat_{S_1}^+(\tau_i) = max(nat_{S_1}(\tau_i)-1, 0)$ et $nat_{S_2}^+(\tau_i) = max(nat_{S_2}(\tau_i)-1, 0)$. Cependant, comme $S_2 \succeq_{worse} S_1$, on sait que $nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$. On en conclu que $nat_{S_2}^+(\tau_i) = nat_{S_1}^+(\tau_i)$.
+
+\item Soit $\tau_i$ un tâche tel que $done_{S_1}^+(\tau_i) = False : nat_{S_1}^+(\tau_i) = nat_{S_1}(\tau_i)-1$ et $nat_{S_2}^+(\tau_i) = nat_{S_2}(\tau_i)-1$. Cependant, comme $S_2 \succeq_{worse} S_1$, on sait que $nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$. On en conclu que $nat_{S_2}^+(\tau_i) = nat_{S_1}^+(\tau_i)$.
+
+\item Si $Run(S_1) = Run(S_2)$ :
+
+\begin{enumerate}[label = (\alph*)]
+
+\item Pour tout $\tau_i \in Run(S_1) = Run(S_2) : rct_{S_1}^+(\tau_i) = rct_{S_1}(\tau_i) -1, rct_{S_2}^+(\tau_i) = rct_{S_2}(\tau_i) -1$. Puisque $S_2 \succeq_{worse} S_1$, on sait que $rct_{S_1} \geq rct_{S_2}$. D'où $rct_{S_2}^+(\tau_i) \geq rct_{S_1}^+(\tau_i)$.
+
+\item Pour une tâche $\tau_1 \notin Run(S_1) = Run(S_2) : rct_1^+(\tau_i) = rct_1(\tau_i), rct_2^+(\tau_i) = rct_2(\tau_i)$. Puisque $S_2 \succeq_{worse} S_1$, on sait que $rct_{S_1} \geq rct_{S_2}$. D'où $rct_{S_2}^+(\tau_i) \geq rct_{S_1}^+(\tau_i)$.
+
+\end{enumerate}
+
+\item Si $Run(S_1) \neq Run(S_2)$ :
+
+\begin{enumerate}[label = (\alph*)]
+
+\item Pour tout $\tau_i \in Run(S_2)$, donc $\tau_i \notin Run(S_1) : rct_{S_1}^+(\tau_i) = rct_{S_1}(\tau_i),\ rct_{S_2}^+(\tau_i) = rct_{S_2}(\tau_i) -1$. Puisque $S_2 \succeq_{worse} S_1$, on sait que $rct_{S_2}(\tau_i) \geq rct_{S_1}(\tau_i)$. La question est alors : est ce que $rct_{S_2}(\tau_i)-1 \geq rct_{S_1}(\tau_i)$ ?\\
+
+Premièrement, rappelons que comme $S_2 \succeq_{worse} S_1 : done_{S_1} = done_{S_1}$, $nat_{S_1} = nat_{S_2}, crit_{S_1} = crit_{S_2}$. Donc le seul facteur qui peut faire change $Run$ de comportement est $rct$. Si $\tau_i \in Run(S_2)$ et $\tau_i \notin Run(S_1)$ deux explications sont possible :\begin{itemize}
+\item $rct_{S_2}(\tau_i) \neq rct_{S_1}(\tau_i)$ donc $rct_{S_2}(\tau_i) > rct_{S_1}(\tau_i)$ ou $rct_{S_2}(\tau_i) < rct_{S_1}(\tau_i)$ mais par la relation de simulation de pire scénario on sait qu'il s'agit de la première possibilité car on sait que $rct_{S_2}(\tau_i) \geq rct_{S_1}(\tau_i)$.
+
+
+\item $rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i)$ et donc $\exists \tau_j \in Run(S_1)\ t.q\ rct_{S_2}(\tau_j) \neq rct_{S_1}(\tau_j)$, d'où, par un raisonnement analogue au point précédent, on en déduit que $rct_{S_2}(\tau_j) > rct_{S_1}(\tau_j)$. $Run$ étant \textit{rct-cohérent}, par \autoref{rctcoherent}, cette configuration n'est pas possible.\\
+\end{itemize}
+
+
+On en déduit que  $rct_{S_2}(\tau_i) > rct_{S_1}(\tau_i)$. D'où $rct_{S_2}(\tau_i)-1 \geq rct_{S_1}(\tau_i)$. On peut alors en conclure que $rct_{S_2}^+(\tau_i) \geq rct_{S_1}^+(\tau_i)$.
+
+\item Pour une tâche $\tau_i \in Run(S_1)$ et $ \notin Run(S_2) : rct_1^+(\tau_i) = rct_1(\tau_i)-1, rct_2^+(\tau_i) = rct_2(\tau_i)$. Puisque $S_2 \succeq_{worse} S_1$, on sait que $rct_{S_2}(\tau_i) \geq rct_{S_2}(\tau_i)$. Comme $rct_{S_2}(\tau_i) \geq rct_{S_1}(\tau_i)-1$, on en conclu que $rct_{S_2}^+(\tau_i) \geq rct_{S_1}^+(\tau_i)$.
+
+\item Pour une tâche $\tau_i \notin Active(S_1) = Active(S_2) : rct_1^+(\tau_i) = rct_1(\tau_i), rct_2^+(\tau_i) = rct_2(\tau_i)$. Puisque $S_2 \succeq_{worse} S_1$, on sait que $rct_{S_1} \geq rct_{S_2}$. D'où $rct_{S_2}^+(\tau_i) \geq rct_{S_1}^+(\tau_i)$.
+
+\end{enumerate}
+
+
+
+
+\end{enumerate}
+Par \autoref{texec}. Il est maintenant établi que $S^+_2 \succeq_{worse} S^+_1$.\\
+
+Par le \autoref{impdoneeqwc}, nous obtenons que $ImplicitelyDone(S^+_1) = ImplicitelyDone(S_2^+)$.
+Prouvons maintenant que, pour tout $\tau^T\subseteq Run(S_1^+) \cup ImplicitelyDone(S_1^+)$ menant à $S_1^+ \xrightarrow{\tau^T} S_1^T$, il existe un $S_2^T$ tel que $S_2^+ \xrightarrow{\tau^T} S_2^T$ et $S_2^T \succeq_{worse} S_1^T$.
+\begin{enumerate}
+
+\item Par la \autoref{tterm} on a $crit_{S_1}^T = crit_{S_1}^+$ et $crit_{S_2}^T = crit_{S_2}^+$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ on a $crit_{S_2}^+= crit_{S_1}^+$. On en conclu que $crit_{S_2}^T= crit_{S_1}^T$.
+
+
+\item Par la \autoref{tterm}, pour tout $\tau_i \in \tau^T \cup ImplicitelyDone(S_1^+) : done_{S_1}^T(\tau_i) = True = done_{S_2}^T(\tau_i)$.\\
+Pour tout $\tau_i \notin \tau^T \cup ImplicitelyDone(S_1^+)$ on a $done_{S_1}^T(\tau_i) = done_{S_1}^+(\tau_i)$ et $done_{S_2}^T(\tau_i) = done_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ on a $done_{S_2}^+(\tau_i)= done_{S_1}^+(\tau_i)$. D'où $done_{S_2}^T(\tau_i) = done_{S_1}^T(\tau_i)$. On en conclu que $done_{S_2}^T = done_{S_1}^T$.
+
+
+\item Par la \autoref{tterm}, pour tout $\tau_i \in \tau$ on a $nat_{S_1}^T(\tau_i) = nat_{S_1}^+(\tau_i)$ et $nat_{S_2}^T(\tau_i) = nat_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ on a $nat_{S_2}^+(\tau_i) = nat_{S_1}^+(\tau_i)$. On en conclu que $nat_{S_2}^T(\tau_i) = nat_{S_1}^T(\tau_i)$.
+
+\item Par la \autoref{tterm}, pour tout $\tau_i $ avec $done_{S_1}^T(\tau_i) = True$ :\\
+
+Soit $done_{S_1}^+(\tau_i) = True \rightarrow \tau_i \notin \tau^T \cup ImplicitelyDone(S_1^+)$ : $rct_{S_1}^T(\tau_i) = rct_{S_1}^+(\tau_i)$ et $rct_{S_2}^T(\tau_i) = rct_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ et que $done_{S_1}^T(\tau_i) = True$ on a $rct_{S_2}^+(\tau_i) = rct_{S_1}^+(\tau_i)$. D'où $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$.\\
+
+Soit $done_{S_1}^+(\tau_i) = False$, pour que la tâche se termine elle doit obligatoirement signaler sa complétion et donc on sait que $\tau_i \in \tau^T \cup ImplicitelyDone(S_1^+)$ d'où  $rct_{S_2}^T(\tau_i) = 0 = rct_{S_1}^T(\tau_i)$ et donc $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$
+
+\item Par la \autoref{tterm}, pour tout $\tau_i $ avec $rct_{S_1}^T(\tau_i) = 0$ :\\
+
+Soit $\tau_i \notin \tau^T \cup ImplicitelyDone(S_1^+)$ : $rct_{S_1}^T(\tau_i) = rct_{S_1}^+(\tau_i)$ et $rct_{S_2}^T(\tau_i) = rct_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ et que $rct_{S_1}^T(\tau_i) = 0$ on a $rct_{S_2}^+(\tau_i) = rct_{S_1}^+(\tau_i)$. D'où $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$.\\
+
+Soit $\tau_i \in \tau^T \cup ImplicitelyDone(S_1^+)$ d'où  $rct_{S_2}^T(\tau_i) = 0 = rct_{S_1}^T(\tau_i)$ et donc $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$
+
+\item Par la \autoref{tterm}, pour tout $\tau_i $ avec $rct_{S_1}^T(\tau_i) > 0 \wedge done_{S_1}^T(\tau_i) = False$ :\\
+
+Alors $\tau_i \notin \tau^T \cup ImplicitelyDone(S_1^+)$ : $rct_{S_1}^T(\tau_i) = rct_{S_1}^+(\tau_i)$ et $rct_{S_2}^T(\tau_i) = rct_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ on a $rct_{S_2}^+(\tau_i) \geq rct_{S_1}^+(\tau_i)$. D'où $rct_{S_2}^T(\tau_i) \geq rct_{S_1}^T(\tau_i)$.\\
+
+On sait que $\tau_i \notin \tau^T \cup ImplicitelyDone(S_1^+)$ car sinon $done_{S_1}^T(\tau_i) = True$.
+\end{enumerate}
+Il est maintenant établi que $S^T_2 \succeq_{worse} S^T_1$.\\
+
+Par le \autoref{criteqwc}, nous obtenons que $Critical_{S_1^T} = Critical_{S_2^T}$. Prouvons maintenant que pour l'unique état $S_1^C$ tel que $S^{T}_1\xrightarrow{C}S^{C}_1$, il existe $S_2^C$ tel que $S^{T}_2\xrightarrow{C}S^{C}_2$ et $S^C_2 \succeq_{worse} S^C_1$.
+
+\begin{enumerate}
+
+\item Par la \autoref{tcrit} on a $crit_{S_1}^C = Critical_{S_1^T}$ et $crit_{S_2}^C = Critical_{S_2^T}$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ on a $Critical_{S_1^T} = Critical_{S_2^T}$. On en conclu que $crit_{S_2}^C= crit_{S_1}^C$.
+
+
+\item Par \autoref{tcrit}, pour toute tâche $\tau_i \in \tau$ avec $\chi_i < Critical_{S_1^T}$ :
+\begin{enumerate}[label=(\alph*)]
+\item $done_{S_1}^C(\tau_i) = True = done_{S_2}^C(\tau_i)$
+\item $rct_{S_1}^C(\tau_i) = 0 = rct_{S_2}^C(\tau_i)$
+\item $nat_{S_1}^C(\tau_i) = 0 = nat_{S_2}^C(\tau_i)$
+\end{enumerate}
+
+\item Par \autoref{tcrit}, pour toute tâche $\tau_i \in \tau$ avec $\chi_i \geq Critical_{S_1^T}$ :
+\begin{enumerate}[label=(\alph*)]
+
+%done
+\item $done_{S_1}^C(\tau_i) = done_{S_1}^T(\tau_i)$ et $done_{S_2}^C(\tau_i) = done_{S_2}^T(\tau_i)$. Et puisque $S^T_2 \succeq_{worse} S^T_1$ on a $done_{S_2}^T(\tau_i)= done_{S_1}^T(\tau_i)$. On en conclu que $done_{S_2}^C(\tau_i) = done_{S_1}^C(\tau_i)$.
+
+
+%nat
+\item Pour tout $\tau_i : nat_{S_1}^C(\tau_i) = nat_{S_1}^T(\tau_i)$ et $nat_{S_2}^C(\tau_i) = nat_{S_2}^T(\tau_i)$. Et puisque $S^T_2 \succeq_{worse} S^T_1$ on a $nat_{S_2}^T(\tau_i) = nat_{S_1}^T(\tau_i)$. On en conclu que $nat_{S_2}^C(\tau_i) = nat_{S_1}^C(\tau_i)$.
+
+
+%rct
+\item  Pour tout $\tau_i $ avec $done_{S_1}^C(\tau_i) = True$ :\\
+
+
+Alors $done_{S_1}^T(\tau_i) = True \rightarrow \tau_i \notin Active(S_1)$ et donc $rct_{S_1}^C(\tau_i) = rct_{S_1}^T(\tau_i),\ rct_{S_2}^C(\tau_i) = rct_{S_2}^T(\tau_i)$. Comme $S^T_2 \succeq_{worse} S^T_1$ et $done_{S_1}^T(\tau_i) = True$ on a $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$.\\
+
+Si $done_{S_1}^T(\tau_i) = False$ et $done_{S_1}^C(\tau_i) = True$ alors $\chi_i < Critical_{S_1^T}$.
+
+\item  pour tout $\tau_i $ avec $rct_{S_1}^C(\tau_i) = 0$ :\\
+
+Alors $done_{S_1}^T(\tau_i) = True \rightarrow \tau_i \notin Active(S_1)$ et donc $rct_{S_1}^C(\tau_i) = rct_{S_1}^T(\tau_i),\ rct_{S_2}^C(\tau_i) = rct_{S_2}^T(\tau_i)$. Comme $S^T_2 \succeq_{worse} S^T_1$ et $done_{S_1}^T(\tau_i) = True$ on a $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$.\\ 
+
+Si $done_{S_1}^T(\tau_i) = False$ et $rct_{S_1}^C(\tau_i) = 0$ alors $\chi_i < Critical_{S_1^T}$ car si ce n'est pas le cas alors cela voudrait dire que $C_i(Critical_{S_1^T})-C_i(crit_{S_1}^T) = 0$ ce qui n'est pas possible.
+
+\item  pour tout $\tau_i $ avec $rct_{S_1}^C(\tau_i) > 0 \wedge done_{S_1}^C(\tau_i) = False$ :
+
+
+$rct_{S_1}^C(\tau_i) = rct_{S_1}^T(\tau_i)+C_i(Critical_{S_1^T})-C_i(crit_{S_1}^T)$ et $rct_{S_2}^C(\tau_i) = rct_{S_2}^T(\tau_i)+C_i(Critical_{S_2^T})-C_i(crit_{S_2}^T)$. Et puisque $S^T_2 \succeq_{worse} S^T_1$ on a $rct_{S_2}^T(\tau_i) \geq rct_{S_1}^T(\tau_i)$, $crit_{S_1}^T = crit_{S_2}^T$ et $Critical_{S_1^T} = Critical_{S_2^T}$. On en conclu que $rct_{S_2}^C(\tau_i) \geq rct_{S_1}^C(\tau_i)$.
+
+\end{enumerate}
+
+\end{enumerate}
+Il est maintenant établi que $S^C_2 \succeq_{worse} S^C_1$.\\
+
+Rappelons que comme $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Active(S^{+}_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1^R=S_1'$ par la \autoref{autospo}. Soit $S_2^R$, un $analogue\ \tau^R-oisif$ de $S_1^R$ (qui existe de par le \autoref{reqanalogueeqwc}), prouvons que $S_2^R \succeq_{idle} S_1^R$.
+
+\begin{enumerate}
+\item Pour tout $\tau_i \in \tau^R : done_{S_1}^R(\tau_i) = False = done_{S_2}^R(\tau_i)$.\\
+Pour tout $\tau_i \notin \tau^R : done_{S_1}^R(\tau_i) = done_{S_1}^C(\tau_i), done_{S_2}^R(\tau_i) = done_{S_2}^C(\tau_i)$, et, comme $S^C_2 \succeq_{worse} S^C_1 : done_{S_2}^C(\tau_i) = done_{S_1}^C(\tau_i)$. Donc $done_{S_2}^R = done_{S_1}^R$.
+
+\item $crit^R_{S_1} = crit^C_{S_1}, crit^R_{S_2} = crit^C_{S_2}$. Comme $S^C_2 \succeq_{worse} S^C_1 : crit^C_{S_2} = crit^C_{S_1}$. Donc $crit^R_{S_2} = crit^R_{S_1}$.
+
+\item Pour tout $\tau_i \in \tau^R : nat_{S_1}^R(\tau_i) = nat_{S_2}^R(\tau_i)$ puisque $S_2^R$ est un $analogue\ \tau^R-oisif$ de $S_1^R$.
+
+\item Pour tout $\tau_i \notin \tau^R : nat_{S_1}^R(\tau_i) = nat_{S_1}^C(\tau_i), nat_{S_2}^R(\tau_i) = nat_{S_2}^C(\tau_i)$, et, comme $S^C_2 \succeq_{worse} S^C_1 : nat_{S_2}^C(\tau_i) = nat_{S_1}^C(\tau_i)$. Donc $nat_{S_2}^R = nat_{S_1}^R$.
+
+\item Pour tout $\tau_i \in \tau^R : rct_{S_1}^R(\tau_i) = C_i(\chi_i) = rct_{S_2}^R(\tau_i)$.
+
+
+\item Pour tout $\tau_i \notin \tau^R$ : 
+
+\begin{enumerate}
+\item Pour $\tau_i$ avec $done_{S_1}^R = True$ alors $done_{S_1}^C = True$ et $rct_{S_1}^R(\tau_i) = rct_{S_1}^C(\tau_i),\ rct_{S_2}^R(\tau_i) = rct_{S_2}^C(\tau_i)$. D'où, comme $S^C_2 \succeq_{worse} S^C_1 $ et $done_{S_1}^C = True : rct_{S_2}^C(\tau_i) = rct_{S_1}^C(\tau_i)$. Donc $rct_{S_2}^R(\tau_i) = rct_{S_1}^R(\tau_i)$.
+
+\item Pour $\tau_i$ avec $rct_{S_1}^R = 0$ alors $rct_{S_1}^C = 0$ et $rct_{S_1}^R(\tau_i) = rct_{S_1}^C(\tau_i),\ rct_{S_2}^R(\tau_i) = rct_{S_2}^C(\tau_i)$. D'où, comme $S^C_2 \succeq_{worse} S^C_1 $ et $rct_{S_1}^C = 0 : rct_{S_2}^C(\tau_i) = rct_{S_1}^C(\tau_i)$. Donc $rct_{S_2}^R(\tau_i) = rct_{S_1}^R(\tau_i)$.
+
+\item Pour $\tau_i$ avec $rct_{S_1}^R > 0 \wedge done_{S_1}^R = False$ : $rct_{S_1}^R(\tau_i) = rct_{S_1}^C(\tau_i), rct_{S_2}^R(\tau_i) = rct_{S_2}^C(\tau_i)$, et, comme $S^C_2 \succeq_{worse} S^C_1 : rct_{S_2}^C(\tau_i) \geq rct_{S_1}^C(\tau_i)$. Donc $rct_{S_2}^R(\tau_i) \geq rct_{S_1}^R(\tau_i)$
+
+
+\end{enumerate} 
+\end{enumerate} 
+
+
+Il est maintenant établi que $S^R_2 \succeq_{worse} S^R_1$ ce qui prouve bien que tout les états intermédiaires nécessaire à la présence de l'arc $(S_1, S_1')$ sont bien simulés par ceux généré par le lien $(S_2, S_2)'$ ssi $S_2 \succeq_{worse} S_1$.\\
+
+Pour terminer la démonstration il reste à prouver que si $S_2 \succeq_{worse} S_1$ et $S_1 \in Fail_\tau$ alors $S_2 \in Fail_\tau$ aussi. Soit $\tau_i$ une tâche tel que $Laxity_{S_1}(\tau_i) = nat_{S_1}(\tau_i) -T_i + D_i - rct_{S_1}(\tau_i) < 0$. Puisque $S_2 \succeq_{worse} S_1 : rct_{S_2}(\tau_i) \geq rct_{S_1}(\tau_i), nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$. D'où $Laxity_{S_2}(\tau_i) = nat_{S_2}(\tau_i) -T_i + D_i - rct_{S_2}(\tau_i) \leq Laxity_{S_1}(\tau_i) < 0$ et donc $S_2 \in Fail_\tau$.
+
+\end{proof}
+
 \subsubsection{Simulation de tâche oisive}
 
 \begin{defin}[Simulation de tâche oisive]
@@ -1077,8 +1337,8 @@ Soit $\tau$ un ensemble de tâche sporadique de criticité mixte. Le préordre d
 \item $crit_{S_1} = crit_{S_2}$
 \item $done_{S_1} = done_{S_2}$
 \item $rct_{S_1} = rct_{S_2}$
-\item Pour tout $\tau_i$ tel que $done_{S_1} : nat_{S_1} \leq nat_{S_2}$
-\item Pour tout $\tau_i$ tel que $!done_{S_1} : nat_{S_1} = nat_{S_2}$
+\item Pour tout $\tau_i$ tel que $done_{S_1}(\tau_i) : nat_{S_1}(\tau_i) \leq nat_{S_2}(\tau_i)$
+\item Pour tout $\tau_i$ tel que $!done_{S_1}(\tau_i) : nat_{S_1}(\tau_i) = nat_{S_2}(\tau_i)$
 \end{itemize}
 Cette relation est transitive et réflexive, il s'agit donc bien d'un préordre. La relation défini aussi un ordre partiel sur $Active(S)$ car celle ci est anti-symétrique.
 Remarquons que $Active(S_1) = Active (S_2)$ puisque $done_{S_1} = done_{S_2}$
@@ -1243,6 +1503,28 @@ Il est maintenant établi que $S^R_2 \succeq_{idle} S^R_1$ ce qui prouve bien qu
 Pour terminer la démonstration il reste à prouver que si $S_2 \succeq_{idle} S_1$ et $S_1 \in Fail_\tau$ alors $S_2 \in Fail_\tau$ aussi. Soit $\tau_i$ une tâche tel que $Laxity_{S_1}(\tau_i) = nat_{S_1}(\tau_i) -T_i + D_i - rct_{S_1}(\tau_i) < 0$. Puisque $S_2 \succeq_{idle} S_1 : rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i), nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i)$. D'où $Laxity_{S_2}(\tau_i) = nat_{S_2}(\tau_i) -T_i + D_i - rct_{S_2}(\tau_i) \leq Laxity_{S_1}(\tau_i) < 0$ et donc $S_2 \in Fail_\tau$.
 
 \end{proof}
+
+\subsubsection{Simulation de pire scénario et de tâche oisive}
+
+\begin{defin}[Simulation de pire scénario et de tâche oisive]
+\label{idlewcsim}
+Soit $\tau$ un ensemble de tâche sporadique de criticité mixte. Le préordre de tâche oisive $\succeq_{idle} \subseteq State(\tau)\times State(\tau)$ est tel que pour tout $S_1, S_2 : S_1 \succeq_{idle}S_2$ ssi:
+\begin{itemize}
+\item $crit_{S_1} = crit_{S_2}$
+\item $done_{S_1} = done_{S_2}$
+\item Pour tout $\tau_i$ tel que $done_{S_1}(\tau_i) \vee rct_{S_1}(\tau_i) = 0 : rct_{S_1}(\tau_i) = rct_{S_2}(\tau_i)$
+\item Pour tout $\tau_i$ tel que $!done_{S_1}(\tau_i) \wedge rct_{S_1}(\tau_i) > 0 : rct_{S_1}(\tau_i) \geq rct_{S_2}$
+\item Pour tout $\tau_i$ tel que $done_{S_1}(\tau_i) : nat_{S_1}(\tau_i) \leq nat_{S_2}(\tau_i)$
+\item Pour tout $\tau_i$ tel que $!done_{S_1}(\tau_i) : nat_{S_1}(\tau_i) = nat_{S_2}(\tau_i)$
+\end{itemize}
+Cette relation est transitive et réflexive, il s'agit donc bien d'un préordre.
+%La relation défini aussi un ordre partiel sur $Active(S)$ car celle ci est anti-symétrique.
+Remarquons que $Active(S_1) = Active (S_2)$ puisque $done_{S_1} = done_{S_2}$
+\end{defin}
+
+
+
+
 
 \chapter{resultat expérimentaux}
 
