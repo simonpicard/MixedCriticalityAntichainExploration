@@ -1,6 +1,14 @@
-\documentclass[a4paper]{report}
+\documentclass[11pt,a4paper,oneside]{book}
+
+%\documentclass[a4paper]{report}
+
+\usepackage[hmargin={1.25in,1.25in},vmargin={1.25in,1.25in}]{geometry}
+
+
 \usepackage[french]{babel}
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
 \usepackage{graphicx}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage{amsthm}
@@ -14,6 +22,7 @@
 %\usepackage{geometry}
 \usepackage{enumitem}
 \usepackage{hyperref}
+\usepackage{comment}
 
 
 
@@ -83,19 +92,46 @@
 \end{center}
 \end{titlepage}
 
-\tableofcontents
-\chapter{État de l'art}
-Ce document a été réalisé dans le cadre du second cycle d'études à l'ULB en science informatique. C'est la première partie du travail total que représente le mémoire. Le but est de se lancer dans la rédaction d'un travail de fin d'études porté sur un sujet choisi par l'étudiant, qui comprend en premier lieu un état de l'art et ensuite un travail personnel sur le sujet défini à la fin de ce papier. En l'état, ce document contient la partie état de l'art. Cette dernière est donc portée essentiellement sur la recherche bibliographique, la lecture et la compréhension. Ce travail est réalisé sous la direction des professeurs Gilles Geeraerts et Joël Goossens.\\
+\newpage
+\thispagestyle{empty} 
+\null
 
-Ce chapitre présente l'état de l'art ayant pour sujet deux problèmes différents de deux domaines différents de l'informatique. Premièrement, le chapitre se concentre sur l'ordonnancement à criticité mixte, pour se faire, il faut commencer par introduire l'ordonnancement classique, puis une explication informelle de ce type d'ordonnancement est donnée pour enfin terminer par le formalisme de celui-ci. Dans un second temps, le problème de l'accessibilité est présenté, en commençant par fournir certaines notions de base, ensuite en exposant un formalisme pour finir par expliquer la notion d'antichaîne. Par la suite, l'interaction entre ces deux problèmes est mise au clair. Et pour finir, les contributions qui seront faites dans ce mémoire sont détaillées.
+
+
+\frontmatter
+
+
+
+\chapter*{Abstract}
+
+\chapter*{Résumé}
+
+\chapter*{Remerciements}
+
+\tableofcontents
+
+
+\mainmatter
+
+
+\chapter{Introduction}
+Ce document a été réalisé dans le cadre du second cycle d'études à l'ULB en sciences informatiques. C'est la première partie du travail total que représente le mémoire. Le but est de se lancer dans la rédaction d'un travail de fin d'études porté sur un sujet choisi par l'étudiant, qui comprend en premier lieu un état de l'art et ensuite un travail personnel sur le sujet défini à la fin de ce papier. La partie état de l'art porte essentiellement sur la recherche bibliographique, la lecture et la compréhension. Ce travail est réalisé sous la direction des professeurs Gilles Geeraerts et Joël Goossens.
+
+
+\chapter{État de l'art}
+
+Ce chapitre présente l'état de l'art ayant pour sujet deux problèmes différents de deux domaines différents de l'informatique.\\
+Premièrement, le chapitre se concentre sur l'ordonnancement à criticité mixte. Pour se faire, il faut commencer par introduire l'ordonnancement classique, puis une explication informelle de ce type d'ordonnancement est donnée pour enfin terminer par le formalisme de celui-ci.\\
+Dans un second temps, le problème de l'accessibilité est présenté, en commençant par fournir certaines notions de base, ensuite en exposant un formalisme pour finir par expliquer la notion d'antichaîne. Par la suite, l'interaction entre ces deux problèmes est mise au clair.\\
+Enfin, les contributions qui seront faites dans ce mémoire seront détaillées.
 
 \section{Ordonnancement de systèmes à criticité mixte}
 \subsection{Notions élémentaires}
-L'un des domaines majeurs de l'informatique théorique actuelle est celui de l'ordonnancement, il s'agit d'organiser dans le temps la réalisation de différents travaux compte tenu de contraintes temporelles. Pour s'exécuter, ces travaux ont besoin d'avoir accès à une ou plusieurs ressources partagées entre eux. En pratique, une fois qu'un travail est généré, il possède un temps d'exécution et une échéance. Dans la plupart des cas, on parle de système comprenant une série de travaux, le but est alors d'agencer ces différents travaux de sorte qu'ils ne ratent pas leurs échéances, il faut partitionner la ou les ressources partagées entre les travaux. L'objet de cette sous-section est de définir un certain modèle pour ce problème ainsi que d'introduire différentes notions de la théorie de l'ordonnancement.
+L'un des domaines majeurs de l'informatique théorique actuelle est celui de l'ordonnancement. Il s'agit d'organiser dans le temps la réalisation de différents travaux, compte tenu de contraintes temporelles. Pour s'exécuter, ces travaux ont besoin d'avoir accès à une ou plusieurs ressources partagées entre eux. En pratique, une fois qu'un travail est généré, il possède un temps d'exécution et une échéance. Dans la plupart des cas, on parle de système comprenant une série de travaux, le but est alors d'agencer ces différents travaux de sorte qu'ils ne ratent pas leurs échéances, il faut partitionner la ou les ressources partagées entre les travaux. L'objet de cette sous-section est de définir un certain modèle pour ce problème ainsi que d'introduire différentes notions de la théorie de l'ordonnancement.
 \subsubsection{Modèle}
 Pour permettre l'ordonnancement d'un système, un certain formalisme a été défini, cette partie le présente.\\
 
-Commençons par une notion fondamentale, le travail. Il s'agit d'un ensemble d'opérations à effectuer nécessitant de prendre possession de la ou une des ressources partagées.
+Commençons par une notion fondamentale, le travail. Il s'agit d'un ensemble d'opérations à effectuer nécessitant de prendre possession de la ou d'une des ressources partagées.
 
 \begin{defin}[Travail \cite{goossens2014os}]
 Un travail est représenté par un triplet : 
@@ -105,7 +141,7 @@ $J_i = (r_i, d_i, c_i)$
 \begin{itemize}
 \item $r_i \in \mathbb{N}^{+}$ est l'instant auquel $J_i$ est généré.
 \item $d_i \in \mathbb{N}^{+}$ est l'échéance absolue de $J_i$, c'est-à-dire le moment avant lequel le travail doit impérativement avoir été exécuté complètement. On assume que $d_i > r_i$
-\item $c_i \in \mathbb{N}^{+}$ définis la durée d'exécution du travail.
+\item $c_i \in \mathbb{N}^{+}$ définit la durée d'exécution du travail.
 \end{itemize}
 Le travail $J_i$ doit donc recevoir $c_i$ unités de processeur durant l'intervalle $[r_i, d_i)$. $[a,b)$ est l'intervalle entre $a$ et $b$, $a$ est inclus et $b$ ne l'est pas. \\
 En général, on parle d'instance $I$, il s'agit d'un ensemble de travaux : $ I = \{J_1, J_2, ...\} $
@@ -120,9 +156,9 @@ $\tau_i = (O_i, T_i, D_i, C_i)$
 \end{center}
 \begin{itemize}
 \item $O_i \in \mathbb{N}^{+}$ est le décalage de la tâche, l'instant auquel le premier travail de la tâche est généré.
-\item $C_i \in \mathbb{N}^{+}$ définis la durée d'exécution d'un travail généré par la tâche.
+\item $C_i \in \mathbb{N}^{+}$ définit la durée d'exécution d'un travail généré par la tâche.
 \item $D_i \in \mathbb{N}^{+}$ est l'échéance relative de la tâche, c'est donc le laps de temps entre la génération d'un travail et son échéance absolue.
-\item $T_i \in \mathbb{N}^{+}$ est la périodicité de la tâche, c'est-à-dire l'intervalle entre deux générations de travail.
+\item $T_i \in \mathbb{N}^{+}$ est la périodicité de la tâche, c'est-à-dire l'intervalle entre deux générations de travail.\\
 \end{itemize}
 Le $k^{e}$ travail $J_{i,k}$ de la tâche $\tau_i$ est donc généré à l'instant $O_i + (k-1)*T_i$ et a pour échéance  $O_i+(k-1)*T_i+D_i$ .
 \end{defin}
@@ -140,27 +176,28 @@ On définit ensuite une série caractéristique \cite{goossens1999scheduling} qu
 On définit ensuite, sur un système de plusieurs tâches $\tau = \{\tau_1, \tau_2, ...\}$
 \begin{itemize}
 \item Un système de tâche est synchrone si toutes ses tâches ont un décalage nul, $O_i = 0\ \forall i$
-\item Asynchrone sinon.
+\item Asynchrone sinon.\todo{expliquer}
 \end{itemize}
 
 \subsubsection{Ordonnancement}
-Une stratégie d'ordonnancement est un algorithme permettant le partage d'une ou plusieurs ressources entre plusieurs parties dont elles font la requête de manière simultanée et asynchrone \cite{goossens2014os}. Les ordonnanceurs sont utilisés par exemple dans un système d'exploitation, dans les disques durs, dans les routeurs internet ... Le but d'un ordonnanceur classique est d'éviter le gaspillage de ressource et de partager cette dernière de manière équitable entre ceux qui le demandent. Dans un ordonnanceur temps réel, une contrainte de temps doit être respectée, il faut que les processus se terminent avant leurs échéances, ce type d'ordonnanceur est largement utilisé dans les systèmes embarqués, par exemple dans un cardiostimulateur.\\
+Une stratégie d'ordonnancement est un algorithme permettant le partage d'une ou plusieurs ressources entre plusieurs parties dont elles font la requête de manière simultanée et asynchrone \cite{goossens2014os}. Les ordonnanceurs sont utilisés, par exemple, dans un système d'exploitation, dans les disques durs, dans les routeurs internet ... Le but d'un ordonnanceur classique est d'éviter le gaspillage de ressource et de partager cette dernière de manière équitable entre ceux qui le demandent. Dans un ordonnanceur temps réel, une contrainte de temps doit être respectée, il faut que les processus se terminent avant leurs échéances, ce type d'ordonnanceur est largement utilisé dans les systèmes embarqués, par exemple dans un cardiostimulateur.\\
 
-À l'heure actuelle, les constructeurs de système embarqué ont tendance à implémenter plusieurs fonctionnalités sur une même plateforme pour réduire les coûts, la chaleur, l'alimentation... Malheureusement, un tel partage de ressource peut mener à des interférences entre les différents clients, on cherche donc à savoir si oui ou non, un tel ensemble de clients peuvent partager une ressource sans qu'il y ait de moments où un client n'a pas accès à cette ressource alors qu'il en a besoin.\\
-Typiquement, on parle d'ordonnancement d'un processeur, on divise donc le temps d'exécution disponible grâce aux coups d'horloge, définissant le temps entre deux coups d'horloge successifs comme une unité de temps. L'ordonnanceur peut être préemptif, c'est-à-dire qu'il peut interrompre un travail pour en ordonnancer un autre, ou non.\\
+À l'heure actuelle, les constructeurs de systèmes embarqués ont tendance à implémenter plusieurs fonctionnalités sur une même plateforme pour réduire les coûts, la chaleur, l'alimentation... Malheureusement, un tel partage de ressource peut mener à des interférences entre les différents clients, on cherche donc à savoir si un tel ensemble de clients peuvent partager une ressource sans qu'il y ait de moments où un client n'a pas accès à cette ressource alors qu'il en a besoin.\\
+
+Typiquement, on parle d'ordonnancement d'un processeur, on divise donc le temps d'exécution disponible grâce aux coups d'horloge, définissant le temps entre deux coups d'horloge successifs comme une unité de temps. L'ordonnanceur peut être préemptif, c'est-à-dire qu'il peut interrompre un travail pour en ordonnancer un autre.\\
 
 Dans ce document, nous nous concentrerons sur les algorithmes d'ordonnancement préemptif sur un monoprocesseur à vitesse unitaire.\\
 
-L'algorithme d'ordonnancement devra choisir parmi plusieurs travaux lequel pourra jouir de la puissance du processeur.  Pour ce faire, il utilisera un système de priorité clair et défini, chaque travail possédera une priorité et, en fonction de celle-ci, l'ordonnanceur pourra partager le temps de calcul entre les travaux. Il existe trois classes d'algorithme d'ordonnancement \cite{goossens2014os} :
+L'algorithme d'ordonnancement devra choisir parmi plusieurs travaux lequel pourra jouir de la puissance du processeur.  Pour ce faire, il utilisera un système de priorité clair et défini, chaque travail possédera une priorité et, en fonction de laquelle, l'ordonnanceur pourra partager le temps de calcul entre les travaux. Il existe trois classes d'algorithme d'ordonnancement \cite{goossens2014os} :\\
 
 \begin{itemize}
 \item Priorité fixe au niveau des tâches (Fixed Task Priority, FTP) : il s'agit d'un ordonnancement où chaque tâche s'est vue attribuer une priorité avant l'exécution du système. Chaque travail hérite ensuite de la priorité de la tâche qui l'a générée.
-\item Priorité fixe au niveau des travaux (Fixed Job Priority, FJP) : chaque travail reçoit un niveau de priorité lorsqu'il est généré, celui-ci restera constant pour toute la vie du travail. Dès lors, différents travaux d'une même tâche peuvent avoir une priorité différente.
-\item Priorité dynamique (Unrestructed Dynamic Priority, DP) : il s'agit du cas général où aucune contrainte ne s'applique à l'assignation des priorités aux travaux. En règle générale, cette nouvelle ligne conduite signifie qu'un travail va changer de priorité durant son existence.
+\item Priorité fixe au niveau des travaux (Fixed Job Priority, FJP) : chaque travail reçoit un niveau de priorité lorsqu'il est généré, celui-ci restera constant pour toute la durée du travail. Dès lors, différents travaux d'une même tâche peuvent avoir une priorité différente.
+\item Priorité dynamique (Unrestructed Dynamic Priority, DP) : il s'agit du cas général où aucune contrainte ne s'applique à l'assignation des priorités aux travaux. En règle générale, cette nouvelle ligne conduite signifie qu'un travail va changer de priorité durant son existence.\\
 \end{itemize}
 On remarque que ces différentes classifications s'incluent elles-mêmes, en effet, FTP fait partie de la classe FJP qui est elle-même dans la classe DP.\\
 
-L'ordonnancement est donc avant tout une certaine assignation de priorité, de manière générale on considère que la valeur de la priorité attribuée à un travail est un naturel et est inversement proportionnel à sa priorité. Si deux travaux ont une même priorité, il faudra choisir de manière déterminée lequel sera ordonnancé. On définit donc la relation de priorité par le symbole $\succ$, par exemple : $\tau_i \succ \tau_j$, ici $\tau_i$ a une priorité supérieure à celle de $\tau_j$.\\
+L'ordonnancement est donc avant tout une certaine assignation de priorité. De manière générale, on considère que la valeur de la priorité attribuée à un travail est un naturel et est inversement proportionnel à sa priorité. Si deux travaux ont une même priorité, il faudra choisir de manière déterminée lequel sera ordonnancé. On définit donc la relation de priorité par le symbole $\succ$, par exemple : $\tau_i \succ \tau_j$, ici $\tau_i$ a une priorité supérieure à celle de $\tau_j$.\\
 
 \begin{defin}[Fonction de priorité \cite{santy2012ordonnancement}]
 Formellement, une fonction de priorité $\pi$ assigne à toute tâche $\tau_i$ d'un système de $n$ tâches $\tau$ (respectivement à tout travail $J_i$ d'une instance de $m$ travaux $I$) un nombre entier $\pi(\tau_i)$ (respectivement $\pi(J_i)$) compris entre $1$ et $n$ (respectivement $m$) qui représente de manière inversement proportionnelle la priorité de la tâche (respectivement du travail).
@@ -172,22 +209,23 @@ $\pi(\tau_i) < \pi(\tau_j) \Leftrightarrow \tau_i \succ \tau_j$\\
 \end{center}
 \end{defin}
 
-En temps réel, l'ordonnancement se porte en général sur un système de tâche, on souhaite prouver si oui ou non un tel ensemble satisfait les conditions introduites par ce mode, deux nouvelles caractéristiques en émergent \cite{goossens2014os} :
+En temps réel, l'ordonnancement se porte en général sur un système de tâche. On souhaite prouver si un tel ensemble remplit les conditions introduites par ce mode. Deux nouvelles caractéristiques en émergent \cite{goossens2014os} :
 
 \begin{itemize}
-\item La faisabilité d'un système de tâche est vérifiée s'il existe un certain partage du temps de calcul entre les différents travaux de sorte que chacun d'entre eux ait pu exécuter toutes leurs actions sans rater leur échéance.
-\item Un système de tâche est ordonnançable avec un certain algorithme d'ordonnancement si celui-ci permet d'agencer les travaux de sorte que chacun d'entre eux ait pu exécuter toutes leurs actions sans rater leur échéance.
+\item La faisabilité d'un système de tâche est vérifiée s'il existe un certain partage du temps de calcul entre les différents travaux, de sorte que chacun d'entre eux ait pu exécuter toutes leurs actions sans rater leur échéance.
+\item Un système de tâche est ordonnançable avec un certain algorithme d'ordonnancement si celui-ci permet d'agencer les travaux de sorte que chacun d'entre eux ait pu exécuter toutes leurs actions sans rater leur échéance.\\
 \end{itemize}
 
 Une définition analogue peut être faite pour une collection de travaux.\\
-Il est à noter qu'il est possible qu'un système de tâche soit faisable, mais pas ordonnançable dans certains cas. Ces deux notions sont souvent liées à celle de l'utilisation qui représente la charge de travail du processeur, la quantité de travail effectué par rapport au temps dont il dispose pour le faire.
+
+Il est à noter qu'il est possible dans certains cas qu'un système de tâche soit faisable, mais pas ordonnançable. Ces deux notions sont souvent liées à celle de l'utilisation qui représente la charge de travail du processeur : la quantité de travail effectué par rapport au temps dont il dispose pour le faire.
 
 \begin{defin}[Utilisation \cite{goossens2014os}]
 L'utilisation d'une tâche est définie par la fonction $U(\tau_i) = C_i/T_i$.\\
 L'utilisation d'un système est la somme des utilisations des tâches le composant : $U(\tau) = \underset{\tau_i \in \tau}{\sum} (\tau_i)$
 \end{defin}
 
-Pour clôturer cette sous-section, un algorithme d'ordonnancement monoprocesseur est présenté. Il s'agit d'un algorithme à priorité statique au niveau des travaux (FJP) : EDF (Earliest Deadline First). Celui-ci attribue à chacun des travaux une priorité relative à leurs échéances absolues, au plus elles sont proches, au plus prioritaire est le travail. Formellement, on obtient $d_i < d_j \Leftrightarrow J_i \succ J_j$ et en cas d'égalité, $d_i = d_j \wedge i < j \Leftrightarrow J_i \succ J_j$.
+Pour clôturer cette sous-section, un algorithme d'ordonnancement monoprocesseur est présenté. Il s'agit d'un algorithme à priorité statique au niveau des travaux (FJP) : EDF (Earliest Deadline First). Celui-ci attribue à chacun des travaux une priorité relative à leurs échéances absolues, plus elles sont proches, plus le travail est prioritaire. Formellement, on obtient $d_i < d_j \Leftrightarrow J_i \succ J_j$ et en cas d'égalité, $d_i = d_j \wedge i < j \Leftrightarrow J_i \succ J_j$.
 
 \begin{theo}[\cite{goossens2014os}]
 Si une collection de travaux est faisable, alors elle est ordonnançable avec EDF.
@@ -226,18 +264,19 @@ Le problème de criticité mixte est un problème d'ordonnancement. Pour rappel,
 Dans cette sous-section, nous nous penchons sur un problème plus précis : celui de la certification, dont le but est de prouver qu'un système est ordonnançable.\\
 
 Précédemment, il a été présenté l'ordonnancement de travaux classique, ici on en déduit un nouveau problème où les clients pourraient avoir une importance plus ou moins élevée en fonction de leur criticité dans leur système. 
-Il est évident que dans une voiture, le système de freins ABS (<<Anti-lock Brake System>>) est plus important, plus critique que l'autoradio, car, en cas de dysfonctionnement, il y a danger pour le conducteur, et donc l'ABS devrait être prioritaire sur l'autoradio, c'est-à-dire que si ces deux clients souhaitent prendre possession du processeur, mais que seul l'un des deux le peut, l'ABS sera privilégié. Ce problème d'ordonnancement avec différente priorité est très actuel, en effet c'est un domaine de recherche croissant dans le monde de l'ordonnancement temps réel et des systèmes embarqués, il fait l'objet d'un programme au sein du laboratoire <<US Air Force Laboratory>>, le Mixed-Criticality Architecture Requirements (MCAR) \cite{de2009scheduling}.\\
-Dans le milieu aérospatial, le problème a été standardisé par l'organisme RTCA, qui classifie les travaux en fonction de la gravité qu'engendrerait un dépassement de leur échéance, il s'agit du standard DO-178C imprimer en figure~\ref{do178}.\\
+Il est évident que, dans une voiture, le système de freins ABS (<<Anti-lock Brake System>>) est plus important, plus critique que l'autoradio, car, en cas de dysfonctionnement, il y a danger pour le conducteur, et donc l'ABS devrait être prioritaire sur l'autoradio, c'est-à-dire que si ces deux clients souhaitent prendre possession du processeur, mais que seul l'un des deux le peut, l'ABS sera privilégié. Ce problème d'ordonnancement avec différentes priorités est très actuel. En effet, c'est un domaine de recherche croissant dans le monde de l'ordonnancement temps réel et des systèmes embarqués, il fait l'objet d'un programme au sein du laboratoire <<US Air Force Laboratory>>, le Mixed-Criticality Architecture Requirements (MCAR) \cite{de2009scheduling}.\\
+
+Dans le milieu aérospatial, le problème a été standardisé par l'organisme RTCA, qui classifie les travaux en fonction de la gravité qu'engendrerait un dépassement de leur échéance, il s'agit du standard DO-178C imprimé en figure~\ref{do178}.\\
 \begin{figure}[h]
 \begin{tabularx}{\textwidth}{|c|c|X|}
 \hline
 Niveau & Gravité & Conséquences\\
 \hline
-À & Catastrophique & Un échec peut causer multiple décès, habituellement avec la perte de l'objet volant\\
+A & Catastrophique & Un échec peut causer multiple décès, habituellement avec la perte de l'objet volant\\
 \hline
 B & Hasardeuse & Un échec a un grand impact négatif sur la sûreté ou la performance, ou réduit la capacité de l'équipage à gérer l'objet volant à cause de détresse physique ou d'une charge de travail plus importante ou bien engendre de sérieuses blessures parmi les passagers.\\
 \hline
-C & Majeure & Un échec réduit significativement la marge de sûreté ou augmente significativement le travail de l'équipage. Par exemple, il pourrait engendrer un inconfort pour un passager (voir même une blessure).\\
+C & Majeure & Un échec réduit significativement la marge de sûreté ou augmente significativement le travail de l'équipage. Par exemple, il pourrait engendrer un inconfort pour un passager (voire même une blessure).\\
 \hline
 D & Mineure & Un échec réduit légèrement la marge de sûreté ou augmente légèrement le travail de l'équipage. Par exemple, il pourrait engendrer un désagrément pour un passager dont le personnel devrait s'occuper.\\
 \hline
@@ -254,31 +293,32 @@ Il existe un second aspect de l'ordonnancement à criticité mixte où un systè
 
 \begin{itemize}
 \item Criticité au vol : ce sont les actions exécutées par le drone pour voler en tant que tel, calculer un chemin pour éviter les obstacles, gérer la puissance des réacteurs, l'inclinaison des ailes ...
-\item Criticité à la mission : ce sont toutes les actions qui fonctionnent dans le but de mener à bien la mission du drone, dans notre cas elles pourraient être le fait de filmer avec une caméra, de transmettre ces images où d'autres informations telles que la température extérieure, de faire de la reconnaissance sur ces images et bien d'autres.
+\item Criticité à la mission : ce sont toutes les actions qui fonctionnent dans le but de mener à bien la mission du drone. Dans notre cas, elles pourraient être le fait de filmer avec une caméra, de transmettre ces images ou d'autres informations, telles que la température extérieure, de faire de la reconnaissance sur ces images etc.\\
 \end{itemize}
 
-Il est évident que le niveau critique de vol est plus important que celui de la mission, en effet, si une des actions en rapport avec le vol du drone se passait mal, cette défaillance pourrait mener à un atterrissage forcé qui entraînerait des dégâts matériels, voir même pire, un réel danger pour un être humain.\\
+Il est évident que le niveau critique de vol est plus important que celui de la mission. En effet, si une des actions en rapport avec le vol du drone dysfonctionnait, cette défaillance pourrait mener à un atterrissage forcé qui entraînerait des dégâts matériels, voire même pire, un réel danger pour un être humain.\\
 
-Pour introduire les contraintes sur les fonctionnalités, nous introduisons la notion de Worst-Case Execution Time, abréger WCET, qui représente le temps d'exécution dont aura besoin une action pour s'exécuter complètement au pire des cas. Ces estimations sont très importantes puisque tout le système d'ordonnancement repose sur celles-ci, en effet, si un travail prend plus de temps à s'exécuter que l'estimation, le système complet peut être compromis. L'estimation du WCET doit être \cite{santy2012ordonnancement} :
+Pour introduire les contraintes sur les fonctionnalités, nous introduisons la notion de WCET (Worst-Case Execution Time), qui représente le temps d'exécution dont aura besoin une action pour s'exécuter complètement au pire des cas. Ces estimations sont très importantes, puisque tout le système d'ordonnancement repose sur elles. En effet, si un travail prend plus de temps à s'exécuter que l'estimation, le système complet peut être compromis. L'estimation du WCET doit être \cite{santy2012ordonnancement} :
 
 \begin{itemize}
-\item sure. La validité d'une certification repose sur cette valeur, elle doit donc former une borne supérieure la plus juste possible. Il est exclu que celle-ci soit vue à la baisse, elle ne peut être optimiste.
-\item la moins pessimiste possible. Au plus le WCET est pessimiste, au plus il induira des instants oisifs durant l'ordonnancement puisqu'en pratique, le temps d'exécution sera fréquemment inférieur à celui-ci. L'estimation ne doit pas être trop surestimée, sous peine d'engendrer un faux négatif lors d'un test d'ordonnançabilité.
+\item sûre. La validité d'une certification repose sur cette valeur, elle doit donc former une borne supérieure la plus juste possible. Il est exclu que celle-ci soit vue à la baisse, elle ne peut être optimiste.
+\item la moins pessimiste possible. Plus le WCET est pessimiste, plus il induira des instants oisifs durant l'ordonnancement puisqu'en pratique, le temps d'exécution sera fréquemment inférieur à celui-ci. L'estimation ne doit pas être surestimée, sous peine d'engendrer un faux négatif lors d'un test d'ordonnançabilité.\\
 \end{itemize}
-Le calcul d'un WCET qui soit sur et non pessimiste est un exercice difficile et n'est pas à prendre à la légère. Il s'agit d'un domaine à part entier en science informatique, actuellement en plein essor et il fait l'objet de divers concours.\\
 
-Comme en témoigne le standard DO-178C en figure~\ref{do178}, les conséquences engendrées par un travail qui raterait une échéance varient. Un lien de causalité entre la criticité d'un travail et le pessimisme de l'estimation de son WCET a été mis en évidence \cite{vestal2007preemptive}. Les estimations du temps d'exécution sont généralement créées grâce à des simulations. Pour les moins critiques, des simulations classiques suffisent, mais au plus la fonctionnalité est critique, au plus on teste de cas, ce qui amène à simuler ces travaux dans des cas improbables, tel que celui où la mémoire vive du système serait remplie. Les tâches les plus critiques devront pouvoir être ordonnancées malgré une estimation de leur WCET très pessimiste, le problème est que, comme énoncé ci-dessus, au plus une estimation est pessimiste, au plus il y aura de gaspillage de ressource. C'est de ce constat que vient l'idée de l'ordonnancement à criticité mixte, en effet on veut pouvoir garantir que dans les cas d'exécution classiques, les tâches critiques et moins critiques pourront être ordonnancées, mais dans des cas extrêmes, on souhaite toujours garantir que les tâches hautement critiques restent ordonnancées correctement.\\
+Le calcul d'un WCET sûr et non pessimiste est un exercice difficile et n'est pas à prendre à la légère. Il s'agit d'un domaine à part entière des sciences informatiques, actuellement en plein essor qui fait l'objet de divers concours.\\
 
-Dans l'exemple du drone, si celui-ci souhaite voler dans l'espace aérien, il est impératif que son logiciel satisfasse les critères d'une autorité de certification (AC) civile qui gère ledit espace aérien, tel que l’ <<European Aviation Safety Agency>> (EASA) en Europe ou bien la <<Federal Aviation Authority>> (FAA) aux États-Unis. Ces AC se doivent d'être extrêmement prudentes pour éviter tout accident, dès lors, elles imposent que la certification d'un système soit faite avec des assomptions sur le temps d'exécution des fonctionnalités critiques très pessimistes. En revanche, les AC ne sont pas du tout concernées par les tâches critiques à la mission, en effet leur seule préoccupation est la sûreté du réseau aérien.\\
-Les temps d'exécution des fonctionnalités critiques à la mission sont quant à eux estimés par le client et l'industriel, ces derniers estiment aussi le WCET des tâches critiques au vol, mais avec des standards moins rigoureux que ceux des AC civiles.\\
+Comme en témoigne le standard DO-178C en figure~\ref{do178}, les conséquences engendrées par un travail qui raterait une échéance varient. Un lien de causalité entre la criticité d'un travail et le pessimisme de l'estimation de son WCET a été mis en évidence \cite{vestal2007preemptive}. Les estimations du temps d'exécution sont généralement créées grâce à des simulations. Pour les moins critiques, des simulations classiques suffisent, mais plus la fonctionnalité est critique, plus on teste de cas, ce qui amène à simuler ces travaux dans des cas improbables, tels que celui où la mémoire vive du système serait remplie. Les tâches les plus critiques devront pouvoir être ordonnancées malgré une estimation de leur WCET très pessimiste. Le problème est que, comme énoncé ci-dessus, plus une estimation est pessimiste, plus il y aura de gaspillage de ressource. C'est de ce constat que vient l'idée de l'ordonnancement à criticité mixte. En effet, on veut pouvoir garantir que dans les cas d'exécutions classiques, les tâches critiques et moins critiques pourront être ordonnancées, mais dans des cas extrêmes, on souhaite toujours garantir que les tâches hautement critiques restent ordonnancées correctement.\\
 
-Concrètement, les AC imposeront donc aux tâches critiques au vol des estimations dans des cas extrêmes (il existe d'autres techniques d'estimation que la simulation, comme obliger à ce que ces tâches critiques soient codées en un langage spécifique permettant l'analyse du WCET) tandis que le fabricant simulera l'exécution dans des conditions simples en y ajoutant une valeur de sûreté, ce résultat sera probablement lui aussi pessimiste, mais moins que celui de l'AC.\\
+Dans l'exemple du drone, si celui-ci souhaite voler dans l'espace aérien, il est impératif que son logiciel satisfasse les critères d'une autorité de certification (AC) civile qui gère ledit espace aérien, tel que l’ <<European Aviation Safety Agency>> (EASA) en Europe ou bien la <<Federal Aviation Authority>> (FAA) aux États-Unis. Ces AC se doivent d'être extrêmement prudentes pour éviter tout accident. Dès lors, elles imposent que la certification d'un système soit faite avec des assomptions sur le temps d'exécution des fonctionnalités critiques très pessimistes. En revanche, les AC ne sont pas du tout concernées par les tâches critiques à la mission, leur seule préoccupation est la sûreté du réseau aérien.\\
+Les temps d'exécution des fonctionnalités critiques à la mission sont quant à eux estimés par le client et l'industriel; ces derniers estiment aussi le WCET des tâches critiques au vol, mais avec des standards moins rigoureux que ceux des AC civiles.\\
 
-Toutes les actions se seront donc vues attribuer un WCET, mais certaines en auront reçu plusieurs, une au niveau critique de mission et une au niveau critique de vol. Le problème de certification doit donc être valide à plusieurs niveaux. Cependant, toutes les actions n'ont pas le besoin d'être certifié par toutes les instances de vérification, si c'était le cas il suffirait de faire un test en sélectionnant les contraintes les plus larges, donc les plus grands WCET, pour chaque action. Seules certaines actions sont soumises aux contraintes de certaines instances de vérification comme c'est le cas des calculs liés au vol du drone dans notre exemple. Il s'agit donc de s'assurer que les actions critiques au vol passent le test de l'AC qui gère l'espace aérien tandis que les actions de l'ensemble du système, donc des deux niveaux critiques, puissent cohabiter selon les WCET estimés par le fabricant.\\
+Concrètement, les AC imposeront donc aux tâches critiques au vol des estimations dans des cas extrêmes (il existe d'autres techniques d'estimation que la simulation, comme l'obligation de coder ces tâches critiques en un langage spécifique permettant l'analyse du WCET), tandis que le fabricant simulera l'exécution dans des conditions simples en y ajoutant une valeur de sûreté. Ce résultat sera probablement lui aussi pessimiste, mais moins que celui de l'AC.\\
+
+Toutes les actions se seront vues attribuer un WCET, mais certaines en auront reçu plusieurs : une au niveau critique de mission et une au niveau critique de vol. Le problème de certification doit donc être valide à plusieurs niveaux. Cependant, toutes les actions n'ont pas besoin d'être certifiées par toutes les instances de vérification. Si c'était le cas, il suffirait de faire un test en sélectionnant les contraintes les plus larges, donc les plus grands WCET, pour chaque action. Seules certaines actions sont soumises aux contraintes de certaines instances de vérification, comme c'est le cas des calculs liés au vol du drone dans notre exemple. Il s'agit donc de s'assurer que les actions critiques au vol passent le test de l'AC qui gère l'espace aérien, tandis que les actions de l'ensemble du système, donc des deux niveaux critiques, puissent cohabiter selon les WCET estimés par le fabricant.\todo{réduire les donc}\\
 
 Reprenons l'exemple du drone de reconnaissance, supposons qu'il ne possède que deux travaux, $J_1$ : la manipulation de l'hélice (criticité au vol) et  $J_2$ : la photographie (criticité à la mission). Ces deux travaux peuvent être ordonnancés à partir du temps $t_0$ et doivent tous deux être terminés au temps $t_8$. Le WCET de la manipulation de l'hélice a été estimé à 6 alors que celui de la photographie l'a été à 4.\\
 
-Ce système semble non ordonnançable, car la somme de ces WCET est plus grande que la limite d'exécution des deux actions. Cependant, il ne faut pas oublier qu'il y a deux niveaux de certification, en effet le premier correspond à l'AC qui gère l'espace aérien, cette dernière se soucie exclusivement de la manipulation de l'hélice et le second est en relation avec la validation par le fabricant qui lui ne tient pas compte du WCET de la manipulation de l'hélice imposée par l'autre AC.\\
+Ce système semble non ordonnançable, car la somme de ces WCET est plus grande que la limite d'exécution des deux actions. Cependant, il ne faut pas oublier qu'il y a deux niveaux de certification : le premier correspond à l'AC qui gère l'espace aérien, cette dernière se soucie exclusivement de la manipulation de l'hélice et le second est en relation avec la validation par le fabricant qui ne tient pas compte du WCET de la manipulation de l'hélice imposée par l'autre AC.\\
 Supposons que l'industriel ait attribué à la manipulation de l'hélice un WCET de 2. Il est alors possible de passer les deux certifications : pour la criticité au vol, seule la manipulation de l'hélice doit être ordonnancée, l'action est donc exécutée du temps $t_0$ au temps $t_6$ et pour la criticité à la mission, la manipulation de l'hélice est exécutée du temps $t_0$ au temps $t_2$ et la photographie est exécutée du temps $t_2$ au temps $t_6$. Dans les deux scénarios, toutes les actions ont pu être exécutées avant leur échéance.\\
 
 On remarque qu'utiliser un ordonnancement à fonction de priorité basée sur le niveau de criticité aurait fonctionné ici aussi cependant il est aisé de construire un autre système où un tel algorithme d'ordonnancement échoue alors que le système est ordonnançable.
@@ -289,7 +329,7 @@ Si l'ordonnancement se fait par priorité en fonction de la criticité des trava
 Le système est pourtant ordonnançable, en effet la stratégie serait d'exécuter $J_1$ puis $J_2$, elle est correcte pour les deux niveaux de criticité.
 \end{exem}
 
-La difficulté de cet ordonnancement est qu'il est évalué avant de savoir s'il se trouve dans le cas où il faudrait considérer uniquement les actions de haute criticité et leurs grands WCET ou pas. En effet, c'est lors de l'exécution que l'ordonnanceur s'en rendra compte. Les actions signalent à l'ordonnanceur lorsqu'elles sont réalisées, c'est donc au moment où une tâche d'un niveau critique supérieure prend plus de temps qu'elle le devrait en l'état actuel que le système passe au niveau critique supérieure et ne soucie plus des actions moins critiques. Le niveau de criticité représente le niveau de pessimisme avec lequel il faut ordonnancer le système. 
+La difficulté de cet ordonnancement est qu'il est évalué avant de savoir s'il se trouve dans le cas où il faudrait considérer uniquement les actions de haute criticité et leurs grands WCET. En effet, c'est lors de l'exécution que l'ordonnanceur s'en rendra compte. Les actions signalent à l'ordonnanceur lorsqu'elles sont réalisées, c'est donc au moment où une tâche d'un niveau critique supérieur prend plus de temps qu'elle le devrait en l'état actuel que le système passe au niveau critique supérieur et ne soucie plus des actions moins critiques. Le niveau de criticité représente le niveau de pessimisme avec lequel il faut ordonnancer le système. 
 
 \subsubsection{Modèle}
 Cette partie définit une série de notions permettant de formaliser le problème de l'ordonnancement à criticité mixte, ces notions seront utilisées dans la suite de ce document.
@@ -303,19 +343,21 @@ Un travail dans un système à criticité mixte de niveau $K$ est caractérisé 
 \item $r_i \in \mathbb{N}^{+}$ est l'instant auquel $J_i$ est généré.
 \item $d_i \in \mathbb{N}^{+}$ est l'échéance absolue de $J_i$, c'est-à-dire le moment avant lequel le travail doit avoir été exécuté complètement. On assume que $d_i > r_i$
 \item $\chi_i \in \{0, ..., K\}$ est le niveau de criticité du travail $J_i$, au plus il est grand au plus critique est le travail.
-\item $c_i : \{0, ..., K\} \rightarrow \mathbb{N}^{+}$ définis le WCET du travail pour chacun des niveaux de criticité du système.
+\item $c_i : \{0, ..., K\} \rightarrow \mathbb{N}^{+}$ définit le WCET du travail pour chacun des niveaux de criticité du système.
 \end{itemize}
 On suppose que $c_i(1) \leq c_i(2) \leq ... \leq c_i(K)$ et que $c_i(m) = c_i(\chi_i)$ pour tout $\chi_i < m \leq K$.\\
 De manière générale, la fonction du temps d'exécution d'un travail sera souvent représentée comme un vecteur $c_i = [c_i(1), ..., c_i(K)]$
 \end{defin}
+
 \begin{defin}[Instance CM \cite{baruah2010towards}]
 Une instance en criticité mixte, appelée instance CM, est définie comme étant une collection de travaux $I = (J_1, J_2, ... J_n)$. En possession d'une telle instance, nous souhaitons déterminer si oui ou non il existe une ligne de conduite permettant de l'ordonnancer correctement.
 \end{defin}
 
 Chaque travail $J_i$ dans une instance CM $I = (J_1, J_2, ... J_n)$ doit recevoir $\bar{c}_i$ unités de temps d'exécution où $\bar{c}_i$ n'est pas connu à l'avance et se dévoile lorsque $J_i$ signale la fin de son exécution. La collection des temps d'exécution $\bar{c} = (\bar{c}_1, \bar{c}_2, ..., \bar{c}_n)$ est appelée un scénario.\\
+
 Le niveau de criticité du scénario $\bar{c} = (\bar{c}_1, \bar{c}_2, ..., \bar{c}_n)$ est défini comme étant le plus petit entier $\ell$ satisfaisant $\bar{c}_i \leq c_i(\ell)$ pour tout travail $J_i$ (s'il n'existe pas de tel $\ell$, le scénario est dit erroné).\\
 
-Dans ce modèle, un scénario de criticité $\ell$ doit uniquement s'assurer que les travaux de criticité $\ell$ ou supérieurs soient réalisés avant leur échéance. En d'autres termes, une fois la criticité $\ell$ atteinte, les travaux de criticité $\ell-1$ et inférieurs sont laissés tombés.
+Dans ce modèle, un scénario de criticité $\ell$ doit uniquement s'assurer que les travaux de criticité $\ell$ ou supérieurs soient réalisés avant leur échéance. En d'autres termes, une fois la criticité $\ell$ atteinte, les travaux de criticité $\ell-1$ et inférieurs sont abandonnés.
 
 \begin{defin}[Tâche en criticité mixte \cite{BaruahBDMSS11}]
 Nous considérons ici les tâches dans un système à criticité mixte de niveau $K$ sans décalage et à échéance implicite. Elles sont définies par un triplet :
@@ -323,27 +365,31 @@ Nous considérons ici les tâches dans un système à criticité mixte de niveau
 $\tau_i = (C_i, T_i, \chi_i)$\\
 \end{center}
 \begin{itemize}
-\item $C_i : \{0, ..., K\} \rightarrow \mathbb{N}^{+}$ définis le WCET des travaux généré pour chacun des niveaux de criticité du système.
+\item $C_i : \{0, ..., K\} \rightarrow \mathbb{N}^{+}$ définit le WCET des travaux générés pour chacun des niveaux de criticité du système.
 \item $T_i \in \mathbb{N}^{+}$ est la période de la tâche.
-\item $\chi_i \in \{0, ..., K\}$ est le niveau de criticité de la tâche $\tau_i$, au plus il est grand, au plus critique est la tâche.
+\item $\chi_i \in \{0, ..., K\}$ est le niveau de criticité de la tâche $\tau_i$, plus il est grand, plus critique est la tâche.\\
 \end{itemize}
-On suppose à nouveau que $C_i(1) \leq C_i(2) \leq ... \leq C_i(K)$. La tâche $\tau_i$ génère un nombre potentiellement infini de travaux ayant une criticité et une fonction de temps d'exécution hérité de $\tau_i$, l'échéance aura lieu à la fin de la période $T_i$ en cours.\\
+
+On suppose à nouveau que $C_i(1) \leq C_i(2) \leq ... \leq C_i(K)$. La tâche $\tau_i$ génère un nombre potentiellement infini de travaux ayant une criticité et une fonction de temps d'exécution héritée de $\tau_i$, l'échéance aura lieu à la fin de la période $T_i$ en cours.\\
 La fonction du temps d'exécution sera elle aussi souvent représentée sous la forme d'un vecteur $C_i = [C_i(1), ..., C_i(K)]$
 \end{defin}
 
 \begin{defin}[Algorithme d'ordonnancement \cite{baruah2010towards}]
-Un algorithme d'ordonnancement pour une instance CM $I$ (qui peut être généré par un système de tâche) définit à tout instant et pour tout niveau de criticité du scénario résultant, le travail à ordonnancer.\\
-Un algorithme est dit clairvoyant s'il connaît à l'avance quel sera le temps d'exécution $\bar{c}_i$ de tout travail $J_i \in I$, à l'inverse un algorithme en ligne ne connaît pas ce temps d'exécution, c'est-à-dire qu'il ne possède pas toutes les informations a priori, il doit se contenter d'une partie de celle-ci et ne découvre ce temps d'exécution réel $\bar{c}_i$ seulement lorsque le travail $J_i$ signale sa complétion. La criticité du scénario n'est donc révélée qu'une fois celui-ci terminé.
+Un algorithme d'ordonnancement pour une instance CM $I$ (qui peut être générée par un système de tâche) définit à tout instant et pour tout niveau de criticité du scénario résultant, le travail à ordonnancer.\\
+
+Un algorithme est dit clairvoyant s'il connaît à l'avance quel sera le temps d'exécution $\bar{c}_i$ de tout travail $J_i \in I$, à l'inverse un algorithme en ligne ne connaît pas ce temps d'exécution, c'est-à-dire qu'il ne possède pas toutes les informations \textit{a priori}, il doit se contenter d'une partie de celle-ci et ne découvre ce temps d'exécution réel $\bar{c}_i$ seulement lorsque le travail $J_i$ signale sa complétion. La criticité du scénario n'est donc révélée qu'une fois celui-ci terminé.
 \end{defin}
 
 \begin{defin}[Ordonnançabilité CM \cite{BaruahBDMSS11}]
-Un algorithme ordonnance une instance CM $I = (J_1, J_2, ... J_n)$ correctement s'il est en mesure de, pour toute criticité $\ell$, garantir que tout travail $J_i$ de l'instance CM $I$ ayant une criticité $\chi_i \geq \ell$ pourrait être exécuté jusqu'au signalement de sa complétion entre sa génération et son échéance, soit l'intervalle $[r_i, d_i)$.\\ Une instance CM est appelée ordonnançable CM si elle admet un algorithme en ligne qui permet de l'ordonnancer.\\
-L'instance CM $I$ peut résulter d'une génération de travaux par un système de tâche $\tau$, on dit alors qu'un système de tâche est ordonnançable CM si l'instance CM qu'il produit admet un algorithme en ligne qui permet de l'ordonnancer.
+Un algorithme ordonnance une instance CM $I = (J_1, J_2, ... J_n)$ correctement s'il est en mesure, pour toute criticité $\ell$, de garantir que tout travail $J_i$ de l'instance CM $I$ ayant une criticité $\chi_i \geq \ell$ pourrait être exécuté jusqu'au signalement de sa complétion, entre sa génération et son échéance, soit l'intervalle $[r_i, d_i)$.\\ Une instance CM est appelée ordonnançable CM si elle admet un algorithme en ligne qui permet de l'ordonnancer.\\
+
+L'instance CM $I$ peut résulter d'une génération de travaux par un système de tâche $\tau$. On dit alors qu'un système de tâche est ordonnançable CM, si l'instance CM qu'il produit admet un algorithme en ligne qui permet de l'ordonnancer.
 \end{defin}
 
 \begin{defin}[faisabilité CM]
-Une instance CM $I = (J_1, J_2, ... J_n)$ est faisable s'il existe un agencement correct de ses travaux permettant de, pour toute criticité $\ell$, faire en sorte que tout travail $J_i$ de l'instance CM $I$ ayant une criticité $\chi_i \geq \ell$ est exécuté jusqu'au signalement de sa complétion entre sa génération et son échéance, soit l'intervalle $[r_i, d_i)$.\\
-Comme pour l'ordonnancement CM, si l'instance CM $I$ générée par système de tâche $\tau$ est faisable CM, on dit que ce système de tâche est faisable CM.
+Une instance CM $I = (J_1, J_2, ... J_n)$ est faisable s'il existe un agencement correct de ses travaux permettant, pour toute criticité $\ell$, de faire en sorte que tout travail $J_i$ de l'instance CM $I$ ayant une criticité $\chi_i \geq \ell$ est exécuté jusqu'au signalement de sa complétion entre sa génération et son échéance, soit l'intervalle $[r_i, d_i)$.\\
+
+Comme pour l'ordonnancement CM, si l'instance CM $I$ générée par le système de tâche $\tau$ est faisable CM, on dit que ce système de tâche est faisable CM.
 \end{defin}
 
 \begin{defin}[Utilisation en criticité mixte \cite{BaruahBDMSS11}]
@@ -357,7 +403,7 @@ $U_{\tau, i}(\ell) = \underset{j \in L_i}{\sum} U_{\tau_j}(\ell) \qquad i = 1,..
 \end{center}
 \end{defin}
 
-On sait que s'il n'y a qu'un seul niveau de criticité alors, un système de tâche périodique à échéance implicite $\tau$ est faisable sur un processeur si et seulement si $U_{\tau, 1}(1) \leq 1$ \cite{liu1973scheduling}. On en déduit la condition pour la faisabilité CM :
+On sait que s'il n'y a qu'un seul niveau de criticité, alors, un système de tâche périodique à échéance implicite $\tau$ est faisable sur un processeur si, et seulement si, $U_{\tau, 1}(1) \leq 1$ \cite{liu1973scheduling}. On en déduit la condition pour la faisabilité CM :
 \begin{theo}[\cite{BaruahBDMSS11}]
 Un système de tâche $\tau$ est faisable CM sur un processeur à vitesse unitaire, si pour chaque $\ell = 1, ..., K$ :
 \begin{center}
@@ -373,7 +419,7 @@ $U_{\tau, 2}(2) \leq 1$
 \end{theo}
 
 \begin{theo}[\cite{BaruahBDMSS11}]
-Un système de tâche périodique à échéance implicite a criticité unitaire est ordonnançable CM avec l'algorithme EDF sur un monoprocesseur à vitesse unitaire si et seulement si $U_{\tau, 1}(1) \leq 1$.
+Un système de tâche périodique à échéance implicite à criticité unitaire est ordonnançable CM avec l'algorithme EDF sur un monoprocesseur à vitesse unitaire si, et seulement si, $U_{\tau, 1}(1) \leq 1$.
 \end{theo}
 
 \begin{exem}[\cite{baruah2010towards}]
@@ -382,18 +428,22 @@ Considérant une instance CM $I$ contenant quatre travaux :
 \item $J_1 = (0,3,2,[1,2])$
 \item $J_2 = (0,3,1,[2,2])$
 \item $J_3 = (0,5,2,[1,1])$
-\item $J_4 = (3,5,2,[1,2])$
+\item $J_4 = (3,5,2,[1,2])$\\
 \end{itemize}
-Seul le travail $J_2$ à une criticité de 1, les autres ont une criticité de 2. La fonction du temps d'exécution est représentée explicitement par un vecteur $[c_i(1), c_i(2)]$.\\
+
+Seul le travail $J_2$ a une criticité de 1, les autres ont une criticité de 2. La fonction du temps d'exécution est représentée explicitement par un vecteur $[c_i(1), c_i(2)]$.\\
 Pour cette instance, tout scénario où les temps réels d'exécution $\bar{c}_1,\bar{c}_2,\bar{c}_3,\bar{c}_4$ inférieure ou égale à $1,2,1,1$ aura une criticité de 1, tout autre scénario où ces temps $\bar{c}_1,\bar{c}_2,\bar{c}_3,\bar{c}_4$ ne sont pas supérieurs à $ 2,2,1,2$ aura une criticité de 2. Les autres scénarios sont, par définition, erronés.\\
+
 Analysons un algorithme d'ordonnancement possible :
 \begin{itemize}
 \item S0: exécuter $J_1$ sur $[0,1)$, si $J_1$ n'a pas terminé son exécution, c'est dire qu'il ne s'est pas déclaré comme réalisé et donc prend plus d’un coup d'horloge, alors exécuter la stratégie S1, sinon S2.
 \item S1: exécuter $J1$ sur $[1,2)$, $J_3$ sur $[2,3)$ et $J_4$ sur $[3,5)$
-\item S2: exécuter $J2$ sur $[1,3)$, $J_3$ sur $[3,4)$ et $J_4$ sur $[4,5)$
+\item S2: exécuter $J2$ sur $[1,3)$, $J_3$ sur $[3,4)$ et $J_4$ sur $[4,5)$\\
 \end{itemize}
+
 L'algorithme d'ordonnancement ci-dessus n'est pas correct pour l'instance $I$, en effet, le scénario $\bar{c} = (1,2,1,2)$ engendrerait une échéance ratée. Ce scénario est de criticité 2 puisque $\bar{c}_4 = c_4(2) = 2$, dès lors, un algorithme correct se doit d'ordonnancer $J_1, J_3, J_4$. Dans le cas présent, le travail $J_4$ manquera son échéance d'une unité de temps. Il se trouve que l'instance $I$ n'est pas ordonnançable CM.
 \end{exem}
+
 \subsection{Problème posé}
 Si un système de tâche n'est pas ordonnançable par un certain algorithme, il peut y avoir trois raisons possibles \cite{bakerbrute} :
 \begin{itemize}
@@ -404,34 +454,35 @@ Si un système de tâche n'est pas ordonnançable par un certain algorithme, il 
 
 En criticité mixte, déterminer si un système de tâche est faisable est possible, la condition de faisabilité d'un système de tâche a été donnée précédemment.\\
 
-Pour vérifier qu'un algorithme d'ordonnancement ordonnance correctement un système de tâche en criticité mixte, une simulation peut être faite, en revanche s'il y a une erreur, il n'est pas encore possible de savoir si c'est à cause de l'algorithme ou par ce que les systèmes de tâche ne sont simplement pas ordonnançable CM.\\
+Pour vérifier qu'un algorithme d'ordonnancement ordonnance \todo{changer un des ordonnance} correctement un système de tâche en criticité mixte, une simulation peut être faite. En revanche s'il y a une erreur, il n'est pas encore possible de savoir si c'est à cause de l'algorithme ou parce que les systèmes de tâche ne sont simplement pas ordonnançables CM.\\
 
-Le but est de distinguer le deuxième cas du troisième, en répondant à la question que pose le dernier cas. Il s'agit donc de, étant donné une instance de travaux, déterminer si celle-ci est ordonnançable CM. Ce n'est pas un problème facile, en effet il a été prouvé qu'il s'agit d'un problème NP-dur \cite{baruah2009mixed}, ce qui signifie que, si $NP \neq P$, il n'existe pas de solutions en temps polynomial pour résoudre le problème.\\
+Le but est de distinguer le deuxième cas du troisième, en répondant à la question que pose le dernier cas. Il s'agit donc, étant donné une instance de travaux, de déterminer si celle-ci est ordonnançable CM. Ce n'est pas un problème facile. En effet, il a été prouvé qu'il s'agit d'un problème NP-dur \cite{baruah2009mixed}, ce qui signifie que, si $NP \neq P$, il n'existe pas de solutions en temps polynomial pour résoudre le problème.\\
 
-Dans ce document, nous nous concentrerons sur le problème de l'ordonnançabilité CM d'une instance de travaux sur un monoprocesseur à vitesse unitaire. L'idée principale est d'utiliser des techniques de la communauté des méthodes formelle pour résoudre ce problème, plusieurs travaux ont été publiés et vont en ce sens \cite{geeraerts2013multiprocessor} \cite{bakerbrute}. La section suivante décrit une partie du monde des méthodes formelles et définit une série d'outils qui seront utiles pour la résolution du problème.
+Dans ce document, nous nous concentrerons sur le problème de l'ordonnançabilité CM d'une instance de travaux sur un monoprocesseur à vitesse unitaire. L'idée principale est d'utiliser des techniques de la communauté des méthodes formelle pour résoudre ce problème. Plusieurs travaux ont été publiés et vont en ce sens \cite{geeraerts2013multiprocessor} \cite{bakerbrute}.\\
+La section suivante décrit une partie du monde des méthodes formelles et définit une série d'outils qui seront utiles pour la résolution du problème.
 
 \section{Problème d'accessibilité}
-Le problème de l'accessibilité est un problème fondamental de l'informatique et de la théorie des graphes, en effet il est applicable sur différentes structures étendues des graphes pour différents problèmes.\\
-Un graphe est une structure permettant de représenter des réseaux au sens large, il s'agit d'un ensemble de points dont certaines paires sont reliées par un lien. Les points sont appelés sommets et les liens sont appelés arêtes dans les graphes non orientés, c'est-à-dire que les liens sont utilisables dans les deux sens, et arcs dans les graphes orientés, où les liens ne sont empruntables que dans un sens et donc orientés. On représente un graphe $G$ par un ensemble de sommets $V$ et un ensemble d'arcs ou d'arêtes $E$, donc $G = (V, E)$.\\
+Le problème de l'accessibilité est un problème fondamental de l'informatique et de la théorie des graphes. En effet il est applicable sur différentes structures étendues des graphes pour différents problèmes.\\
+Un graphe est une structure permettant de représenter des réseaux au sens large, il s'agit d'un ensemble de points dont certaines paires sont connectées  par un lien. Les points sont appelés sommets. Les liens sont appelés arêtes dans les graphes non orientés, c'est-à-dire que les liens sont utilisables dans les deux sens. Ou alors arcs dans les graphes orientés, où les liens ne sont empruntables que dans un sens et donc orientés. On représente un graphe $G$ par un ensemble de sommets $V$ et un ensemble d'arcs ou d'arêtes $E$, donc $G = (V, E)$.\\
 De manière générale, le problème de l'accessibilité revient à décider si, étant donné un graphe $G = (V, E)$ et deux états $i$ et $f$, il est possible d'emprunter une séquence d'arcs ou d'arêtes $\in E$ successifs en partant de l'état $i$ pour arriver à l'état $f$. Si tel est le cas, on dit que $f$ est accessible depuis $i$.\\
 
-L'accessibilité est largement utilisée, car elle fait l'objet de nombreuses réductions, c'est-à-dire qu'un problème initial est transformé en ce problème, et le résoudre revient à résoudre le problème initial. Annuellement depuis 2007, une conférence sur ce problème en général est organisée, il s'agit de l'<<International Workshop on Reachability Problems>>, la prochaine aura lieu en septembre 2015\footnote{http://rp2015.mimuw.edu.pl/}.\\
+L'accessibilité est largement utilisée, car elle fait l'objet de nombreuses réductions, c'est-à-dire qu'un problème initial est transformé en ce problème, et le résoudre revient à résoudre le problème initial. Annuellement depuis 2007, une conférence sur ce problème en général est organisée, il s'agit de l'<<International Workshop on Reachability Problems>>, la prochaine aura lieu en septembre 2015\footnote{http://rp2015.mimuw.edu.pl/}.\todo{a retravaillé, redondance}\\
 
 
 \subsection{Notions élémentaires}
-En informatique, il est fréquent que le scientifique passe plus de temps à vérifier que son programme est correct plutôt qu'à le développer, pour pallier ce problème, les méthodes formelles ont émergées.\\
-Il s'agit d'un des sous-domaines des sciences informatiques. Ces méthodes formelles sont des techniques basées sur l'utilisation de différents outils, principalement les mathématiques, dans le but de prouver qu'un certain programme respect une certaine spécification. Les méthodes formelles s'appuient donc grandement sur des représentations formelles et rigoureuses de la sémantique des programmes. Ces techniques sont largement utilisés dans le domaine de la vérification de programme qui consiste à prouver qu'un programme fait effectivement ce qu'il est censé faire. Pour de telles questions de validité on utilise par exemple le model-checking qui fait une analyse exhaustive des différentes exécutions du programme dans le but de déceler la présence (ou de prouver l'absence) d'erreurs dans ces dernières. Il existe différents types de model-checking, une présentation du domaine a été faite par Clarke \cite{clarke1999model} et aussi par Baier \cite{baier2008principles}.\\
+En informatique, il est fréquent que le scientifique passe plus de temps à vérifier que son programme est correct plutôt qu'à le développer. Pour pallier ce problème, les méthodes formelles ont émergé.\\
+Il s'agit d'un des sous-domaines des sciences informatiques. Ces méthodes formelles sont des techniques basées sur l'utilisation de différents outils, principalement les mathématiques, dans le but de prouver qu'un certain programme respecte une certaine spécification. Les méthodes formelles s'appuient donc grandement sur des représentations formelles et rigoureuses de la sémantique des programmes. Ces techniques sont largement utilisées dans le domaine de la vérification de programme qui consiste à prouver qu'un programme fait effectivement ce qu'il est censé faire. Pour de telles questions de validité, on utilise par exemple le model-checking qui fait une analyse exhaustive des différentes exécutions du programme dans le but de déceler la présence (ou de prouver l'absence) d'erreurs dans ces dernières. Il existe différents types de model-checking, une présentation du domaine a été faite par Clarke \cite{clarke1999model} et aussi par Baier \cite{baier2008principles}.\\
 %Par exemple, l'article \cite{amadio2000reachability} vérifie qu'un protocole de chiffrement à clef symétrique ne peut atteindre un état erroné.\\
 
 Le model-checking est découpé en trois phases :
 \begin{itemize}
-\item La phase de modélisation : il s'agit de la modélisation du système à vérifier ainsi que celle des propriétés qu'on souhaite vérifier, le tout selon le formalisme désiré.
+\item La phase de modélisation : il s'agit de la modélisation du système, ainsi que celle des propriétés qu'on souhaite vérifier, le tout selon le formalisme désiré.
 \item La phase d'exécution : où l'on applique un model-checker (par exemple UPPAAL ou Spin) au modèle du système pour vérifier si la spécification recherchée est présente.
 \item La phase d'analyse : où l'on tire des conclusions en fonction du résultat obtenu lors de la deuxième phase.
 \end{itemize}
 \phantom\\
 
-Le model-checking repose donc essentiellement sur la modélisation d'un programme. Le modèle obtenu décrira alors le comportement du système de manière précise et non ambigüe. Ces derniers sont souvent représentés sous la forme d'un automate fini qui définit un ensemble d'états fini et un ensemble de transitions. Les états contiennent alors des informations pour les différentes variables d'un système et les transitions représentent l'évolution du système.
+Le model-checking repose donc essentiellement sur la modélisation d'un programme. Le modèle obtenu décrira alors le comportement du système de manière précise et non ambigüe. On utilisera souvent la représentation sous forme d'un automate fini qui définit un ensemble d'états fini et un ensemble de transitions. Les états contiennent alors des informations pour les différentes variables d'un système et les transitions représentent l'évolution du système.
 \begin{defin}[Automate fini \cite{geeraerts2013multiprocessor}]
 Un automate fini $A$ est un quadruple :
 \begin{center}
@@ -448,7 +499,7 @@ $A=(V,E,S_0,F)$ où
 
 Le problème de l'accessibilité reste adéquat dans les cas des automates finis, car ils peuvent être représentés par des graphes orientés.\\
 
-En modélisation, on aura tendance à utiliser des systèmes à transitions, ce sont des automates, en particulier on parle système à transitions étiquetées.
+En modélisation, on aura tendance à utiliser des systèmes à transitions, ce sont des automates, en particulier on parle de système à transitions étiquetées.
 
 \begin{defin}[Système à transitions étiquetées]
 Un système à transitions étiquetées $LTS$ est un quadruple:
@@ -461,14 +512,14 @@ $LTS = (S, Act, \rightarrow, I)$ où
 \item $\rightarrow \subseteq S \times Act \times S$ est l'ensemble des transitions
 \item $I \subseteq S$ est l'ensemble des états initiaux
 \end{itemize}
-Si $S$ et $Act$ sont fini, on parle de systèmes à transitions étiquetées finis.
+Si $S$ et $Act$ sont finis, on parle de systèmes à transitions étiquetées finis.
 \end{defin}
 
 Par facilité, pour $(s, \alpha, s') \in \rightarrow$ on écrira $s\xrightarrow{\alpha}{}s'$. Initialement, un tel système va donc être dans un état de départ $s\in I$, puis s'il existe une transition $s\xrightarrow{\alpha}{}s'$, le système pourra l'emprunter et se retrouvera alors à l'état $s'$, il pourrait aussi emprunter toute autre transition partant de l'état $s$. Il est aussi possible que le système à transitions étiquetées possède plusieurs transitions possédant la même action. Pour définir de manière formelle le déterminisme d'un système à transitions étiquetées, nous avons besoin de la notion de successeur et de prédécesseur.
 
 
 \begin{defin}[Prédécesseur, successeur\cite{baier2008principles}]
-Soit un système à transitions étiquetées $LTS = (S, Act, \rightarrow, I)$, pour $s \in S$ et $\alpha \in Act$, l'ensemble des $\alpha$-successeur est défini comme étant :
+Soit un système à transitions étiquetées $LTS = (S, Act, \rightarrow, I)$, pour $s \in S$ et $\alpha \in Act$, l'ensemble des $\alpha$-successeurs est défini comme étant :
 \begin{center}
 $Post(s,\alpha) = \{ s' \in S | s\xrightarrow{\alpha}{}s' \}, \quad Post(s) = \underset{\alpha \in Act}{\cup} Post(s, \alpha)$
 \end{center}
@@ -508,7 +559,7 @@ La figure~\ref{exemplts} représente un système à transitions étiquetées où
 \item l'ensemble des transitions est $\rightarrow = (pay\xrightarrow{insert\_coin}{}select, select\xrightarrow{\tau}{}soda, select\xrightarrow{\tau}{}beer, soda\xrightarrow{get\_soda}{}pay, beer\xrightarrow{get\_beer}{}pay)$
 \item L'ensemble des états initiaux est $I = (pay)$
 \end{itemize}
-Cet automate représente donc une machine à vendre des sodas et de la bière, en premier lieu il faut insérer une pièce, ensuite la machine sélectionne avec une probabilité d’ un demie un soda sinon une bière et le donne au client, puis finalement, retourne à l'état initial, l'état d'attente.
+Cet automate représente donc une machine à vendre des sodas et de la bière. En premier lieu, il faut insérer une pièce, ensuite la machine sélectionne avec une probabilité d’un demi un soda sinon une bière et le donne au client, puis finalement, retourne à l'état initial, l'état d'attente.
 
 %On pourrait déterminer la fonction d'étiquetage comme attribuant à tout état $s$ son nom, $L(s) = \{s\}$. On pourrait aussi vouloir s'assurer que <<La machine libère la boisson seulement si elle a reçu une pièce>>, pour ce faire on définirait la fonction d'étiquetage $L$  comme :
 %\begin{center}
@@ -542,25 +593,25 @@ Ces itérations convergent vers un point fixe puisque les opérations impliquée
 Pour poser le problème de l'accessibilité correctement il faut encore définir ce qu'est un chemin.
 
 \begin{defin}[Chemin \cite{geeraerts2013multiprocessor}]
-Un chemin dans un automate fini $A = (V, E, S_0, F)$ est une séquence finie d'état $v_1, ..., v_t$ tel que, pour tout $1 \leq i \leq t-1 : (v_i, v_{i+1}) \in E$ 
+Un chemin dans un automate fini $A = (V, E, S_0, F)$ est une séquence finie d'état $v_1, ..., v_t$ telle que, pour tout $1 \leq i \leq t-1 : (v_i, v_{i+1}) \in E$ 
 \end{defin}
 
 La fonction $Reach(A)$ découle de cette définition : soit $V' \subseteq V$ un ensemble d'état de $A$, s'il existe un chemin $v_1,...v_t$ dans $A$ tel que $v_t \in V'$, on dit que $v_1$ a accès à $V'$. Pour un automate $A$, on représente l'ensemble des états accessibles depuis un état initial de $A$ par la fonction $Reach(A)$.
 
 \begin{defin}[États accessibles \cite{geeraerts2013multiprocessor}]
-L'ensemble des états accessible d'un automate est défini par 
+L'ensemble des états accessibles d'un automate est défini par 
 \begin{center}
 $Reach(A) = \{v \in V | \exists\ un\ chemin\ v_1,...,v_t : v_1 \in S_0 \wedge v_t = v\}$
 \end{center}
 \end{defin}
 
-Dès lors, le problème de l'accessibilité dans un automate pose la question de savoir si, étant donné un automate $A$ et l'ensemble d'états finaux $F$, il est possible d'accéder à un état final dans l'automate $A$, c'est à dire, de savoir si $Reach(A) \cap F = \emptyset$ ou non. On peut aussi poser la question par rapport aux prédécesseurs et successeurs itérés :
+Dès lors, le problème de l'accessibilité dans un automate pose la question de savoir si, étant donné un automate $A$ et l'ensemble d'états finaux $F$, il est possible d'accéder à un état final dans l'automate $A$, c'est-à-dire, de savoir si $Reach(A) \cap F = \emptyset$ ou non. On peut aussi poser la question par rapport aux prédécesseurs et successeurs itérés :
 
 \begin{theo}[\cite{doyen2010antichain}]
-Soit $A = (V,E,S_0,F)$ un automate fini, la réponse au problème de l'accessibilité de $i \in S_0$ à $F$ pour $A$ est Oui si et seulement si $Post^*(i) \cap F \neq \emptyset$ si et seulement si $\underset{f \in F}{\cup}Pre^*(f) \cap i \neq \emptyset$.
+Soit $A = (V,E,S_0,F)$ un automate fini, la réponse au problème de l'accessibilité de $i \in S_0$ à $F$ pour $A$ est Oui si, et seulement si, $Post^*(i) \cap F \neq \emptyset$, si, et seulement si, $\underset{f \in F}{\cup}Pre^*(f) \cap i \neq \emptyset$.
 \end{theo}
 
-La complexité en temps, soit la quantité d'opérations nécessaire pour résoudre un problème, de la fonction $Reach$ dépend du modèle utilisé. Dans le cas d'un automate fini, le problème peut se résoudre simplement par une recherche en profondeur ou en largeur, dès lors il est résoluble en temps linéaire par rapport au nombre d'états et de transitions, c'est-à-dire qu'au pire des cas, il faudra emprunter toutes les transitions et passer par tout les états. Il en va de même pour les systèmes à transitions étiquetées finis puisqu'il s'agit d'automates finis décorés.\\
+La complexité en temps, soit la quantité d'opérations nécessaire pour résoudre un problème, de la fonction $Reach$ dépend du modèle utilisé. Dans le cas d'un automate fini, le problème peut se résoudre simplement par une recherche en profondeur ou en largeur, dès lors il est résoluble en temps linéaire par rapport au nombre d'états et de transitions, c'est-à-dire qu'au pire des cas il faudra emprunter toutes les transitions et passer par tous les états. Il en va de même pour les systèmes à transitions étiquetées finis puisqu'il s'agit d'automates finis décorés.\\
 
 Concrètement, on pourrait utiliser le problème de l'accessibilité pour vérifier qu'un programme ne peut jamais atteindre un état erroné. On créerait alors un système à transitions étiquetées $A = (V, E, S_0, F)$ avec $V$ les états du programme, $E$ les transitions du programme, $S_0$ comprenant l'état initial et $F$ l'ensemble des états erronés. On voudrait donc obtenir que $Reach(A) \cap F = \emptyset$, que $\forall i \in S_0 : Post^*(i) \cap F = \emptyset$.
 
@@ -592,15 +643,15 @@ De la même façon, on définit la $\preceq$-fermeture vers le bas $Down(\preceq
 Maintenant que les préordres sont définis, nous pouvons détailler l'antichaîne se basant dessus.
 
 \begin{defin}[Antichaîne \cite{doyen2010antichain}]
-Un ensemble $H \subseteq V$ est une quasi-antichaîne si pour tout $v_1 , v_2 \in S$, soit $v_1$ et $v_2$ sont incomparable, soit $ v_1 \preceq v_2$ et $v_2 \preceq v_1$.\\
-Ce même ensemble $H \subseteq V$ est une antichaîne si pour tout $v_1 , v_2 \in S$, $v_1$ et $v_2$ sont incomparable.\\
+Un ensemble $H \subseteq V$ est une quasi-antichaîne si pour tout $v_1 , v_2 \in S$, soit $v_1$ et $v_2$ sont incomparables, soit $ v_1 \preceq v_2$ et $v_2 \preceq v_1$.\\
+Ce même ensemble $H \subseteq V$ est une antichaîne si pour tout $v_1 , v_2 \in S$, $v_1$ et $v_2$ sont incomparables.\\
 On obtient alors, une antichaîne avec la relation $\preceq$ est un sous-ensemble $H$ de $V$ tel que :
 \begin{center}
 $H = \{v_1 \in V|\forall v_2 \in V : v_1 \preceq v_2 \Rightarrow v_1 = v_2\}$
 \end{center}
 
 Avec un préordre, les ensembles $Min(\preceq, S)$ et $Max(\preceq, S)$ sont des quasi-antichaînes et avec un ordre partiel, un préordre antisymétrique, ces ensembles sont des antichaînes.\\
-Par abus de langage, on appelle antichaîne les ensembles d'éléments minimaux ou maximaux même s'il ne s'agit pas d'un ordre partiel, mais d'un préordre.
+Par abus de langage, on appelle antichaîne les ensembles d'éléments minimaux ou maximaux, même s'il ne s'agit pas d'un ordre partiel, mais d'un préordre.
 
 \end{defin}
 
@@ -639,16 +690,16 @@ Cette sous-section se termine en illustrant toutes ces notions avec deux exemple
 
 Cette illustration représente un automate fini, un cercle est un état, une flèche reliant deux cercles est une transition, l'état initial est celui avec la flèche orpheline pointant vers lui et l'état final est le double cercle.\\
 
-Sur l'exemple en figure \ref{dfna}, on souhaite savoir s'il existe un chemin d'un état initial à un état final, nous avons identifié une relation de simulation vers l'avant $\triangleleft$, sur l'image un état avec la pointe du triangle devant lui simule celui qui a la base devant lui. Nous allons exécuter un algorithme en largeur vers l'avant. A la première itération, on obtiendra alors les deux états succédant l'initial, on utilisera la fonction $Min$ avec la relation de simulation $\triangleleft$ pour garder celui ou ceux qui ne sont simulés par aucun autre et nous continuerons à utiliser les fonctions $Post$ et $Min$ jusqu'à stabilité. Dans l'exemple, nous emprunterons donc le chemin du haut jusqu'à l'état final.
+Sur l'exemple en figure \ref{dfna}, on souhaite savoir s'il existe un chemin d'un état initial à un état final. Nous avons identifié une relation de simulation vers l'avant $\triangleleft$, sur l'image un état avec la pointe du triangle devant lui simule celui qui a la base devant lui. Nous allons exécuter un algorithme en largeur vers l'avant. A la première itération, on obtiendra alors les deux états succédant l'initial, on utilisera la fonction $Min$ avec la relation de simulation $\triangleleft$ pour garder celui ou ceux qui ne sont simulés par aucun autre et nous continuerons à utiliser les fonctions $Post$ et $Min$ jusqu'à stabilité. Dans l'exemple, nous emprunterons donc le chemin du haut jusqu'à l'état final.
 
 \end{exem}
 
 Un exemple plus concret de l'utilisation de ces antichaînes se retrouve dans le cas du problème de l'universalité :
 
 \begin{exem}[\cite{doyen2010antichain}]
-Considérons la construction par sous-ensemble du complément d'un automate non déterministe (NFA) à alphabet fini. Ce complément sera un automate fini déterministe (DFA), ses états seront des groupes d'états du NFA, appelé cellule, noté $s_i$. Dans ce complément, l'inclusion entre les cellules est un ordre partiel et est une relation de simulation vers l'avant\footnote{c'est aussi une simulation vers l'arrière} : si $s_2 \subseteq s_1$ et qu'il y a une transition de $s_1$ vers $s_3$ alors il existe une transition de $s_2$ vers un $s_4 \subseteq s_3$. On retrouve cette propriété dans le problème de l'accessibilité : si $s_2 \subseteq s_1$ et une cellule finale est accessible depuis $s_1$, alors $s_2$ a accès à une cellule finale aussi. Dans ce cas, un algorithme de recherche en largeur vers l'avant pourra se permettre de ne pas explorer $s_1$ s'il explore $s_2$. En effet, $Post^*(s_1) \cap F \neq \emptyset \rightarrow Post^*(s_2) \cap F \neq \emptyset$ ce qui veut dire que si $s_2$ a accès à une cellule finale, c'est soit parce que $s_1$ y a accès soit par ce que $s_2$ possède un chemin que $s_1$ ne peut emprunter qui mène à une cellule finale. L'algorithme manipule des ensembles $\subseteq$-fermés vers le haut de cellules qui peuvent être représentés par des antichaînes de leurs éléments $\subseteq$-minimaux.\\
+Considérons la construction par sous-ensemble du complément d'un automate non déterministe (NFA) à alphabet fini. Ce complément sera un automate fini déterministe (DFA), ses états seront des groupes d'états du NFA, appelé cellule, noté $s_i$. Dans ce complément, l'inclusion entre les cellules est un ordre partiel et est une relation de simulation vers l'avant\footnote{c'est aussi une simulation vers l'arrière} : si $s_2 \subseteq s_1$ et qu'il y a une transition de $s_1$ vers $s_3$ alors il existe une transition de $s_2$ vers un $s_4 \subseteq s_3$. On retrouve cette propriété dans le problème de l'accessibilité : si $s_2 \subseteq s_1$ et une cellule finale est accessible depuis $s_1$, alors $s_2$ a accès à une cellule finale aussi. Dans ce cas, un algorithme de recherche en largeur vers l'avant pourra se permettre de ne pas explorer $s_1$ s'il explore $s_2$. En effet, $Post^*(s_1) \cap F \neq \emptyset \rightarrow Post^*(s_2) \cap F \neq \emptyset$ ce qui veut dire que si $s_2$ a accès à une cellule finale, c'est soit parce que $s_1$ y a accès, soit par ce que $s_2$ possède un chemin que $s_1$ ne peut emprunter qui mène à une cellule finale. L'algorithme manipule des ensembles $\subseteq$-fermés vers le haut de cellules qui peuvent être représentés par des antichaînes de leurs éléments $\subseteq$-minimaux.\\
 
-C'est par cette méthode que l'article \cite{doyen2010antichain} propose de résoudre le problème de l'universalité pour un NFA, avec lequel la résolution par antichaîne prend tout son sens. On aimerait savoir si un automate non déterministe accepte tous les mots de son alphabet, le but est alors de construire un DFA par sous-ensembles et d'inverser les états finaux, dès lors, si un état final est accessible par un état initial, cela signifie qu'il existe un mot qui n'est pas accepté par le NFA de base. Dans ce cadre nous pouvons utiliser la recherche en largeur vers l’avant avec antichaînes basées sur l'inclusion, une relation de simulation vers l'avant.
+C'est par cette méthode que l'article \cite{doyen2010antichain} propose de résoudre le problème de l'universalité pour un NFA, avec lequel la résolution par antichaîne prend tout son sens. On aimerait savoir si un automate non déterministe accepte tous les mots de son alphabet, le but est alors de construire un DFA par sous-ensembles et d'inverser les états finaux. Dès lors, si un état final est accessible par un état initial, cela signifie qu'il existe un mot qui n'est pas accepté par le NFA de base. Dans ce cadre, nous pouvons utiliser la recherche en largeur vers l’avant avec antichaînes basées sur l'inclusion, une relation de simulation vers l'avant.
 \end{exem}
 
 \section{Réduction}
@@ -656,7 +707,7 @@ Ont été présentés deux problèmes qui semblent différents, de deux domaines
 
 Cette réduction est une passerelle entre deux communautés des sciences informatiques qui n'ont a priori pas à se rencontrer.\\
 
-Il s'agit donc de formaliser l'ordonnancement CM en tant que système à transitions étiquetées. La modélisation se basera sur le travail de Baker et Crinei \cite{bakerbrute}, celle-ci modélise toutes les exécutions possibles d'un système de tâche par les différents chemins possible dans un automate. Cependant, le type d'ordonnancement n'est pas le même, en effet dans le travail de Baker et Crinei on retrouve un test d'ordonnançabilité pour un système de tâche sporadique en multiprocesseur.\\
+Il s'agit donc de formaliser l'ordonnancement CM en tant que système à transitions étiquetées. La modélisation se basera sur le travail de Baker et Crinei \cite{bakerbrute}, celle-ci modélise toutes les exécutions possibles d'un système de tâche par les différents chemins possible dans un automate. Cependant, le type d'ordonnancement n'est pas le même. En effet dans le travail de Baker et Crinei, on retrouve un test d'ordonnançabilité pour un système de tâche sporadique en multiprocesseur.\\
 
 Certaines notions restent les mêmes, par exemple on se servira d'état de système, nécessitant de savoir pour chaque travail d'une instance le temps avant leur libération $nat$ et le temps restant de calcul $rct$.
 
@@ -685,26 +736,31 @@ La première étape du mémoire sera de réduire le problème de l'ordonnancemen
 
 Ensuite, il faudra transformer les états de cet automate en antichaînes dans le but de réduire le temps de parcours du graphe, il faudra donc définir la relation de simulation pour les différents états en tenant compte des contraintes posées par la criticité mixte.\\
 
-Une fois la modélisation terminée, une implémentation logicielle du problème sera mise en place dans le but de tester l'efficacité de la résolution du problème de certification. Ceci sera accompagné de comparatifs entre la méthode de résolution avec antichaînes et sans.
+Une fois la modélisation terminée, une implémentation logicielle du problème sera mise en place dans le but de tester l'efficacité de la résolution du problème de certification. Ceci sera accompagné de comparatifs entre la méthode de résolution avec et sans antichaînes.
 
 
-\chapter{Ordonnancement en Criticité Mixte}
+
+\chapter{Algortihme d'ordonnancement}
 \section{Introduction}
 Les but de ce chapitre est de présenter différents algorithmes d'ordonnancement de système à criticité mixte. Cette approche est nécessaire est pour pouvoir les utiliser dans le futur modèle et surtout pour voir s'il est possible de trouver des conditions d'utilisation plus permissive que les présente.
 
 \section{CAPA}
-\section{AMC-max}
 \section{EDF-VD}
 \section{OCBP}
 Dans cette algorithme, nous déterminons hors ligne une priorité pour chaque tâches, et à tout instant la tâche avec le plus grande priorité est exécutée.
-\section{WCR}
+\section{LWLF}
 
 
-\chapter{Test d'ordonnancement}
+\chapter{Sémantique sous forme d'automate}
+
+Dans cette section
+
 \section{Tache Périodique}
-\subsection{Modèle sous forme d'automate}
 
-Le but de cette section est de modéliser les différentes exécutions d'un ensemble de tâches en criticité mixte ordonnancé par un algorithme donné sous la forme d'un automate fini.\\
+Le but de cette section est de modéliser les différentes exécutions d'un ensemble de tâches périodique en criticité mixte, ordonnancé par un algorithme donné, sous la forme d'un automate fini.\\
+Il s'agit, dans premier temps, de définir les états qui composent l'automate et puis, de déterminer les transitions entre ceux-ci.\\
+
+Pour représenter un ensemble de tâche durant, il faut qu'il soit possible d'y retrouver les caractéristiques des tâches et le scénario. Pour ce faire, on établi l'état du système comme reprenant ces caractéristique. Pour le scénario dans lequel on se trouve, il suffit d'y inclure le niveau de criticité lors de l'exécution. Il faut ensuite pouvoir définir où les tâches sont dans leur exécution et quand elles doivent être terminée au plus tard.
 
 \begin{defin}[État du système]
 Soit $\tau = \tau_1, \tau_2, \tau_3 ...$ un ensemble de tâches périodiques en criticité mixte, l'état du système de $\tau$ est le tuple $S = (at_S, rct_S, crit_S)$ avec
@@ -712,35 +768,48 @@ Soit $\tau = \tau_1, \tau_2, \tau_3 ...$ un ensemble de tâches périodiques en 
 \begin{itemize}
 \item $at_S$, une fonction représentant le temps d'arrivée du travail courant d'une tâche : $\tau \rightarrow \mathbb{N},\ at_S(\tau_i) \leq R_{max}$ avec $R_{max} = max(max_i\ (T_i),\ max_i\ (O_i))$
 \item $rct_S$, le temps de calcul restant du travail généré par une tâche : $ \tau \rightarrow \mathbb{N},\ 0 \leq rct_S(\tau_i) \leq C_{max}$ avec $C_{max} = max_{i,j}\ C_i(j)$
-\item $crit_S$, le niveau de criticité actuel du scénario, $ \in \mathbb{N},\ 0 \leq crit_S \leq K$
+\item $crit_S$, le niveau de criticité actuel du scénario, $ \in \mathbb{N},\ 1 \leq crit_S \leq K$
 
 \end{itemize}
 
+
+Cette définition reprend correctement les caractéristiques dont l'état du système à besoin. Le temps d'arrivé des tâche permet de savoir quand la tâche à émise un travail et donc d'en déduire son échéance. Le temps de restant de calcul permet de savoir où la tâche en est dans son exécution. Enfin, le niveau de criticité du scénario est représenté tel quel.\\
+
+L'automate sera composé ces états du système comme états. On remarque que $at_S$ n'est pas borné inférieurement dans la définition, l'automate semble alors infini. Il est possible de finir l'ensemble des états du système et ce sera démontré par la suite.\\
+En regardant la définition, il est possible d'avoir des état du système qui ne sont pas cohérent avec un l'ordonnancement d'un ensemble de tâche. Par exemple, il est possible que le temps restant de calcul d'un tâche de criticité inférieure à celle du scénario soit positive. Il s'agirait d'un contradiction avec la définition de l'ordonnancement en criticité mixte. Les transitions de l'automate seront tel que ce genre d'état ne sera jamais atteint.
+
 \end{defin}
 
-Pour définir les transitions de l'automate, il faut définir des notions auxiliaires.
+Avant de pouvoir définir les transitions de l'automate, il faut établir des notions auxiliaires sur lesquelles elles se baseront.\\
+La première de celles-ci est l'ensemble des tâche active, il s'agit des tâches qui souhaitent prendre possession de processeur. De plus, l'ensemble des tâches abandonné dans le scénario. 
 
-\begin{defin}[Tâches actives et disqualifiées]
-Une tâche est active dans l'état $S$ si elle est arrivée dans celui-ci et n'est pas disqualifiée.
+\begin{defin}[Tâches actives et abandonnés]
+Une tâche est dite abandonné lors ce que sa criticité est inférieure à celle de l'état du système. De par la définition de l'ordonnancement en criticité mixte, ces tâches ne font plus partie de celles à ordonnancer. Les tâches abandonnées sont représentées dans le système comme venant de soumettre un travail ne nécessitant aucune ressource..
+
+$Discarded(S) = \{\tau_i | at_S(\tau_i) == 0 \wedge rct_S(\tau_i) == 0\}$\\
+
+Une tâche est active dans l'état $S$ si a émise un travail dans celui-ci et n'est pas été abandonné.
 
 $Active(S) = \{\tau_i | at_S(\tau_i) < 0\vee (at_S(\tau_i) == 0 \wedge rct_S(\tau_i) > 0)\}$\\
 
-Une tâche est dite disqualifiée lors ce que sa criticité est inférieure à celle de l'état. Ces tâches sont représentées dans le système comme ayant un temps de calcul restant et le temps d'arrivée nul.
-
-$Discarded(S) = \{\tau_i | at_S(\tau_i) == 0 \wedge rct_S(\tau_i) == 0\}$
+Si une tâche génère un travail et que celui si est complété, la définition tel quel qualifierait toujours ces tâches d'active. Cependant, le système de transition sera construit de sort que lors ce qu'une tâche à terminer un travail, son temps d'arrivé deviendra celui du prochain travail.\\
+Deux cas seront possible, soit le temps d'arrivé est dans le futur et donc la tâche ne sera plus active. Soit le temps d'arrivé est immédiat, c'est à dire que le travail s'est terminé juste avant la soumission d'un nouveau travail et donc la tâche restera active.
 \end{defin}
 
+En ordonnancement en criticité mixte, les tâches signalent leur complétion. Ce type d'ordonnancement fait l'hypothèse que les tâche n'excède pas leur pire WCET estimé. Une tâche qui aurait été exécuté pour temps égal à son pire WCET se signalera toujours comme complétée. De cette observation, en découle l'ensemble des tâches implicitement terminées.
 
 \begin{defin}[Tâche implicitement terminée]
-Dans le modèle, ce sont les tâches elles-mêmes qui signalent la complétion de leurs travaux. En revanche il existe un cas où les travaux seront implicitement finis : celui où le système est au niveau de la criticité du travail et que le travail a été exécuté complètement.\\
-Cette transition vient du fait que, dans le modèle, un travail n'excède pas son WCET maximal.
+Une tâche qui aurait un niveau de criticité équivalent à celui de l'état du système sera implicitement terminé si elle a soumise un travail et qu'il a été accompli pour toute la durée de son estimation.
 
 $ImplicitelyDone(S) = \{\tau_i | rct_S == 0 \wedge\ at_S(\tau_i) < 0\wedge crit_S=\chi_i\}$\\
 \end{defin}
 
+Les état du système ne sont pas tous des état qui seront réellement possible durant l'ordonnancement d'un ensemble de tâche en criticité mixte. Par exemple il n'y a aucune contraint sur la criticité de l'état du système. En revanche, il est possible de detecter qu'un état doit passer au niveau de criticité supérieur. C'est le but la notion de criticité réel d'un état du système.
 
-\begin{defin}[Criticité d'un état]
-La criticité réelle d'un état $S$ est celle de l'état si aucune tâche n'a été exécutée complètement sans avoir signalé sa complétion, celle de l'état incrémentée d'un sinon.
+
+\begin{defin}[Criticité réel d'un état]
+Pour détecter que l'état doit passer à la criticité suivante, il faut qu'une tâche ait exécuté totalement son WCET pour le niveau actuel. Il vérifier si une tâche est toujours active bien qu'elle n'ait plus de temps de calcul restant.\\
+On pose que la criticité réelle d'un état $S$ est celle de l'état si aucune tâche n'a été exécutée complètement sans avoir signalé sa complétion, celle de l'état incrémentée d'un sinon.
 $$
 Critical_S = \left\{
     \begin{array}{ll}
@@ -751,23 +820,43 @@ Critical_S = \left\{
 $$
 \end{defin}
 
+Il faut rappeler que le but de ce modelisme est de déterminer l'ordonnançabilité CM d'un ensemble de tache. Il s'agit donc de s'assurer qu'aucune tâche ne manque son échéance. La laxité d'un tâche permet de savoir durant combien d'unité de temps la tâche peut être oisive avant de manquer son échéance. A tout moment, si laxité d'une tâche est négative, fatalement,  elle ne parviendra pas à être exécuté pour son temps restant de calcul total.
+
 \begin{defin}[Laxité]
 La laxité d'une tâche $\tau_i$ d'un état $S$ est :
 
 $Laxity_S(\tau_i) = at_S(\tau_i)  + D_i - rct_S(\tau_i))$\\
 
-La laxité d'une tâche est donc le nombre d'unités de temps où la tâche peut être oisive avant de manquer son échéance. Dès lors, si la laxité d'une des tâches d'un état est négative, une tâche manquera son échéance. Cette définition permet de donner celle des états erronés.
+Pour obtenir la laxité d'un tâche, il faut commencer par acquérir le nombre d'unité temps avant l'échéance de la tâche. Ensuite il faut y soustraire le temps restant de calcul maximal de la tâche.
 \end{defin}
+
+Cette définition de la laxité est valide pour l'ordonnancement CM mais aussi pour le classique. En mixité critique, il est possible d'aller plus loin. En effet, la laxité ici tenait compte du temps restant de calcul maximal pour le niveau de criticité actuel, mais il faut aussi à tout moment pouvoir exécuter les tâche actives pour leurs pire WCET. C'est à partir de ce constat que l'idée de pire laxité a émergée.
+
+\begin{defin}[Pire laxité]
+\label{per:worstlaxity}
+La pire laxité d'une tâche $\tau_i$ dans l'état $S$ est :
+
+$$
+WorstLaxity_S(\tau_i) = at_S(\tau_i) + D_i - (rct_S(\tau_i) + (C_i(K)-C_i(crit_S))
+$$
+
+Pour obtenir cette pire laxité, il faut reprendre la définition de la laxité et ajouter au temps restant de calcul, le temps restant de calcul qui viendrait s'ajouter dans le pire scénario.
+\end{defin}
+
+La pire laxité a été introduite pour repérer un manquement d'échéance. Le but de l'automate construit est déterminer si un ensemble de tâche périodique en criticité mixte est ordonnançable. D'où, dès qu'un état où la pire laxité d'une des tâches est négatives, l'ensemble des tâches n'est ordonnançable avec l'algorithme en question.\\
+Il est donc possible de définir les états erronés de l'automate comme étant ceux où une tâche manquera son échéance.
 
 \begin{defin}[États erronés]
-Un état $S$ est erroné si l'une des laxités des tâches est négative, on obtient alors l'ensemble :
+Un état $S$ est erroné si l'une des pire laxités des tâches est négative, on obtient alors l'ensemble :
 
-$Fail_\tau = \{S|\exists \tau_i \in \tau : Laxity_S(\tau_i) < 0  \}$\\
+$Fail_\tau = \{S|\exists \tau_i \in \tau : WorstLaxity_S(\tau_i) < 0  \}$\\
 \end{defin}
 
-Grâce à ces états erronés, nous pouvons à présent borner inférieurement $at_S$. En effet, puisque dès que la laxité d'un état est négative, il est érroné, il n'est pas nécéssaire d'inclure dans l'automate les état où $\exists\ \tau_i \in \tau\ tq\ Laxity_S(\tau_i) < -1$. Dés lors : $at_S(\tau_i) + D_{max} - rct_S(\tau_i) \geq -1$ d'où $at_S(\tau_i) \geq rct_S(\tau_i) - (D_{max}+1) \geq -(D_{max}+1)$ et donc $-(D_{max}+1) \leq at_S(\tau_i) \leq R_{max}$ avec $D_{max} = max_i\ D_i$ et $R_{max} = max(max_i\ (T_i),\ max_i\ (O_i))$\\
+Grâce à ces états erronés, nous pouvons à présent borner inférieurement $at_S$. En effet, puisque dès que la pire laxité d'un état est négative : il est érroné, il n'est pas nécéssaire d'inclure dans l'automate les état où $\exists\ \tau_i \in \tau\ tq\ WorstLaxity_S(\tau_i) < -1$.\\
+Dés lors : $at_S(\tau_i) + D_{max} - (rct_S(\tau_i) + (C_{max}(K)-C_{max}(1)) \geq -1$.\\
+D'où $at_S(\tau_i) \geq + rct_S(\tau_i) + C_{max}(K) - (D_{max}+C_{max}(1)+1) \geq - (D_{max}+C_{max}(1)+1)$ et donc $- (D_{max}+C_{max}(1)+1) \leq at_S(\tau_i) \leq R_{max}$ avec $D_{max} = max_i\ D_i$ et $R_{max} = max(max_i\ (T_i),\ max_i\ (O_i))$ pour tout $\tau_i \in \tau$.\\
 
-Nous pouvons à présent définir les transitions de l'automate. Pour ce faire nous devons choisir un $ordonnanceur$, une fonction sur un état vers une tâche à ordonnancer.
+L'automate qui se construit ici est basé sur et un ensemble de tâche mais aussi sur un ordonnanceur. Il est donc nécessaire de choisir un tel ordonnanceur, c'est-à-dire une fonction sur un état du système vers une tâche à ordonnancer.
 
 \begin{defin}[Ordonnanceur]
 Un $ordonnanceur$ monoprocesseur pour $\tau$ est une fonction $Run : State(\tau) \rightarrow \tau$ telle que $Run(S) \subseteq Active(S)$ et $0 \leq |Run(S)| \leq 1$.
@@ -778,7 +867,13 @@ De plus :
 $\forall \tau_i \in Active(S_1) : (at_{S_1} == at_{S_2} \wedge rct_{S_1} == rct_{S_2} \wedge crit_{S_1} == crit_{S_2} )$ implique $Run(S_1) == Run(S_2)$
 \end{itemize}
 
+L'ordonnanceur $work-conserving$ ordonnancera toujours une tâche s'il y a des tâches actives dans l'état du système. Un ordonnanceur $sans\ memoire$ signifie qu'il se base uniquement sur l'état du système pour choisir la tâche la plus prioritaire. C'est-à-dire qu'il ne va pas prêter attention à ce qu'il s'est passé avant.
 \end{defin}
+
+Il est maintenant possible de de définir les transition de l'automate. L'automate aura une transition depuis un état du système vers tout ceux qu'il peut générer. Il peut y en avoir plusieurs car une tâche peut signaler ou non sa complétion.\\
+Pour définir cet ensemble de transition, l'automate utilisera des transitions intermédiaire pour représenter différentes action au cours d'une unité de temps.\\
+
+Durant une unité de temps, une tâche est exécutée, ensuite elle signale on non sa complétion et enfin, s'il y a lieu, la criticité de l'état du système peut passer  au niveau supérieur.
 
 \begin{defin}[Transition d'exécution]
 Soit $S = (at_S, rct_S, crit_S)$ un état du système et $Run$ un $ordonnanceur$ pour $\tau$. On dit que l'état du système $S^+ = (at_S^+, rct_S^+, crit_S^+)$ est un $successeur\ horloge$ de $S$ avec $Run$, noté $S\xrightarrow{Run}S^+$ ssi:
@@ -814,7 +909,7 @@ Soit $S = (at_S, rct_S, crit_S)$ un état du système et $\tau' \subseteq Active
 \item $crit_{S'} = crit_{S}$
 
 \end{itemize}
-Cette transition représente les complétions signalée ou implicite de travaux de tâches.
+Cette transition représente les complétions signalée ou implicite de travaux de tâches. Pour les tâches qui ne se termine pas, rien ne change. Pour les tâche se complétant le temps restant de calcul est mit au WCET de la tâche pour le niveau de criticité de l'état. Le temps d'arrivé de la tâche est incrémenté de sa période, s'il est positif alors la tâche ne sera pas active directement.
 \end{defin}
 
 \begin{defin}[Transition critique]
@@ -837,13 +932,13 @@ $$ at_S^C(\tau_i) = \left\{
 \right.
 $$\\
 \end{itemize}
-Cette transition met à jour la criticité du système et augmente les temps restants d'exécution si nécessaire. Si la criticité dépasse celle de certaines tâches, leur temps d'arrivé et leur temps d'exécution sont mis à zéro et rejoigne donc bien l'ensemble $Discarded(S^C)$.
+Cette transition met à jour la criticité du système et augmente les temps restants d'exécution si nécessaire. Si la criticité dépasse celle de certaines tâches, leur temps d'arrivé et leur temps d'exécution sont mis à zéro et elles rejoignent donc bien l'ensemble $Discarded(S^C)$.
 \end{defin}
 
 \begin{defin} Étant donné un ensemble de tâches $\tau$ et un ordonnanceur $Run$, l'automate $A(\tau,Run)$ est le tuple $(V, E, S_0, F)$ où:
 \begin{itemize}
 \item  $V=State(\tau)$
-\item $(S_1,S_2) \in E$ ssi il existe les états intermédiaires $S'$ et $S'' \in State(\tau)$ et $\tau' \subseteq Active(S') $ tel que : $S_1\xrightarrow{Run}S'\xrightarrow{\tau'}S''\xrightarrow{C}S_2$
+\item $(S_1,S_2) \in E$ ssi il existe les états intermédiaires $S'$ et $S'' \in State(\tau)$ et $\tau' \subseteq Run(S) $ tel que : $S_1\xrightarrow{Run}S'\xrightarrow{\tau'}S''\xrightarrow{C}S_2$
 \item $S_0 = (at_{S_0}, rct_{S_0}, crit_{S_0})$ :\begin{itemize}
 \item $at_{S_0} = O_i\ \forall \tau_i \in \tau$
 \item $rct_{S_0} = C_i(1)\ \forall \tau_i \in \tau$
@@ -852,11 +947,14 @@ Cette transition met à jour la criticité du système et augmente les temps res
 \item $F = Fail_\tau$
 \end{itemize}
 
+On remarque les tâche pouvant signaler leur complétion sont celle qui ont été ordonnancées. En effet, il faut qu'une tâche soit exécuté pour pouvoir signaler qu'elle a terminée son travail.
+
 \end{defin} 
+
+Cette première modélisation 
 
 
 \section{Tâche Sporadique}
-\subsection{Modèle sous forme d'automate}
 
 
 \begin{defin}[État du système]
@@ -915,10 +1013,17 @@ La laxité d'une tâche est donc le nombre d'unités de temps où la tâche peut
 \end{defin}
 
 \begin{defin}[Pire laxité]
-\label{laxity}
+\label{worstlaxity}
 La pire laxité d'une tâche $\tau_i$ dans l'état $S$ est :
 
-$WorstLaxity_S(\tau_i) = nat_S(\tau_i) -T_i + D_i - (rct_S(\tau_i) + (C_i(K)-C_i(crit_S))$\\
+$$
+WorstLaxity_S(\tau_i) =\left\{
+    \begin{array}{ll}
+        nat_S(\tau_i) -T_i + D_i - (rct_S(\tau_i) + (C_i(K)-C_i(crit_S)) & \tau \in Active(S) \\
+        Laxity_S(\tau_i) & \tau \notin Active(S)
+    \end{array}
+\right.
+$$
 
 La laxité d'une tâche est donc le nombre d'unités de temps où la tâche peut être oisive avant de manquer son échéance. Dès lors, si la laxité d'une des tâches d'un état est négative, une tâche manquera son échéance. Cette définition permet de donner celle des états erronés.
 \end{defin}
@@ -1069,300 +1174,42 @@ Pour un état $S$, on note l'ensemble de ses $successeur\ \tau^R-request$ $S^{\t
 
 \end{defin} 
 
-\subsection{Antichaine}
 
-\subsubsection{Simulation de pire scénario}
-
-\begin{defin}[Simulation de pire scénario]
-\label{wcsim}
-Soit $\tau$ un ensemble de tâche sporadique de criticité mixte. Le préordre de pire scénario $\succeq_{worse} \subseteq State(\tau)\times State(\tau)$ est tel que pour tout $S_1, S_2 : S_1 \succeq_{worse}S_2$ ssi:
-\begin{itemize}
-\item $crit_{S_1} = crit_{S_2}$
-\item $done_{S_1} = done_{S_2}$
-\item $nat_{S_1} = nat_{S_2}$
-\item Pour tout $\tau_i$ tel que $done_{S_1}(\tau_i) \vee rct_{S_1}(\tau_i) = 0 : rct_{S_1}(\tau_i) = rct_{S_2}(\tau_i)$
-\item Pour tout $\tau_i$ tel que $!done_{S_1}(\tau_i) \wedge rct_{S_1}(\tau_i) > 0 : rct_{S_1}(\tau_i) \geq rct_{S_2}(\tau_i)$
-\end{itemize}
-Cette relation est transitive et réflexive, il s'agit donc bien d'un préordre.
-%La relation défini aussi un ordre partiel sur $Active(S)$ car celle ci est anti-symétrique.
-Remarquons que $Active(S_1) = Active (S_2)$ puisque $done_{S_1} = done_{S_2}$
-\end{defin}
-
-\begin{lem}
-\label{impdoneeqwc}
-Si $S_1$ et $S_2$ sont est états tel que $S_1 \succeq_{worse}S_2$ alors $ImplicitelyDone(S_1) = ImplicitelyDone(S_2)$.
-\end{lem}
-\begin{proof} Par \autoref{idlesim}: $S_2 \succeq_{worse} S_1$ implique que pour tout $\tau_i \in \tau$ tel que $ rct_{S_1}(\tau_i) = 0: done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$, $rct_{S_1}(\tau_i) = rct_{S_1}(\tau_i)$ et que $crit_{S_1} = crit_{S_2}$. D'où $ImplicitelyDone(S_1) = ImplicitelyDone(S_2)$.
-\end{proof}
-
-\begin{lem}
-\label{criteqwc}
-Si $S_1$ et $S_2$ sont est états tel que $S_1 \succeq_{idle} S_2$ alors $Critical_{S_1} = Critical_{S_2}$.
-\end{lem}
-\begin{proof} Par \autoref{wcsim}: $S_2 \succeq_{worse} S_1$ implique que $Active(S_1) = Active(S_2)$, $crit_{S_1} = crit_{S_2}$ et que $rct_{S_1}(\tau_i) = rct_{S_2}(\tau_i)$ pour tout $\tau_i \in \tau$ avec $rct_{S_1} = 0$. D'où $Critical_{S_1} = Critical_{S_2}$.
-\end{proof}
-
-
-\begin{lem}
-\label{elieqwc}
-Si $S_1$ et $S_2$ sont deux états tel que $S_1 \succeq_{worse}S_2$ alors $Eligible(S_1) = Eligible(S_2)$.
-\end{lem}
-\begin{proof}  Par \autoref{wcsim}: $S_2 \succeq_{worse} S_1$ implique que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$, $crit_{S_1} = crit_{S_2}$ et que $nat_{S_1}(\tau_i) = nat_{S_2}(\tau_i)$ pour tout $\tau_i \in \tau$. D'où $Critical_{S_1} = Critical_{S_2}$.
-\end{proof}
-
-\begin{defin}
-\label{reqanaloguewc}
-Soit $S_1$ et $S_2$ deux états tel que $S_1 \succeq_{worse}S_2$ et $\tau^R \subseteq Eligible(S_2)$. Alors, pour tout $\overline{S}_2\in S_2^{\tau^R}$, un état  $\overline{S}_1\in S_1^{\tau^R}$ est appelé $analogue\ \tau^R-oisif$ de $\overline{S}_2$ ssi:
-\begin{center}
-$\forall \tau_i \in \tau^R : nat_{\overline{S}_1}(\tau_i) = nat_{\overline{S}_2}(\tau_i) $
-\end{center}
-\end{defin}
-
-\begin{lem}
-\label{reqanalogueeqwc}
-Soit $S_1$ et $S_2$ deux états tel que $S_1 \succeq_{worse} S_2$ et $\tau^R \subseteq Eligible(S_2)$ un sous-ensemble de tache. Alors, pour tout $\overline{S}_2 \in S_2^{\tau^R}$ il y a un $analogue\ \tau^R-oisif\ \overline{S}_1 \in S_1^{\tau^R}$ de $\overline{S}_2$.
-\end{lem}
-\begin{proof}
-\autoref{treq}, \autoref{wcsim} et \autoref{elieqwc} pose que pour tout $\tau_i \in \tau^R \subseteq Eligible(S_1) = Eligible(S_2)$ on a $nat_{S_1}(\tau_i) = nat_{S_2}(\tau_i) \leq 0$, $rct_{S_1}(\tau_i) = rct_{S_2}(\tau_i) = 0$, $done_{S_1}(\tau_i) = done_{S_2}(\tau_i) = True$ et que $crit_{S_1} = crit_{S_2}$. Par définition, tout $\overline{S}_2 \in S^{\tau^R}_2$ satisfait :
-\begin{center}
-$\forall \tau_i \in \tau^R : nat_{\overline{S}_2}(\tau_i) \in I^i_2=[nat_{S_2}(\tau_i)+T_i, T_i] $
-\end{center}
-De manière similaire, par définition \autoref{treq}, pour tout vecteur $(k_1, k_2, ..., k_n)(ou\ n = |\tau^R|)$ tel que pour tout $1\leq i \leq n: k_i \in I^i_1=[nat_{S_1}(\tau_i)+T_i, T_i]$, il existe $\overline{S}_1\in S^{\tau^R}_1$ avec $nat_{\overline{S}_1}(\tau_i) = k_i$ pour tout $1\leq i \leq n$. C'est à dire qu'à chaque fois qu'un vecteur $(k_1, k_2, ..., k_n)$ de valeurs dans $I_1^1 \times I_1^2 \times ... \times I_1^n$ est fixé, il est possible de trouver un état $\overline{S}_1 \in S^{\tau^R}_1$ tel que le $nat$ de chaque tâche $\tau_i$ est exactement $k_i$. Comme $nat_{S_1}(\tau_i) = nat_{S_2}(\tau_i)$ pour tout $1\leq i \leq n$ on en conclu que $I^i_2 = I^i_1$ pour tout $1\leq i \leq n$. Dés lors, le vecteur $nat_{\overline{S}_2}(\tau_1), nat_{\overline{S}_2}(\tau_2), ..., nat_{\overline{S}_2}(\tau_n)$ est dans $I_1^1 \times I_1^2 \times ... \times I_1^n$. D'où il existe $\overline{S}_1 \in S^{\tau^R}_1$ tel que pour tout $1\leq i \leq n : nat_{\overline{S}_1}(\tau_i) = nat_{\overline{S}_2}(\tau_i)$
-\end{proof}
-
-
-\begin{defin}[Algorithme d'ordonnancement rct-cohérent]
-\label{rctcoherent}
-Un algorithme d'ordonnancement $Run$ est dit \textit{rct-cohérent} si pour tout état $S_1, S_2 \in state(\tau)$ tel que
-\begin{itemize}
-\item $crit_{S_1} = crit_{S_2}$
-\item $done_{S_1} = done_{S_2}$
-\item $nat_{S_1} = nat_{S_2}$
-\item $\forall \tau_i \notin Active(S_1) : rct_{S_1} = rct_{S_2}$
-\item $\forall \tau_i \in Active(S_1) : rct_{S_1} \geq rct_{S_2}$
-\end{itemize}
-
-On a $\forall \tau_i \in Run(S_2) : \tau_i \in Run(S_1) \vee rct_{S_2}(\tau_i) > rct_{S_1}(\tau_i)$.
-\end{defin}
-
-Cette définition signifie en faite qu'un algorithme d'ordonnancement qui favorise une tâche ayant un certain $rct$ sera aussi favorisé si celui-ci augmente.\todo{pas dingue + exemple}\\
-
-
-
-
-Prouvons maintenant que $\succeq_{worse}$ est bien une relation de simulation lors ce qu'on considère un ordonnanceur sans mémoire et \textit{rct-cohérent}.
-
-\begin{theo}
-Soit $\tau$ un ensemble de tâche sporadique à mixité critique and $Run$ un ordonnanceur sans mémoire (déterminé) et \textit{rct-cohérent} pour $\tau$ sur un processeur. Alors, $\succeq_{worse}$ est une relation de simulation pour $A(\tau, Run)$.
-\end{theo}
-
-\begin{proof}
-Soit $S_1, S'_1$ et $S_2$ trois état dans $States(\tau)$ tel que $(S_1, S_1') \in E$ et $S_2 \succeq_{worse}S_1$, montrons qu'il existe $S_2' \in States(\tau)$ avec $(S_2, S_2') \in E$ and $S_2' \succeq_{worse} S_1'$.\\
-
-Puisque $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Active(S^{+}_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1'$.\\
-
-Par \autoref{wcsim}, $S_2 \succeq_{worse} S_1$ implique que $Active(S_1) = Active(S_2)$. Soit $\tau_i$ un tâche faisant partie de $Active(S_1)$, d'où $done_{S_1}(\tau_i) = False$. Dans ce cas, et puisque $S_2 \succeq_{worse} S_1$, on en conclu que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$, $nat_{S_1}(\tau_i) = nat_{S_1}(\tau_i)$, $rct_{S_1}(\tau_i) \geq rct_{S_1}(\tau_i)$ et que $crit_{S_1} = crit_{S_2}$ pour tout $\tau_i \in Active(S_1)$. Donc $Run(S_1)$ n'est pas forcément égale à $Run(S_2)$.
-Soit $S^+_1$ l'état unique tel que $S_1\xrightarrow{Run}S^{+}_1$, montrons qu'il existe $S^+_2$ tel que $S_2\xrightarrow{Run}S^{+}_2$ et que $S^+_2 \succeq_{idle} S^+_1$.
-\begin{enumerate}
-
-\item Pour tout  $\tau_i \in \tau : done_{S_1}^+(\tau_i) = done_{S_1}(\tau_i), done_{S_2}^+(\tau_i) = done_{S_2}(\tau_i)$. Puisque $S_2 \succeq_{worse} S_1$, on a aussi que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$. On en conclu que $done_{S_1}^+ = done_{S_2}^+$.
-
-\item $crit_{S_1}^+ = crit_{S_1}, crit_{S_2}^+ = crit_{S_2}$. Puisque $S_2 \succeq_{worse} S_1$, on a aussi que $crit_{S_1} = crit_{S_2}$. On en conclu que $crit_{S_1}^+ = crit_{S_2}^+$.
-
-\item Pour tout $\tau_i$ un tâche tel que $done_{S_1}^+(\tau_i) = True : nat_{S_1}^+(\tau_i) = max(nat_{S_1}(\tau_i)-1, 0)$ et $nat_{S_2}^+(\tau_i) = max(nat_{S_2}(\tau_i)-1, 0)$. Cependant, comme $S_2 \succeq_{worse} S_1$, on sait que $nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$. On en conclu que $nat_{S_2}^+(\tau_i) = nat_{S_1}^+(\tau_i)$.
-
-\item Soit $\tau_i$ un tâche tel que $done_{S_1}^+(\tau_i) = False : nat_{S_1}^+(\tau_i) = nat_{S_1}(\tau_i)-1$ et $nat_{S_2}^+(\tau_i) = nat_{S_2}(\tau_i)-1$. Cependant, comme $S_2 \succeq_{worse} S_1$, on sait que $nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$. On en conclu que $nat_{S_2}^+(\tau_i) = nat_{S_1}^+(\tau_i)$.
-
-\item Si $Run(S_1) = Run(S_2)$ :
-
-\begin{enumerate}[label = (\alph*)]
-
-\item Pour tout $\tau_i \in Run(S_1) = Run(S_2) : rct_{S_1}^+(\tau_i) = rct_{S_1}(\tau_i) -1, rct_{S_2}^+(\tau_i) = rct_{S_2}(\tau_i) -1$. Puisque $S_2 \succeq_{worse} S_1$, on sait que $rct_{S_1} \geq rct_{S_2}$. D'où $rct_{S_2}^+(\tau_i) \geq rct_{S_1}^+(\tau_i)$.
-
-\item Pour une tâche $\tau_1 \notin Run(S_1) = Run(S_2) : rct_1^+(\tau_i) = rct_1(\tau_i), rct_2^+(\tau_i) = rct_2(\tau_i)$. Puisque $S_2 \succeq_{worse} S_1$, on sait que $rct_{S_1} \geq rct_{S_2}$. D'où $rct_{S_2}^+(\tau_i) \geq rct_{S_1}^+(\tau_i)$.
-
-\end{enumerate}
-
-\item Si $Run(S_1) \neq Run(S_2)$ :
-
-\begin{enumerate}[label = (\alph*)]
-
-\item Pour tout $\tau_i \in Run(S_2)$, donc $\tau_i \notin Run(S_1) : rct_{S_1}^+(\tau_i) = rct_{S_1}(\tau_i),\ rct_{S_2}^+(\tau_i) = rct_{S_2}(\tau_i) -1$. Puisque $S_2 \succeq_{worse} S_1$, on sait que $rct_{S_2}(\tau_i) \geq rct_{S_1}(\tau_i)$. La question est alors : est ce que $rct_{S_2}(\tau_i)-1 \geq rct_{S_1}(\tau_i)$ ?\\
-
-Premièrement, rappelons que comme $S_2 \succeq_{worse} S_1 : done_{S_1} = done_{S_1}$, $nat_{S_1} = nat_{S_2}, crit_{S_1} = crit_{S_2}$. Donc le seul facteur qui peut faire change $Run$ de comportement est $rct$. Si $\tau_i \in Run(S_2)$ et $\tau_i \notin Run(S_1)$ deux explications sont possible :\begin{itemize}
-\item $rct_{S_2}(\tau_i) \neq rct_{S_1}(\tau_i)$ donc $rct_{S_2}(\tau_i) > rct_{S_1}(\tau_i)$ ou $rct_{S_2}(\tau_i) < rct_{S_1}(\tau_i)$ mais par la relation de simulation de pire scénario on sait qu'il s'agit de la première possibilité car on sait que $rct_{S_2}(\tau_i) \geq rct_{S_1}(\tau_i)$.
-
-
-\item $rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i)$ et donc $\exists \tau_j \in Run(S_1)\ t.q\ rct_{S_2}(\tau_j) \neq rct_{S_1}(\tau_j)$, d'où, par un raisonnement analogue au point précédent, on en déduit que $rct_{S_2}(\tau_j) > rct_{S_1}(\tau_j)$. $Run$ étant \textit{rct-cohérent}, par \autoref{rctcoherent}, cette configuration n'est pas possible.\\
-\end{itemize}
-
-
-On en déduit que  $rct_{S_2}(\tau_i) > rct_{S_1}(\tau_i)$. D'où $rct_{S_2}(\tau_i)-1 \geq rct_{S_1}(\tau_i)$. On peut alors en conclure que $rct_{S_2}^+(\tau_i) \geq rct_{S_1}^+(\tau_i)$.
-
-\item Pour une tâche $\tau_i \in Run(S_1)$ et $ \notin Run(S_2) : rct_1^+(\tau_i) = rct_1(\tau_i)-1, rct_2^+(\tau_i) = rct_2(\tau_i)$. Puisque $S_2 \succeq_{worse} S_1$, on sait que $rct_{S_2}(\tau_i) \geq rct_{S_2}(\tau_i)$. Comme $rct_{S_2}(\tau_i) \geq rct_{S_1}(\tau_i)-1$, on en conclu que $rct_{S_2}^+(\tau_i) \geq rct_{S_1}^+(\tau_i)$.
-
-\item Pour une tâche $\tau_i \notin Active(S_1) = Active(S_2) : rct_1^+(\tau_i) = rct_1(\tau_i), rct_2^+(\tau_i) = rct_2(\tau_i)$. Puisque $S_2 \succeq_{worse} S_1$, on sait que $rct_{S_1} \geq rct_{S_2}$. D'où $rct_{S_2}^+(\tau_i) \geq rct_{S_1}^+(\tau_i)$.
-
-\end{enumerate}
-
-
-
-
-\end{enumerate}
-Par \autoref{texec}. Il est maintenant établi que $S^+_2 \succeq_{worse} S^+_1$.\\
-
-Par le \autoref{impdoneeqwc}, nous obtenons que $ImplicitelyDone(S^+_1) = ImplicitelyDone(S_2^+)$.
-Prouvons maintenant que, pour tout $\tau^T\subseteq Run(S_1^+) \cup ImplicitelyDone(S_1^+)$ menant à $S_1^+ \xrightarrow{\tau^T} S_1^T$, il existe un $S_2^T$ tel que $S_2^+ \xrightarrow{\tau^T} S_2^T$ et $S_2^T \succeq_{worse} S_1^T$.
-\begin{enumerate}
-
-\item Par la \autoref{tterm} on a $crit_{S_1}^T = crit_{S_1}^+$ et $crit_{S_2}^T = crit_{S_2}^+$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ on a $crit_{S_2}^+= crit_{S_1}^+$. On en conclu que $crit_{S_2}^T= crit_{S_1}^T$.
-
-
-\item Par la \autoref{tterm}, pour tout $\tau_i \in \tau^T \cup ImplicitelyDone(S_1^+) : done_{S_1}^T(\tau_i) = True = done_{S_2}^T(\tau_i)$.\\
-Pour tout $\tau_i \notin \tau^T \cup ImplicitelyDone(S_1^+)$ on a $done_{S_1}^T(\tau_i) = done_{S_1}^+(\tau_i)$ et $done_{S_2}^T(\tau_i) = done_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ on a $done_{S_2}^+(\tau_i)= done_{S_1}^+(\tau_i)$. D'où $done_{S_2}^T(\tau_i) = done_{S_1}^T(\tau_i)$. On en conclu que $done_{S_2}^T = done_{S_1}^T$.
-
-
-\item Par la \autoref{tterm}, pour tout $\tau_i \in \tau$ on a $nat_{S_1}^T(\tau_i) = nat_{S_1}^+(\tau_i)$ et $nat_{S_2}^T(\tau_i) = nat_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ on a $nat_{S_2}^+(\tau_i) = nat_{S_1}^+(\tau_i)$. On en conclu que $nat_{S_2}^T(\tau_i) = nat_{S_1}^T(\tau_i)$.
-
-\item Par la \autoref{tterm}, pour tout $\tau_i $ avec $done_{S_1}^T(\tau_i) = True$ :\\
-
-Soit $done_{S_1}^+(\tau_i) = True \rightarrow \tau_i \notin \tau^T \cup ImplicitelyDone(S_1^+)$ : $rct_{S_1}^T(\tau_i) = rct_{S_1}^+(\tau_i)$ et $rct_{S_2}^T(\tau_i) = rct_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ et que $done_{S_1}^T(\tau_i) = True$ on a $rct_{S_2}^+(\tau_i) = rct_{S_1}^+(\tau_i)$. D'où $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$.\\
-
-Soit $done_{S_1}^+(\tau_i) = False$, pour que la tâche se termine elle doit obligatoirement signaler sa complétion et donc on sait que $\tau_i \in \tau^T \cup ImplicitelyDone(S_1^+)$ d'où  $rct_{S_2}^T(\tau_i) = 0 = rct_{S_1}^T(\tau_i)$ et donc $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$
-
-\item Par la \autoref{tterm}, pour tout $\tau_i $ avec $rct_{S_1}^T(\tau_i) = 0$ :\\
-
-Soit $\tau_i \notin \tau^T \cup ImplicitelyDone(S_1^+)$ : $rct_{S_1}^T(\tau_i) = rct_{S_1}^+(\tau_i)$ et $rct_{S_2}^T(\tau_i) = rct_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ et que $rct_{S_1}^T(\tau_i) = 0$ on a $rct_{S_2}^+(\tau_i) = rct_{S_1}^+(\tau_i)$. D'où $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$.\\
-
-Soit $\tau_i \in \tau^T \cup ImplicitelyDone(S_1^+)$ d'où  $rct_{S_2}^T(\tau_i) = 0 = rct_{S_1}^T(\tau_i)$ et donc $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$
-
-\item Par la \autoref{tterm}, pour tout $\tau_i $ avec $rct_{S_1}^T(\tau_i) > 0 \wedge done_{S_1}^T(\tau_i) = False$ :\\
-
-Alors $\tau_i \notin \tau^T \cup ImplicitelyDone(S_1^+)$ : $rct_{S_1}^T(\tau_i) = rct_{S_1}^+(\tau_i)$ et $rct_{S_2}^T(\tau_i) = rct_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ on a $rct_{S_2}^+(\tau_i) \geq rct_{S_1}^+(\tau_i)$. D'où $rct_{S_2}^T(\tau_i) \geq rct_{S_1}^T(\tau_i)$.\\
-
-On sait que $\tau_i \notin \tau^T \cup ImplicitelyDone(S_1^+)$ car sinon $done_{S_1}^T(\tau_i) = True$.
-\end{enumerate}
-Il est maintenant établi que $S^T_2 \succeq_{worse} S^T_1$.\\
-
-Par le \autoref{criteqwc}, nous obtenons que $Critical_{S_1^T} = Critical_{S_2^T}$. Prouvons maintenant que pour l'unique état $S_1^C$ tel que $S^{T}_1\xrightarrow{C}S^{C}_1$, il existe $S_2^C$ tel que $S^{T}_2\xrightarrow{C}S^{C}_2$ et $S^C_2 \succeq_{worse} S^C_1$.
-
-\begin{enumerate}
-
-\item Par la \autoref{tcrit} on a $crit_{S_1}^C = Critical_{S_1^T}$ et $crit_{S_2}^C = Critical_{S_2^T}$. Et puisque $S^+_2 \succeq_{worse} S^+_1$ on a $Critical_{S_1^T} = Critical_{S_2^T}$. On en conclu que $crit_{S_2}^C= crit_{S_1}^C$.
-
-
-\item Par \autoref{tcrit}, pour toute tâche $\tau_i \in \tau$ avec $\chi_i < Critical_{S_1^T}$ :
-\begin{enumerate}[label=(\alph*)]
-\item $done_{S_1}^C(\tau_i) = True = done_{S_2}^C(\tau_i)$
-\item $rct_{S_1}^C(\tau_i) = 0 = rct_{S_2}^C(\tau_i)$
-\item $nat_{S_1}^C(\tau_i) = 0 = nat_{S_2}^C(\tau_i)$
-\end{enumerate}
-
-\item Par \autoref{tcrit}, pour toute tâche $\tau_i \in \tau$ avec $\chi_i \geq Critical_{S_1^T}$ :
-\begin{enumerate}[label=(\alph*)]
-
-%done
-\item $done_{S_1}^C(\tau_i) = done_{S_1}^T(\tau_i)$ et $done_{S_2}^C(\tau_i) = done_{S_2}^T(\tau_i)$. Et puisque $S^T_2 \succeq_{worse} S^T_1$ on a $done_{S_2}^T(\tau_i)= done_{S_1}^T(\tau_i)$. On en conclu que $done_{S_2}^C(\tau_i) = done_{S_1}^C(\tau_i)$.
-
-
-%nat
-\item Pour tout $\tau_i : nat_{S_1}^C(\tau_i) = nat_{S_1}^T(\tau_i)$ et $nat_{S_2}^C(\tau_i) = nat_{S_2}^T(\tau_i)$. Et puisque $S^T_2 \succeq_{worse} S^T_1$ on a $nat_{S_2}^T(\tau_i) = nat_{S_1}^T(\tau_i)$. On en conclu que $nat_{S_2}^C(\tau_i) = nat_{S_1}^C(\tau_i)$.
-
-
-%rct
-\item  Pour tout $\tau_i $ avec $done_{S_1}^C(\tau_i) = True$ :\\
-
-
-Alors $done_{S_1}^T(\tau_i) = True \rightarrow \tau_i \notin Active(S_1)$ et donc $rct_{S_1}^C(\tau_i) = rct_{S_1}^T(\tau_i),\ rct_{S_2}^C(\tau_i) = rct_{S_2}^T(\tau_i)$. Comme $S^T_2 \succeq_{worse} S^T_1$ et $done_{S_1}^T(\tau_i) = True$ on a $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$.\\
-
-Si $done_{S_1}^T(\tau_i) = False$ et $done_{S_1}^C(\tau_i) = True$ alors $\chi_i < Critical_{S_1^T}$.
-
-\item  pour tout $\tau_i $ avec $rct_{S_1}^C(\tau_i) = 0$ :\\
-
-Alors $done_{S_1}^T(\tau_i) = True \rightarrow \tau_i \notin Active(S_1)$ et donc $rct_{S_1}^C(\tau_i) = rct_{S_1}^T(\tau_i),\ rct_{S_2}^C(\tau_i) = rct_{S_2}^T(\tau_i)$. Comme $S^T_2 \succeq_{worse} S^T_1$ et $done_{S_1}^T(\tau_i) = True$ on a $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$.\\ 
-
-Si $done_{S_1}^T(\tau_i) = False$ et $rct_{S_1}^C(\tau_i) = 0$ alors $\chi_i < Critical_{S_1^T}$ car si ce n'est pas le cas alors cela voudrait dire que $C_i(Critical_{S_1^T})-C_i(crit_{S_1}^T) = 0$ ce qui n'est pas possible.
-
-\item  pour tout $\tau_i $ avec $rct_{S_1}^C(\tau_i) > 0 \wedge done_{S_1}^C(\tau_i) = False$ :
-
-
-$rct_{S_1}^C(\tau_i) = rct_{S_1}^T(\tau_i)+C_i(Critical_{S_1^T})-C_i(crit_{S_1}^T)$ et $rct_{S_2}^C(\tau_i) = rct_{S_2}^T(\tau_i)+C_i(Critical_{S_2^T})-C_i(crit_{S_2}^T)$. Et puisque $S^T_2 \succeq_{worse} S^T_1$ on a $rct_{S_2}^T(\tau_i) \geq rct_{S_1}^T(\tau_i)$, $crit_{S_1}^T = crit_{S_2}^T$ et $Critical_{S_1^T} = Critical_{S_2^T}$. On en conclu que $rct_{S_2}^C(\tau_i) \geq rct_{S_1}^C(\tau_i)$.
-
-\end{enumerate}
-
-\end{enumerate}
-Il est maintenant établi que $S^C_2 \succeq_{worse} S^C_1$.\\
-
-Rappelons que comme $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Active(S^{+}_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1^R=S_1'$ par la \autoref{autospo}. Soit $S_2^R$, un $analogue\ \tau^R-oisif$ de $S_1^R$ (qui existe de par le \autoref{reqanalogueeqwc}), prouvons que $S_2^R \succeq_{idle} S_1^R$.
-
-\begin{enumerate}
-\item Pour tout $\tau_i \in \tau^R : done_{S_1}^R(\tau_i) = False = done_{S_2}^R(\tau_i)$.\\
-Pour tout $\tau_i \notin \tau^R : done_{S_1}^R(\tau_i) = done_{S_1}^C(\tau_i), done_{S_2}^R(\tau_i) = done_{S_2}^C(\tau_i)$, et, comme $S^C_2 \succeq_{worse} S^C_1 : done_{S_2}^C(\tau_i) = done_{S_1}^C(\tau_i)$. Donc $done_{S_2}^R = done_{S_1}^R$.
-
-\item $crit^R_{S_1} = crit^C_{S_1}, crit^R_{S_2} = crit^C_{S_2}$. Comme $S^C_2 \succeq_{worse} S^C_1 : crit^C_{S_2} = crit^C_{S_1}$. Donc $crit^R_{S_2} = crit^R_{S_1}$.
-
-\item Pour tout $\tau_i \in \tau^R : nat_{S_1}^R(\tau_i) = nat_{S_2}^R(\tau_i)$ puisque $S_2^R$ est un $analogue\ \tau^R-oisif$ de $S_1^R$.
-
-\item Pour tout $\tau_i \notin \tau^R : nat_{S_1}^R(\tau_i) = nat_{S_1}^C(\tau_i), nat_{S_2}^R(\tau_i) = nat_{S_2}^C(\tau_i)$, et, comme $S^C_2 \succeq_{worse} S^C_1 : nat_{S_2}^C(\tau_i) = nat_{S_1}^C(\tau_i)$. Donc $nat_{S_2}^R = nat_{S_1}^R$.
-
-\item Pour tout $\tau_i \in \tau^R : rct_{S_1}^R(\tau_i) = C_i(\chi_i) = rct_{S_2}^R(\tau_i)$.
-
-
-\item Pour tout $\tau_i \notin \tau^R$ : 
-
-\begin{enumerate}
-\item Pour $\tau_i$ avec $done_{S_1}^R = True$ alors $done_{S_1}^C = True$ et $rct_{S_1}^R(\tau_i) = rct_{S_1}^C(\tau_i),\ rct_{S_2}^R(\tau_i) = rct_{S_2}^C(\tau_i)$. D'où, comme $S^C_2 \succeq_{worse} S^C_1 $ et $done_{S_1}^C = True : rct_{S_2}^C(\tau_i) = rct_{S_1}^C(\tau_i)$. Donc $rct_{S_2}^R(\tau_i) = rct_{S_1}^R(\tau_i)$.
-
-\item Pour $\tau_i$ avec $rct_{S_1}^R = 0$ alors $rct_{S_1}^C = 0$ et $rct_{S_1}^R(\tau_i) = rct_{S_1}^C(\tau_i),\ rct_{S_2}^R(\tau_i) = rct_{S_2}^C(\tau_i)$. D'où, comme $S^C_2 \succeq_{worse} S^C_1 $ et $rct_{S_1}^C = 0 : rct_{S_2}^C(\tau_i) = rct_{S_1}^C(\tau_i)$. Donc $rct_{S_2}^R(\tau_i) = rct_{S_1}^R(\tau_i)$.
-
-\item Pour $\tau_i$ avec $rct_{S_1}^R > 0 \wedge done_{S_1}^R = False$ : $rct_{S_1}^R(\tau_i) = rct_{S_1}^C(\tau_i), rct_{S_2}^R(\tau_i) = rct_{S_2}^C(\tau_i)$, et, comme $S^C_2 \succeq_{worse} S^C_1 : rct_{S_2}^C(\tau_i) \geq rct_{S_1}^C(\tau_i)$. Donc $rct_{S_2}^R(\tau_i) \geq rct_{S_1}^R(\tau_i)$
-
-
-\end{enumerate} 
-\end{enumerate} 
-
-
-Il est maintenant établi que $S^R_2 \succeq_{worse} S^R_1$ ce qui prouve bien que tout les états intermédiaires nécessaire à la présence de l'arc $(S_1, S_1')$ sont bien simulés par ceux généré par le lien $(S_2, S_2)'$ ssi $S_2 \succeq_{worse} S_1$.\\
-
-Pour terminer la démonstration il reste à prouver que si $S_2 \succeq_{worse} S_1$ et $S_1 \in Fail_\tau$ alors $S_2 \in Fail_\tau$ aussi. Soit $\tau_i$ une tâche tel que $Laxity_{S_1}(\tau_i) = nat_{S_1}(\tau_i) -T_i + D_i - rct_{S_1}(\tau_i) < 0$. Puisque $S_2 \succeq_{worse} S_1 : rct_{S_2}(\tau_i) \geq rct_{S_1}(\tau_i), nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$. D'où $Laxity_{S_2}(\tau_i) = nat_{S_2}(\tau_i) -T_i + D_i - rct_{S_2}(\tau_i) \leq Laxity_{S_1}(\tau_i) < 0$ et donc $S_2 \in Fail_\tau$.
-
-\end{proof}
-
-\subsubsection{Simulation de tâche oisive}
+\subsection{Simulation de tâche oisive}
 
 \begin{defin}[Simulation de tâche oisive]
-\label{idlesim}
-Soit $\tau$ un ensemble de tâche sporadique de criticité mixte. Le préordre de tâche oisive $\succeq_{idle} \subseteq State(\tau)\times State(\tau)$ est tel que pour tout $S_1, S_2 : S_1 \succeq_{idle}S_2$ ssi:
+\label{idle:sim}
+Soit $\tau$ un ensemble de tâche sporadique de criticité mixte. Le préordre de tâche oisive $\succeq_{idle} \subseteq State(\tau)\times State(\tau)$ est tel que pour tout $S_1, S_2 : S_2 \succeq_{idle}S_1$ ssi:
 \begin{itemize}
-\item $crit_{S_1} = crit_{S_2}$
-\item $done_{S_1} = done_{S_2}$
-\item $rct_{S_1} = rct_{S_2}$
-\item Pour tout $\tau_i$ tel que $done_{S_1}(\tau_i) : nat_{S_1}(\tau_i) \leq nat_{S_2}(\tau_i)$
-\item Pour tout $\tau_i$ tel que $!done_{S_1}(\tau_i) : nat_{S_1}(\tau_i) = nat_{S_2}(\tau_i)$
+\item $crit_{S_2} = crit_{S_1}$
+\item $done_{S_2} = done_{S_1}$
+\item $rct_{S_2} = rct_{S_1}$
+\item Pour tout $\tau_i$ tel que $done_{S_1}(\tau_i) = True : nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i)$
+\item Pour tout $\tau_i$ tel que $done_{S_1}(\tau_i) = False : nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$
 \end{itemize}
 Cette relation est transitive et réflexive, il s'agit donc bien d'un préordre. La relation défini aussi un ordre partiel sur $Active(S)$ car celle ci est anti-symétrique.
 Remarquons que $Active(S_1) = Active (S_2)$ puisque $done_{S_1} = done_{S_2}$
 \end{defin}
 
 \begin{lem}
-\label{runeq}
-Si $S_1$ et $S_2$ sont est états tel que $S_1 \succeq_{idle}S_2$ et $Run$ un ordonnanceur sans mémoire alors $Run (S_1) = Run(S_2)$.
+\label{idle:runeq}
+Si $S_1$ et $S_2$ sont est états tel que $S_2 \succeq_{idle}S_1$ et $Run$ un ordonnanceur sans mémoire alors $Run (S_2) = Run(S_1)$.
 \end{lem}
-\begin{proof} Par \autoref{idlesim}: $S_2 \succeq_{idle} S_1$ implique que $Active(S_1) = Active(S_2)$. Soit $\tau_i$ un tâche faisant partie de $Active(S_1)$, d'où $done_{S_1}(\tau_i) = False$. Dans ce cas, et puisque $S_2 \succeq_{idle} S_1$, on en conclu que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$, $nat_{S_1}(\tau_i) = nat_{S_1}(\tau_i)$, $rct_{S_1}(\tau_i) = rct_{S_1}(\tau_i)$ et que $crit_{S_1} = crit_{S_2}$ pour tout $\tau_i \in Active(S_1)$. Donc, comme $Run$ est sans mémoire par hypothèse, $Run(S_1) = Run(S_2)$.
+\begin{proof} Par \autoref{idle:sim}: $S_2 \succeq_{idle} S_1$ implique que $Active(S_2) = Active(S_1)$. Soit $\tau_i$ un tâche faisant partie de $Active(S_1)$, d'où $done_{S_1}(\tau_i) = False$. Dans ce cas, et puisque $S_2 \succeq_{idle} S_1$, on en conclu que $done_{S_2}(\tau_i) = done_{S_1}(\tau_i)$, $nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$, $rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i)$ et que $crit_{S_2} = crit_{S_1}$ pour tout $\tau_i \in Active(S_1)$. Donc, comme $Run$ est sans mémoire par hypothèse, $Run(S_1) = Run(S_2)$.
 \end{proof}
 
 \begin{lem}
-\label{impdoneeq}
-Si $S_1$ et $S_2$ sont est états tel que $S_1 \succeq_{idle}S_2$ alors $ImplicitelyDone(S_1) = ImplicitelyDone(S_2)$.
+\label{idle:impdoneeq}
+Si $S_1$ et $S_2$ sont est états tel que $S_2 \succeq_{idle} S_1$ alors $ImplicitelyDone(S_2) = ImplicitelyDone(S_1)$.
 \end{lem}
-\begin{proof} Par \autoref{idlesim}: $S_2 \succeq_{idle} S_1$ implique que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$, $rct_{S_1}(\tau_i) = rct_{S_1}(\tau_i)$ et que $crit_{S_1} = crit_{S_2}$ pour tout $\tau_i \in \tau$. D'où $ImplicitelyDone(S_1) = ImplicitelyDone(S_2)$.
+\begin{proof} Par \autoref{idle:sim}: $S_2 \succeq_{idle} S_1$ implique que $done_{S_2}(\tau_i) = done_{S_1}(\tau_i)$, $rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i)$ et que $crit_{S_2} = crit_{S_1}$ pour tout $\tau_i \in \tau$. D'où $ImplicitelyDone(S_2) = ImplicitelyDone(S_1)$.
 \end{proof}
 
 \begin{lem}
-\label{criteq}
-Si $S_1$ et $S_2$ sont est états tel que $S_1 \succeq_{idle} S_2$ alors $Critical_{S_1} = Critical_{S_2}$.
+\label{idle:criteq}
+Si $S_1$ et $S_2$ sont est états tel que $S_2 \succeq_{idle} S_1$ alors $Critical_{S_2} = Critical_{S_1}$.
 \end{lem}
-\begin{proof} Par \autoref{idlesim}: $S_2 \succeq_{idle} S_1$ implique que $Active(S_1) = Active(S_2)$, $crit_{S_1} = crit_{S_2}$ et que $rct_{S_1}(\tau_i) = rct_{S_1}(\tau_i)$ pour tout $\tau_i \in \tau$. D'où $Critical_{S_1} = Critical_{S_2}$.
+\begin{proof} Par \autoref{idle:sim}: $S_1 \succeq_{idle} S_2$ implique que $Active(S_2) = Active(S_1)$, $crit_{S_2} = crit_{S_1}$ et que $rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i)$ pour tout $\tau_i \in \tau$. D'où $Critical_{S_2} = Critical_{S_1}$.
 \end{proof}
 
 
@@ -1370,30 +1217,30 @@ Si $S_1$ et $S_2$ sont est états tel que $S_1 \succeq_{idle} S_2$ alors $Critic
 
 
 \begin{lem}
-\label{elisuper}
-Si $S_1$ et $S_2$ sont deux états tel que $S_1 \succeq_{idle}S_2$ alors $Eligible(S_1) \supseteq Eligible(S_2)$.
+\label{idle:elisuper}
+Si $S_1$ et $S_2$ sont deux états tel que $S_2 \succeq_{idle}S_1$ alors $Eligible(S_2) \supseteq Eligible(S_21$.
 \end{lem}
-\begin{proof} Prouvons que toute tâche $\tau_i \in Eligible(S_2) \rightarrow \tau_i \in Eligible(S_1)$. Puisque $\tau_i \in Eligible(S_2)$, on a $done_{S_2}(\tau_i) = True$,  $crit_{S_2} \leq \chi_i$, et $nat_{S_2}(\tau_i) \leq 0$ par définition de $Eligible$. Donc, puisque $S_1 \succeq_{idle}S_2$, $done_{S_1}(\tau_i) = done_{S_2}(\tau_i) = True$,  $crit_{S_1} = crit_{S_2} \leq \chi_i$ et $nat_{S_1}(\tau_i) \leq nat_{S_2}(\tau_i) \leq 0$ par définition de $\succeq_{idle}$. D'où $\tau_i \in Eligible(S_1)$.
+\begin{proof} Prouvons que toute tâche $\tau_i \in Eligible(S_1) \rightarrow \tau_i \in Eligible(S_2)$. Puisque $\tau_i \in Eligible(S_1)$, on a $done_{S_1}(\tau_i) = True$,  $crit_{S_1} \leq \chi_i$, et $nat_{S_1}(\tau_i) \leq 0$ par définition de $Eligible$. Donc, puisque $S_2 \succeq_{idle}S_1$, $done_{S_2}(\tau_i) = done_{S_1}(\tau_i) = True$,  $crit_{S_2} = crit_{S_1} \leq \chi_i$ et $nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i) \leq 0$ par définition de $\succeq_{idle}$. D'où $\tau_i \in Eligible(S_2)$.
 \end{proof}
 
 \begin{defin}
-\label{reqanalogue}
-Soit $S_1$ et $S_2$ deux états tel que $S_1 \succeq_{idle}S_2$ et $\tau^R \subseteq Eligible(S_2)$. Alors, pour tout $\overline{S}_2\in S_2^{\tau^R}$, un état  $\overline{S}_1\in S_1^{\tau^R}$ est appelé $analogue\ \tau^R-oisif$ de $\overline{S}_2$ ssi:
+\label{idle:reqanalogue}
+Soit $S_1$ et $S_2$ deux états tel que $S_2 \succeq_{idle} S_1$ et $\tau^R \subseteq Eligible(S_1)$. Alors, pour tout $\overline{S}_1\in S_1^{\tau^R}$, un état  $\overline{S}_2\in S_2^{\tau^R}$ est appelé $analogue\ \tau^R-oisif$ de $\overline{S}_1$ ssi:
 \begin{center}
-$\forall \tau_i \in \tau^R : nat_{\overline{S}_1}(\tau_i) = nat_{\overline{S}_2}(\tau_i) $
+$\forall \tau_i \in \tau^R : nat_{\overline{S}_2}(\tau_i) = nat_{\overline{S}_1}(\tau_i) $
 \end{center}
 \end{defin}
 
 \begin{lem}
 \label{reqanalogueeq}
-Soit $S_1$ et $S_2$ deux états tel que $S_1 \succeq_{idle} S_2$ et $\tau^R \subseteq Eligible(S_2)$ un sous-ensemble de tache. Alors, pour tout $\overline{S}_2 \in S_2^{\tau^R}$ il y a un $analogue\ \tau^R-oisif\ \overline{S}_1 \in S_1^{\tau^R}$ de $\overline{S}_2$.
+Soit $S_1$ et $S_2$ deux états tel que $S_2 \succeq_{idle} S_1$ et $\tau^R \subseteq Eligible(S_1)$ un sous-ensemble de tache. Alors, pour tout $\overline{S}_1 \in S_1^{\tau^R}$ il y a un $analogue\ \tau^R-oisif\ \overline{S}_2 \in S_2^{\tau^R}$ de $\overline{S}_1$.
 \end{lem}
 \begin{proof}
-\autoref{treq} et \autoref{idlesim} pose que pour tout $\tau_i \in \tau^R \subseteq Eligible(S_2)$ on a $nat_{S_1}(\tau_i) \leq nat_{S_2}(\tau_i) \leq 0$, $rct_{S_1}(\tau_i) = rct_{S_2}(\tau_i) = 0$, $done_{S_1}(\tau_i) = done_{S_2}(\tau_i) = True$ et que $crit_{S_1} = crit_{S_2}$. Par définition, tout $\overline{S}_2 \in S^{\tau^R}_2$ satisfait :
+\autoref{treq} et \autoref{idle:sim} pose que pour tout $\tau_i \in \tau^R \subseteq Eligible(S_1)$ on a $nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i) \leq 0$, $rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i) = 0$, $done_{S_2}(\tau_i) = done_{S_1}(\tau_i) = True$ et que $crit_{S_2} = crit_{S_1}$. Par définition, tout $\overline{S}_1 \in S^{\tau^R}_1$ satisfait :
 \begin{center}
-$\forall \tau_i \in \tau^R : nat_{\overline{S}_2}(\tau_i) \in I^i_2=[nat_{S_2}(\tau_i)+T_i, T_i] $
+$\forall \tau_i \in \tau^R : nat_{\overline{S}_1}(\tau_i) \in I^i_1=[nat_{S_1}(\tau_i)+T_i, T_i] $
 \end{center}
-De manière similaire, par définition $X$, pour tout vecteur $(k_1, k_2, ..., k_n)(ou\ n = |\tau^R|)$ tel que pour tout $1\leq i \leq n: k_i \in I^i_1=[nat_{S_1}(\tau_i)+T_i, T_i]$, il existe $\overline{S}_1\in S^{\tau^R}_1$ avec $nat_{\overline{S}_1}(\tau_i) = k_i$ pour tout $1\leq i \leq n$. C'est à dire qu'à chaque fois qu'un vecteur $(k_1, k_2, ..., k_n)$ de valeurs dans $I_1^1 \times I_1^2 \times ... \times I_1^n$ est fixé, il est possible de trouver un état $\overline{S}_1 \in S^{\tau^R}_1$ tel que le $nat$ de chaque tâche $\tau_i$ est exactement $k_i$. Cependant, comme $nat_{S_1}(\tau_i) \leq nat_{S_2}(\tau_i)$ pour tout $1\leq i \leq n$ on en conclu que $nat_{S_2}(\tau_i) \in I^i_2 \subseteq I^i_1$ pour tout $1\leq i \leq n$. Dés lors, le vecteur $nat_{\overline{S}_2}(\tau_1), nat_{\overline{S}_2}(\tau_2), ..., nat_{\overline{S}_2}(\tau_n)$ est dans $I_1^1 \times I_1^2 \times ... \times I_1^n$. D'où il existe $\overline{S}_1 \in S^{\tau^R}_1$ tel que pour tout $1\leq i \leq n : nat_{\overline{S}_1}(\tau_i) = nat_{\overline{S}_2}(\tau_i)$
+De manière similaire, par définition $X$, pour tout vecteur $(k_1, k_2, ..., k_n)(ou\ n = |\tau^R|)$ tel que pour tout $1\leq i \leq n: k_i \in I^i_2=[nat_{S_1}(\tau_i)+T_i, T_i]$, il existe $\overline{S}_2\in S^{\tau^R}_2$ avec $nat_{\overline{S}_2}(\tau_i) = k_i$ pour tout $1\leq i \leq n$. C'est à dire qu'à chaque fois qu'un vecteur $(k_1, k_2, ..., k_n)$ de valeurs dans $I_2^1 \times I_2^2 \times ... \times I_2^n$ est fixé, il est possible de trouver un état $\overline{S}_2 \in S^{\tau^R}_2$ tel que le $nat$ de chaque tâche $\tau_i$ est exactement $k_i$. Cependant, comme $nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i)$ pour tout $1\leq i \leq n$ on en conclu que $nat_{S_1}(\tau_i) \in I^i_1 \subseteq I^i_2$ pour tout $1\leq i \leq n$. Dés lors, le vecteur $nat_{\overline{S}_1}(\tau_1), nat_{\overline{S}_1}(\tau_2), ..., nat_{\overline{S}_1}(\tau_n)$ est dans $I_2^1 \times I_2^2 \times ... \times I_2^n$. D'où il existe $\overline{S}_2 \in S^{\tau^R}_2$ tel que pour tout $1\leq i \leq n : nat_{\overline{S}_2}(\tau_i) = nat_{\overline{S}_1}(\tau_i)$
 \end{proof}
 
 
@@ -1406,42 +1253,58 @@ Soit $\tau$ un ensemble de tâche sporadique à mixité critique and $Run$ un or
 \begin{proof}
 Soit $S_1, S'_1$ et $S_2$ trois état dans $States(\tau)$ tel que $(S_1, S_1') \in E$ et $S_2 \succeq_{idle}S_1$, montrons qu'il existe $S_2' \in States(\tau)$ avec $(S_2, S_2') \in E$ and $S_2' \succeq_{idle} S_1'$.\\
 
-Puisque $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Active(S^{+}_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1'$.\\
+Puisque $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Run(S_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1'$.\\
 
-Par \autoref{idlesim}, $S_2 \succeq_{idle} S_1$ implique que $Active(S_1) = Active(S_2)$. Soit $\tau_i$ un tâche faisant partie de $Active(S_1)$, d'où $done_{S_1}(\tau_i) = False$. Dans ce cas, et puisque $S_2 \succeq_{idle} S_1$, on en conclu que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$, $nat_{S_1}(\tau_i) = nat_{S_1}(\tau_i)$, $rct_{S_1}(\tau_i) = rct_{S_1}(\tau_i)$ et que $crit_{S_1} = crit_{S_2}$ pour tout $\tau_i \in Active(S_1)$. Donc, comme $Run$ est sans mémoire par hypothèse, $Run(S_1) = Run(S_2)$. Soit $S^+_1$ l'état unique tel que $S_1\xrightarrow{Run}S^{+}_1$, montrons qu'il existe $S^+_2$ tel que $S_2\xrightarrow{Run}S^{+}_2$ et que $S^+_2 \succeq_{idle} S^+_1$.
+Par \autoref{idle:sim} et \autoref{idle:runeq}, $S_2 \succeq_{idle} S_1$ implique que $Active(S_2) = Active(S_1)$ et $Run(S_2) = Run(S_1)$. Soit $S^+_1$ l'état unique tel que $S_1\xrightarrow{Run}S^{+}_1$, montrons qu'il existe $S^+_2$ tel que $S_2\xrightarrow{Run}S^{+}_2$ et que $S^+_2 \succeq_{idle} S^+_1$.
 \begin{enumerate}
 
-\item Pour tout $\tau_i \in Run(S_1) = Run(S_2) : rct_{S_1}^+(\tau_i) = rct_{S_1}(\tau_i) -1, rct_{S_2}^+(\tau_i) = rct_{S_2}(\tau_i) -1$. Puisque $S_2 \succeq_{idle} S_1$, on sait que $rct_{S_1} = rct_{S_2}$. D'où $rct_{S_2}^+(\tau_i) = rct_{S_1}^+(\tau_i)$. Pour une tâche $\tau_1 \notin Run(S_1) = Run(S_2) : rct_1^+(\tau_i) = rct_1(\tau_i), rct_2^+(\tau_i) = rct_2(\tau_i)$. D'où $rct_{S_2}^+(\tau_i) = rct_{S_1}^+(\tau_i)$. On en conclut alors que $rct_{S_2}^+ = rct_{S_1}^+$.
 
-
-\item Pour tout  $\tau_i \in \tau : done_{S_1}^+(\tau_i) = done_{S_1}(\tau_i), done_{S_2}^+(\tau_i) = done_{S_2}(\tau_i)$. Puisque $S_2 \succeq_{idle} S_1$, on a aussi que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$. On en conclu que $done_{S_1}^+ = done_{S_2}^+$.
+\item \label{idle:exe:done} Pour tout  $\tau_i \in \tau : done_{S_1}^+(\tau_i) = done_{S_1}(\tau_i), done_{S_2}^+(\tau_i) = done_{S_2}(\tau_i)$. Puisque $S_2 \succeq_{idle} S_1$, on a aussi que $done_{S_1}(\tau_i) = done_{S_2}(\tau_i)$. On en conclu que $done_{S_1}^+ = done_{S_2}^+$.
 
 \item $crit_{S_1}^+ = crit_{S_1}, crit_{S_2}^+ = crit_{S_2}$. Puisque $S_2 \succeq_{idle} S_1$, on a aussi que $crit_{S_1} = crit_{S_2}$. On en conclu que $crit_{S_1}^+ = crit_{S_2}^+$.
 
-\item Soit $\tau_i$ un tâche tel que $done_{S_1}^+(\tau_i) = True : nat_{S_1}^+ = max(nat_{S_1}(\tau_i)-1, 0)$ et $nat_{S_2}^+ = max(nat_{S_2}(\tau_i)-1, 0)$. Cependant, comme $S_2 \succeq_{idle} S_1$, on sait que $nat_{S_2} \leq nat_{S_1}$. On en conclu que $nat_{S_2}^+ \leq nat_{S_1}^+$.
+\item Pour tout $\tau_i \in Run(S_1) = Run(S_2) : rct_{S_1}^+(\tau_i) = rct_{S_1}(\tau_i) -1, rct_{S_2}^+(\tau_i) = rct_{S_2}(\tau_i) -1$. Puisque $S_2 \succeq_{idle} S_1$, on sait que $rct_{S_1} = rct_{S_2}$. D'où $rct_{S_2}^+(\tau_i) = rct_{S_1}^+(\tau_i)$.\\
+Pour une tâche $\tau_1 \notin Run(S_1) = Run(S_2) : rct_{S_1}^+(\tau_i) = rct_{S_1}(\tau_i), rct_{S_2}^+(\tau_i) = rct_{S_2}(\tau_i)$. D'où $rct_{S_2}^+(\tau_i) = rct_{S_1}^+(\tau_i)$. On en conclut alors que $rct_{S_2}^+ = rct_{S_1}^+$.
 
-\item Soit $\tau_i$ un tâche tel que $done_{S_1}^+(\tau_i) = False : nat_{S_1}^+ = nat_{S_1}(\tau_i)-1$ et $nat_{S_2}^+ = nat_{S_2}(\tau_i)-1$. Cependant, comme $S_2 \succeq_{idle} S_1$, on sait que $nat_{S_2} \leq nat_{S_1}$. On en conclu que $nat_{S_2}^+ \leq nat_{S_1}^+$. Comme $done_{S_1}^+(\tau_i) = False$, $done_{S_1}(\tau_i) = False$ aussi car une tâche ne peut signaler sa complétion qu'après une exécution. Puisque $S_2 \succeq_{idle} S_1$, on a aussi que $nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$. On en conclu que $nat_{S_2}^+(\tau_i) = nat_{S_1}^+(\tau_i)$.
+\item Soit $\tau_i$ un tâche tel que $done_{S_1}^+(\tau_i) = True$, on sait que $done_{S_2}(\tau_i) = done_{S_1}(\tau_i) = True$ par \autoref{idle:exe:done}. Dès lors $nat_{S_1}^+ = max(nat_{S_1}(\tau_i)-1, 0)$ et $nat_{S_2}^+ = max(nat_{S_2}(\tau_i)-1, 0)$. Cependant, comme $S_2 \succeq_{idle} S_1$ et $done_{S_1}(\tau_i) = True$, on sait que $nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i)$. On en conclu que $nat_{S_2}^+(\tau_i) \leq nat_{S_1}^+(\tau_i)$.
+
+\item Soit $\tau_i$ un tâche tel que $done_{S_1}^+(\tau_i) = False$, on sait que $done_{S_2}(\tau_i) = done_{S_1}(\tau_i) = False$ par \autoref{idle:exe:done}. Dès lors $ nat_{S_1}^+ = nat_{S_1}(\tau_i)-1$ et $nat_{S_2}^+ = nat_{S_2}(\tau_i)-1$. Cependant, comme $S_2 \succeq_{idle} S_1$ et $done_{S_1}(\tau_i) = False$, on sait que $nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$. On en conclu que $nat_{S_2}^+(\tau_i) = nat_{S_1}^+(\tau_i)$. On en conclu que $nat_{S_2}^+(\tau_i) = nat_{S_1}^+(\tau_i)$.
 \end{enumerate}
+
+
 Par \autoref{texec}. Il est maintenant établi que $S^+_2 \succeq_{idle} S^+_1$.\\
 
-Par le \autoref{runeq} et le \autoref{impdoneeq}, nous obtenons que $Run(S^+_1) = Run(S^+_2)$ et que $ImplicitelyDone(S^+_1) = ImplicitelyDone(S_2^+)$.
-Prouvons maintenant que, pour tout $\tau^T\subseteq Run(S_1^+) \cup ImplicitelyDone(S_1^+)$ menant à $S_1^+ \xrightarrow{\tau^T} S_1^T$, il existe un $S_2^T$ tel que $S_2^+ \xrightarrow{\tau^T} S_2^T$ et $S_2^T \succeq_{idle} S_1^T$.
+Par le \autoref{idle:runeq} et le \autoref{idle:impdoneeq}, nous obtenons que $Run(S_1) = Run(S_2)$ et que $ImplicitelyDone(S^+_1) = ImplicitelyDone(S_2^+)$.
+Prouvons maintenant que, pour tout $\tau^T\subseteq Run(S_1) \cup ImplicitelyDone(S_1^+)$ menant à $S_1^+ \xrightarrow{\tau^T} S_1^T$, il existe un $S_2^T$ tel que $S_2^+ \xrightarrow{\tau^T} S_2^T$ et $S_2^T \succeq_{idle} S_1^T$.
 \begin{enumerate}
 
 \item Par la \autoref{tterm} on a $crit_{S_1}^T = crit_{S_1}^+$ et $crit_{S_2}^T = crit_{S_2}^+$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $crit_{S_2}^+= crit_{S_1}^+$. On en conclu que $crit_{S_2}^T= crit_{S_1}^T$.
 
+\item \label{idle:term:done} Par la \autoref{tterm}, pour tout $\tau_i \in Run(S_1^+) \cup ImplicitelyDone(S_1^+) : done_{S_1}^T(\tau_i) = True = done_{S_2}^T(\tau_i)$.\\ Pour tout $\tau_i \notin Run(S_1^+) \cup ImplicitelyDone(S_1^+)$ on a $done_{S_1}^T(\tau_i) = done_{S_1}^+(\tau_i)$ et $done_{S_2}^T(\tau_i) = done_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $done_{S_2}^+(\tau_i)= done_{S_1}^+(\tau_i)$. D'où $done_{S_2}^T(\tau_i) = done_{S_1}^T(\tau_i)$. On en conclu que $done_{S_2}^T = done_{S_1}^T$.
+
 \item Par la \autoref{tterm}, pour tout $\tau_i \in Run(S_1^+) \cup ImplicitelyDone(S_1^+) : rct_{S_1}^T(\tau_i) = 0 = rct_{S_2}^T(\tau_i)$.\\ Pour tout $\tau_i \notin Run(S_1^+) \cup ImplicitelyDone(S_1^+)$ on a $rct_{S_1}^T(\tau_i) = rct_{S_1}^+(\tau_i)$ et $rct_{S_2}^T(\tau_i) = rct_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $rct_{S_2}^+(\tau_i)= rct_{S_1}^+(\tau_i)$. D'où $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$. On en conclu que $rct_{S_2}^T = rct_{S_1}^T$.
 
+\item Par la \autoref{tterm}, pour tout $\tau_i \in \tau$ :
 
-\item Par la \autoref{tterm}, pour tout $\tau_i \in Run(S_1^+) \cup ImplicitelyDone(S_1^+) : done_{S_1}^T(\tau_i) = True = done_{S_2}^T(\tau_i)$.\\ Pour tout $\tau_i \notin Run(S_1^+) \cup ImplicitelyDone(S_1^+)$ on a $done_{S_1}^T(\tau_i) = done_{S_1}^+(\tau_i)$ et $done_{S_2}^T(\tau_i) = done_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $done_{S_2}^+(\tau_i)= done_{S_1}^+(\tau_i)$. D'où $done_{S_2}^T(\tau_i) = done_{S_1}^T(\tau_i)$. On en conclu que $done_{S_2}^T = done_{S_1}^T$.
+\begin{equation}
+nat_{S_1}^T(\tau_i) = nat_{S_1}^+(\tau_i)\ et\ nat_{S_2}^T(\tau_i) = nat_{S_2}^+(\tau_i)
+\end{equation}
+
+\begin{enumerate}
+\item pour tout $\tau_i \in \tau$ avec $done_{S_1}^T = False$ on sait que $done_{S_2}^+ = done_{S_1}^+ = False$ car cette transition n'active jamais une tâche, voir \autoref{idle:term:done}. Comme $S^+_2 \succeq_{idle} S^+_1$ et $done_{S_1}^+ = False$ on a $nat_{S_2}^+(\tau_i)= nat_{S_1}^+(\tau_i)$. On en conclu que $nat_{S_2}^T(\tau_i) = nat_{S_1}^T(\tau_i)$.
+
+\item pour tout $\tau_i \in \tau$ avec $done_{S_1}^T = True$
+\begin{itemize}
+\item Soit $done_{S_2}^+ = done_{S_1}^+ = False$ et donc $nat_{S_2}^+(\tau_i)= nat_{S_1}^+(\tau_i)$ car $S^+_2 \succeq_{idle} S^+_1$, d'où $nat_{S_2}^T(\tau_i) \le nat_{S_1}^T(\tau_i)$
+\item Soit $done_{S_2}^+ = done_{S_1}^+ = True$ et donc $nat_{S_2}^+(\tau_i)\le nat_{S_1}^+(\tau_i)$ car $S^+_2 \succeq_{idle} S^+_1$, d'où $nat_{S_2}^T(\tau_i) \le nat_{S_1}^T(\tau_i)$
+\end{itemize}
+\end{enumerate}
 
 
-\item Par la \autoref{tterm}, pour tout $\tau_i \in \tau$ avec $done_{S_1}^T = True$ on a $nat_{S_1}^T(\tau_i) = nat_{S_1}^+(\tau_i)$ et $nat_{S_2}^T(\tau_i) = nat_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $nat_{S_2}^+(\tau_i)\leq nat_{S_1}^+(\tau_i)$. On en conclu que $nat_{S_2}^T(\tau_i) \leq nat_{S_1}^T(\tau_i)$.
-\item Par la \autoref{tterm}, pour tout $\tau_i \in \tau$ avec $done_{S_1}^T = False$ on a $nat_{S_1}^T(\tau_i) = nat_{S_1}^+(\tau_i)$ et $nat_{S_2}^T(\tau_i) = nat_{S_2}^+(\tau_i)$. Si $done^T_{S_1} = False$ alors $done^+_{S_1} = False$ car la complétion d'une tâche respectant les conditions ci-dessus n'est jamais annulée par cette transition. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $nat_{S_2}^+(\tau_i)= nat_{S_1}^+(\tau_i)$. On en conclu que $nat_{S_2}^T(\tau_i) = nat_{S_1}^T(\tau_i)$.
 \end{enumerate}
 Il est maintenant établi que $S^T_2 \succeq_{idle} S^T_1$.\\
 
-Par le \autoref{criteq}, nous obtenons que $Critical_{S_1^T} = Critical_{S_2^T}$. Prouvons maintenant que pour l'unique état $S_1^C$ tel que $S^{T}_1\xrightarrow{C}S^{C}_1$, il existe $S_2^C$ tel que $S^{T}_2\xrightarrow{C}S^{C}_2$ et $S^C_2 \succeq_{idle} S^C_1$.
+Par le \autoref{idle:criteq}, nous obtenons que $Critical_{S_2^T} = Critical_{S_1^T}$. Prouvons maintenant que pour l'unique état $S_1^C$ tel que $S^{T}_1\xrightarrow{C}S^{C}_1$, il existe $S_2^C$ tel que $S^{T}_2\xrightarrow{C}S^{C}_2$ et $S^C_2 \succeq_{idle} S^C_1$.
 
 \begin{enumerate}
 
@@ -1459,7 +1322,7 @@ Par le \autoref{criteq}, nous obtenons que $Critical_{S_1^T} = Critical_{S_2^T}$
 \begin{enumerate}[label=(\alph*)]
 
 %done
-\item $done_{S_1}^C(\tau_i) = done_{S_1}^T(\tau_i)$ et $done_{S_2}^C(\tau_i) = done_{S_2}^T(\tau_i)$. Et puisque $S^T_2 \succeq_{idle} S^T_1$ on a $done_{S_2}^T(\tau_i)= done_{S_1}^T(\tau_i)$. On en conclu que $done_{S_2}^C(\tau_i) = done_{S_1}^C(\tau_i)$.
+\item \label{idle:crit:done} $done_{S_1}^C(\tau_i) = done_{S_1}^T(\tau_i)$ et $done_{S_2}^C(\tau_i) = done_{S_2}^T(\tau_i)$. Et puisque $S^T_2 \succeq_{idle} S^T_1$ on a $done_{S_2}^T(\tau_i)= done_{S_1}^T(\tau_i)$. On en conclu que $done_{S_2}^C(\tau_i) = done_{S_1}^C(\tau_i)$.
 
 
 %rct
@@ -1468,67 +1331,113 @@ Par le \autoref{criteq}, nous obtenons que $Critical_{S_1^T} = Critical_{S_2^T}$
 
 
 %nat
-\item Pour tout $\tau_i$ avec $done^C_{S_1} = True : nat_{S_1}^C(\tau_i) = nat_{S_1}^T(\tau_i)$ et $nat_{S_2}^C(\tau_i) = nat_{S_2}^T(\tau_i)$. Et puisque $S^T_2 \succeq_{idle} S^T_1$ on a $nat_{S_2}^T(\tau_i)\leq nat_{S_1}^T(\tau_i)$. On en conclu que $nat_{S_2}^C(\tau_i) \leq nat_{S_1}^C(\tau_i)$.
+\item Par la \autoref{tcrit}, pour tout $\tau_i \in \tau$ :
 
-\item Pour tout $\tau_i$ avec $done^C_{S_1} = False : nat_{S_1}^C(\tau_i) = nat_{S_1}^T(\tau_i)$ et $nat_{S_2}^C(\tau_i) = nat_{S_2}^T(\tau_i)$. Si $done^C_{S_1} = False$ alors $done^T_{S_1} = False$ car la complétion d'une tâche respectant les conditions ci-dessus n'est pas modifiée par cette transition.  Et puisque $S^T_2 \succeq_{idle} S^T_1$ on a $nat_{S_2}^T(\tau_i)= nat_{S_1}^T(\tau_i)$. On en conclu que $nat_{S_2}^C(\tau_i) = nat_{S_1}^C(\tau_i)$.
+\begin{equation}
+nat_{S_1}^C(\tau_i) = nat_{S_1}^T(\tau_i)\ et\ nat_{S_2}^C(\tau_i) = nat_{S_2}^T(\tau_i)
+\end{equation}
+
+\begin{itemize}
+
+\item Pour tout $\tau_i$ avec $done^C_{S_1} = True$, on sait que $done_{S_2}^T(\tau_i) = done_{S_1}^T(\tau_i) = True$ par \autoref{idle:crit:done}. Puisque $S^T_2 \succeq_{idle} S^T_1$ on a $nat_{S_2}^T(\tau_i)\leq nat_{S_1}^T(\tau_i)$. On en conclu que $nat_{S_2}^C(\tau_i) \leq nat_{S_1}^C(\tau_i)$.
+
+\item Pour tout $\tau_i$ avec $done^C_{S_1} = False$, on sait que $done_{S_2}^T(\tau_i) = done_{S_1}^T(\tau_i) = False$ par \autoref{idle:crit:done}. Puisque $S^T_2 \succeq_{idle} S^T_1$ on a $nat_{S_2}^T(\tau_i) = nat_{S_1}^T(\tau_i)$. On en conclu que $nat_{S_2}^C(\tau_i) = nat_{S_1}^C(\tau_i)$.
+
+\end{itemize}
+
 \end{enumerate}
 
 \end{enumerate}
 Il est maintenant établi que $S^C_2 \succeq_{idle} S^C_1$.\\
 
-Rappelons que comme $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Active(S^{+}_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1^R=S_1'$ par la \autoref{autospo}. Soit $S_2^R$, un $analogue\ \tau^R-oisif$ de $S_1^R$ (qui existe de par le \autoref{reqanalogueeq}), prouvons que $S_2^R \succeq_{idle} S_1^R$.
+Rappelons que comme $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Run(S_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1^R=S_1'$ par la \autoref{autospo}. Soit $S_2^R$, un $analogue\ \tau^R-oisif$ de $S_1^R$ (qui existe de par le \autoref{reqanalogueeq}), prouvons que $S_2^R \succeq_{idle} S_1^R$.
+
 \begin{enumerate}
-\item Pour tout $\tau_i \in \tau^R : rct_{S_1}^R(\tau_i) = C_i(\chi_i) = rct_{S_2}^R(\tau_i)$. Pour tout $\tau_i \notin \tau^R : rct_{S_1}^R(\tau_i) = rct_{S_1}^C(\tau_i), rct_{S_2}^R(\tau_i) = rct_{S_2}^C(\tau_i)$, et, comme $S^C_2 \succeq_{idle} S^C_1 : rct_{S_2}^C(\tau_i) = rct_{S_1}^C(\tau_i)$. Donc $rct_{S_2}^R = rct_{S_1}^R$.
-\item Pour tout $\tau_i \in \tau^R : done_{S_1}^R(\tau_i) = False = done_{S_2}^R(\tau_i)$. Pour tout $\tau_i \notin \tau^R : done_{S_1}^R(\tau_i) = done_{S_1}^C(\tau_i), done_{S_2}^R(\tau_i) = done_{S_2}^C(\tau_i)$, et, comme $S^C_2 \succeq_{idle} S^C_1 : done_{S_2}^C(\tau_i) = done_{S_1}^C(\tau_i)$. Donc $done_{S_2}^R = done_{S_1}^R$.
+\item Pour tout $\tau_i \in \tau^R : rct_{S_1}^R(\tau_i) = C_i(\chi_i) = rct_{S_2}^R(\tau_i)$.\\
+Pour tout $\tau_i \notin \tau^R : rct_{S_1}^R(\tau_i) = rct_{S_1}^C(\tau_i), rct_{S_2}^R(\tau_i) = rct_{S_2}^C(\tau_i)$, et, comme $S^C_2 \succeq_{idle} S^C_1 : rct_{S_2}^C(\tau_i) = rct_{S_1}^C(\tau_i)$. Donc $rct_{S_2}^R = rct_{S_1}^R$.
+
+\item \label{idle:req:done} Pour tout $\tau_i \in \tau^R : done_{S_1}^R(\tau_i) = False = done_{S_2}^R(\tau_i)$.\\
+Pour tout $\tau_i \notin \tau^R : done_{S_1}^R(\tau_i) = done_{S_1}^C(\tau_i), done_{S_2}^R(\tau_i) = done_{S_2}^C(\tau_i)$, et, comme $S^C_2 \succeq_{idle} S^C_1 : done_{S_2}^C(\tau_i) = done_{S_1}^C(\tau_i)$. Donc $done_{S_2}^R = done_{S_1}^R$.
+
 \item $crit^R_{S_1} = crit^C_{S_1}, crit^R_{S_2} = crit^C_{S_2}$. Comme $S^C_2 \succeq_{idle} S^C_1 : crit^C_{S_2} = crit^C_{S_1}$. Donc $crit^R_{S_2} = crit^R_{S_1}$.
+
 \item Pour tout $\tau_i \in \tau^R : nat_{S_1}^R(\tau_i) = nat_{S_2}^R(\tau_i)$ puisque $S_2^R$ est un $analogue\ \tau^R-oisif$ de $S_1^R$.
+
 \item Pour tout $\tau_i \notin \tau^R :$
+
 \begin{equation}
-\label{eqidleproofnat}
+\label{idle:eqidleproofnat}
 nat_{S_1}^R(\tau_i) = nat_{S_1}^C(\tau_i)\ et\ nat_{S_2}^R(\tau_i) = nat_{S_2}^C(\tau_i)
 \end{equation}
 et 
 \begin{equation}
-\label{eqidleproofdone}
+\label{idle:eqidleproofdone}
 done_{S_1}^R(\tau_i) = done_{S_1}^C(\tau_i)\ et\ done_{S_2}^R(\tau_i) = done_{S_2}^C(\tau_i)
 \end{equation}
+
 \end{enumerate}
+
 Par \autoref{treq}. On considère deux autres cas :
 \begin{enumerate}[label=(\alph*)]
-\item Si $done_{S_1}^R(\tau_i) = True$ alors $done_{S_2}^R(\tau_i) = True$ par le point 1 ci-dessus. Cependant, par \eqref{eqidleproofnat}, $done_{S_1}^C(\tau_i) = True$. Donc, comme $S^C_2 \succeq_{idle} S^C_1 : nat_{S_2}^C \leq nat_{S_1}^C$, par \autoref{idlesim}. D'où $nat_{S_2}^R(\tau_i) \leq nat_{S_1}^R(\tau_i)$.
-\item Si $done_{S_1}^R(\tau_i) = False$ alors $done_{S_2}^R(\tau_i) = False$ par le point 1 ci-dessus. Cependant, par \eqref{eqidleproofnat}, $done_{S_1}^C(\tau_i) = False$. Donc, comme $S^C_2 \succeq_{idle} S^C_1 : nat_{S_2}^C = nat_{S_1}^C$, par \autoref{idlesim}. D'où $nat_{S_2}^R(\tau_i) = nat_{S_1}^R(\tau_i)$.
+\item Si $done_{S_1}^R(\tau_i) = True$ alors $done_{S_2}^R(\tau_i) = True$ par \autoref{idle:req:done}. Cependant, par \autoref{idle:eqidleproofdone}, $done_{S_1}^C(\tau_i) = True$. Donc, comme $S^C_2 \succeq_{idle} S^C_1 : nat_{S_2}^C \leq nat_{S_1}^C$, par \autoref{idle:sim}. D'où $nat_{S_2}^R(\tau_i) \leq nat_{S_1}^R(\tau_i)$ par \autoref{idle:eqidleproofnat}.
+
+\item Si $done_{S_1}^R(\tau_i) = False$ alors $done_{S_2}^R(\tau_i) = False$ par \autoref{idle:req:done}. Cependant, par \autoref{idle:eqidleproofdone}, $done_{S_1}^C(\tau_i) = False$. Donc, comme $S^C_2 \succeq_{idle} S^C_1 : nat_{S_2}^C = nat_{S_1}^C$, par \autoref{idlesim}. D'où $nat_{S_2}^R(\tau_i) = nat_{S_1}^R(\tau_i)$ par \autoref{idle:eqidleproofnat}.
 \end{enumerate}
+
+
 Il est maintenant établi que $S^R_2 \succeq_{idle} S^R_1$ ce qui prouve bien que tout les états intermédiaires nécessaire à la présence de l'arc $(S_1, S_1')$ sont bien simulés par ceux généré par le lien $(S_2, S_2)'$ ssi $S_2 \succeq_{idle} S_1$.\\
 
-Pour terminer la démonstration il reste à prouver que si $S_2 \succeq_{idle} S_1$ et $S_1 \in Fail_\tau$ alors $S_2 \in Fail_\tau$ aussi. Soit $\tau_i$ une tâche tel que $Laxity_{S_1}(\tau_i) = nat_{S_1}(\tau_i) -T_i + D_i - rct_{S_1}(\tau_i) < 0$. Puisque $S_2 \succeq_{idle} S_1 : rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i), nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i)$. D'où $Laxity_{S_2}(\tau_i) = nat_{S_2}(\tau_i) -T_i + D_i - rct_{S_2}(\tau_i) \leq Laxity_{S_1}(\tau_i) < 0$ et donc $S_2 \in Fail_\tau$.
+Pour terminer la démonstration il reste à prouver que si $S_2 \succeq_{idle} S_1$ et $S_1 \in Fail_\tau$ alors $S_2 \in Fail_\tau$ aussi.  Soit $\tau_i$ tel que  $WorstLaxity_{S_1}(\tau_i) < 0$.\\
+
+Si $\tau_i \notin Active(S) : WorstLaxity_{S_1}(\tau_i) = nat_{S_1}(\tau_i) -T_i + D_i - rct_{S_1}(\tau_i)$\\
+Puisque $S_2 \succeq_{idle} S_1 : rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i), nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i)$. D'où $WorstLaxity{S_2}(\tau_i) = nat_{S_2}(\tau_i) -T_i + D_i - rct_{S_2}(\tau_i) \leq WorstLaxity{S_1}(\tau_i) < 0$ et donc $S_2 \in Fail_\tau$.\\
+
+Si $\tau_i \in Active(S) : WorstLaxity_{S_1}(\tau_i) = nat_{S_1}(\tau_i) -T_i + D_i - (rct_{S_1}(\tau_i) + (C_i(K)-C_i(crit_{S_1}))$\\
+Puisque $S_2 \succeq_{idle} S_1 : crit_{S_2}(\tau_i) = crit_{S_1}(\tau_i),  rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i), nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$. D'où $WorstLaxity{S_2}(\tau_i) = nat_{S_2}(\tau_i) -T_i + D_i - (rct_{S_2}(\tau_i) + (C_i(K)-C_i(crit_{S_2})) = WorstLaxity{S_1}(\tau_i) < 0$ et donc $S_2 \in Fail_\tau$.
 
 \end{proof}
 
-\subsubsection{Simulation de pire scénario et de tâche oisive}
-
-\begin{defin}[Simulation de pire scénario et de tâche oisive]
-\label{idlewcsim}
-Soit $\tau$ un ensemble de tâche sporadique de criticité mixte. Le préordre de tâche oisive $\succeq_{idle} \subseteq State(\tau)\times State(\tau)$ est tel que pour tout $S_1, S_2 : S_1 \succeq_{idle}S_2$ ssi:
-\begin{itemize}
-\item $crit_{S_1} = crit_{S_2}$
-\item $done_{S_1} = done_{S_2}$
-\item Pour tout $\tau_i$ tel que $done_{S_1}(\tau_i) \vee rct_{S_1}(\tau_i) = 0 : rct_{S_1}(\tau_i) = rct_{S_2}(\tau_i)$
-\item Pour tout $\tau_i$ tel que $!done_{S_1}(\tau_i) \wedge rct_{S_1}(\tau_i) > 0 : rct_{S_1}(\tau_i) \geq rct_{S_2}$
-\item Pour tout $\tau_i$ tel que $done_{S_1}(\tau_i) : nat_{S_1}(\tau_i) \leq nat_{S_2}(\tau_i)$
-\item Pour tout $\tau_i$ tel que $!done_{S_1}(\tau_i) : nat_{S_1}(\tau_i) = nat_{S_2}(\tau_i)$
-\end{itemize}
-Cette relation est transitive et réflexive, il s'agit donc bien d'un préordre.
-%La relation défini aussi un ordre partiel sur $Active(S)$ car celle ci est anti-symétrique.
-Remarquons que $Active(S_1) = Active (S_2)$ puisque $done_{S_1} = done_{S_2}$
-\end{defin}
 
 
+\subsection{Autre relations de simulations infructueuses}
+
+\subsubsection{Simulation de pire scénario}
+
+On pourrait être tenté de construire une relation de simulation basée sur le fait l'état du système soit <<pire>> que l'état simulé.
+
+\paragraph{Basée sur \textit{nat}}
+On voudrait alors deux états soit identique sauf pour le $nat$ des tâche actives. L'état simulant devrait avoir des $nat$ plus petits pour les tâches actives. Dans cet état du système, les échéances des tâches actives seraient alors plus rapprochés quand dans l'état simulé. L'état simulant serait alors plus dur à ordonnancé.\\
+
+Malheureusement il n'est pas possible de jouer cette relation car elle modifierait le comportement de l'ordonnanceur. En effet, il ne serait pas garantit que les tâches ordonnancés dans les états simulés et simulant soit identique.\\
+Cet modification pose un problème car les état qui viennent d'être exécutés peuvent signaler leur complétion. Les états résultants de ces transitions de terminaisons ne seront alors plus un couple simulé-simulant.\\
+
+On pourrait n'utiliser cette relation de simulation uniquement lors-ce-que les deux états respecte la condition précédent mais en plus, l'ordonnanceur devrait choisir la même tâche à exécutée.\\
+Pour ce faire il faudrait alors s'assurer que les transitions respectent l'égalité du choix de la tâche fait par l'ordonnanceur. Or, les transitions ne donnent pas d'informations sur le comportement de l'ordonnanceur.\\
+Il faudrait rendre la preuve propre à un ordonnanceur en particulier ou à un certains type d'ordonnanceurs. Le test passerait alors à coté d'un grand nombre d'algorithme d'ordonnancement.\\
+
+Enfin, on pourrait essayer de limiter l'inégalité entre les $nat$ seulement à la tâche ordonnancé. On devrait alors s'assurer que les tâches ordonnancés dans la paire d'états simulé et simulant soit identique. Cette prémisse ne serait pas dénué de sens car elle signifierait que : si, dans un état initial, une tâche est la plus prioritaire, alors dans un état où cette tâche aurait une échéance plus proche, elle serait aussi définie comme étant la plus prioritaire.\\
+Le problème est identique au précédent, les transitions ne garantiraient pas l'égalité du choix de l'ordonnanceur.\\
+
+\paragraph{Basé sur \textit{rct}}
+
+L'idée serait que un état en simule un autre s'il est identique sauf pour les tâche active, où leur $rct$ pourrait être plus conséquent. Dans cette configuration, il resterait plus de temps de calcul restant au tâche active, rendant l'état moins laxiste.\\
+
+La modélisation du système et basée sur le fait que les tâche se terminent lors ce qu'elles le signalent, ou alors qu'elles ont été exécuté pour leur pire WCET. Entre temps, il peut y avoir des passages à niveau de criticité supérieur lors ce qu'une tâche a été exécuté complètement pour son WCET actuel mais ne s'est pas signalée comme terminée.\\
+Pour détecter qu'une tâche déclenche une criticité supérieure, il faut vérifier justement vérifier que son temps restant de calcul est nul et qu'elle est toujours active. Donc, si cette relation de simulation était en place, un état déclenchant un passage à criticité supérieur pourrait être simulé par un état qui ne pas le ferait pas, car le temps restant de calcul peut y être supérieur. D'où cette relation de simulation n'est pas utilisable.
+
+La relation pourrait être restreinte aux tâche qui n'ont pas un temps restant de calcul nul. Immanquablement, la simulation ne serait pas respecté lors de la transtion d'exécution. \todo{exemple}
+
+
+\subsubsection{Simulation de scénario avancé}
+
+Pour terminer, on pourrait développé une relation qui simulerait un état moins avancé. C'est à dire qu'un état simulerait les état qui ont des coups d'horloge de retard sur lui. Pour ce faire on souhaiterait que deux état soit identique, sauf pour le temps restant de calcul et le temps d'arrivé prochain, mais les deux états devrait avoir la même laxité pour les tâches actives.\\
+Outre les problème déjà énoncé plus lors ce qu'on modifier $nat$ et $rct$, il serait en fait que le voisin d'un état soit déjà simulé par un état visité. En revanche, ce voisin simulerait une partie de ses prédécesseurs.
 
 
 
-\chapter{resultat expérimentaux}
+\chapter{Test d'ordonnancement}
 
-\section{Génération d'ensemble de tâche}
+\section{Génération d'ensembles de tâche}
 Un ensemble de tâche est généré\cite{ekberg2014bounding} en commençant avec un ensemble vide $\tau = \emptyset$ dans lequel des tâches aléatoires sont ajoutées. La génération des tâches est contrôlée par quatre paramètres :
 \begin{itemize}
 \item la probabilité $P_{HI}$ que la tâche soit fortement critique
@@ -1549,6 +1458,16 @@ Chaque ensemble de tâche est généré avec une utilisation objective $U*$. Com
 Tant que $U(\tau) < U_{min}*$, on continue d'ajouter des tâches dans l'ensemble. Si $U(\tau) > U_{max}*$ alors on vide l'ensemble et on en régénère un. Si un ensemble de tâche satisfait $U_{min}* \leq U(\tau) \leq  U_{min}*$, celui-ci est fini sauf si $\chi_i = \chi_j \forall \tau_i,\tau_j \in tau : t.q \tau_i != \tau_j$ ou $U_{HI} > 0.99$ ou $U_{LO} > 0.99$.
 
 Test avec : $P_{HI} = 0.5, R_{HI} = 4, C^{MAX}_{LO} = 10, T^{MAX} = 200$
+
+\section{Analyse de la complexité}
+
+\section{Résultats}
+
+
+
+\chapter{Conclusion}
+
+
 
 %\nocite{*}
 \bibliographystyle{unsrt}
