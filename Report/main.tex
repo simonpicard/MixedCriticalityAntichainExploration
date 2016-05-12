@@ -1,8 +1,13 @@
-\documentclass[11pt,a4paper,oneside]{book}
+%\documentclass[11pt,a4paper,oneside]{book}
+%\usepackage[hmargin={1.25in,1.25in},vmargin={1.25in,1.25in}]{geometry}
 
-%\documentclass[a4paper]{report}
 
-\usepackage[hmargin={1.25in,1.25in},vmargin={1.25in,1.25in}]{geometry}
+
+
+\documentclass[12pt,a4paper,oneside]{book}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage[hmargin={3.5cm,1.5cm},vmargin={2.5cm,2.5cm}]{geometry}
 
 
 \usepackage[french]{babel}
@@ -10,6 +15,9 @@
 \usepackage[T1]{fontenc}
 
 \usepackage{graphicx}
+
+\usepackage[final]{pdfpages} % include pdf files
+
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage{amsthm}
 \usepackage{amsmath}
@@ -17,15 +25,43 @@
 \usepackage{tabularx}
 %\usepackage[nottoc, notlof, notlot]{tocbibind}
 \usepackage{charter}
-\usepackage[T1]{fontenc}
+
 \usepackage{url}
 %\usepackage{geometry}
 \usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{comment}
+\usepackage{listings} 
+\usepackage{caption} 
+\usepackage{stmaryrd}
+
+\newcounter{nalg}[chapter] % defines algorithm counter for chapter-level
+\renewcommand{\thenalg}{\thechapter .\arabic{nalg}} %defines appearance of the algorithm counter
+\DeclareCaptionLabelFormat{algocaption}{Algorithm \thenalg} % defines a new caption label as Algorithm x.y
+
+
+\lstnewenvironment{algorithm}[1][] %defines the algorithm listing environment
+{   
+    \refstepcounter{nalg} %increments algorithm number
+    \captionsetup{labelformat=algocaption,labelsep=colon} %defines the caption setup for: it ises label format as the declared caption label above and makes label and caption text to be separated by a ':'
+    \lstset{ %this is the stype
+        frame=tB,
+        numbers=left, 
+        numberstyle=\tiny,
+        basicstyle=\scriptsize, 
+        keywordstyle=\color{black}\bfseries\em,
+        keywords={,input, output, return, then, endif, datatype, function, in, if, else, foreach, while, begin, end, } %add the keywords you want, or load a language as Rubens explains in his comment above.
+        numbers=left,
+        xleftmargin=.04\textwidth,
+        #1 % this is to add specific settings to an usage of this environment (for instnce, the caption and referable label)
+    }
+}
+{}
 
 
 
+
+\graphicspath{{graphes/}}
 
 
 
@@ -40,9 +76,9 @@
   {}          % CUSTOM-HEAD-SPEC
 \theoremstyle{break}
 
-\newtheorem{defin}{Définition}
+\newtheorem{defin}{Définition}[chapter]
 \def\definautorefname{Définition}
-\newtheorem{exem}{Exemple}
+\newtheorem{exem}{Exemple}[chapter]
 \def\exemautorefname{Exemple}
 
 
@@ -58,10 +94,12 @@
   {\newline}  % HEADSPACE. `plain` default: {5pt plus 1pt minus 1pt}
   {}          % CUSTOM-HEAD-SPEC
 \theoremstyle{breakplain}
-\newtheorem{theo}{Théorème}
+\newtheorem{theo}{Théorème}[chapter]
 \def\theoautorefname{Théorème}
+\newtheorem{lem}{Lemme}[chapter]
 \def\lemautorefname{Lemme}
-\newtheorem{lem}{Lemme}
+\newtheorem{prop}{Proposition}[chapter]
+\def\propautorefname{Proposition}
 
 \title{Préparation au mémoire --- MEMO-F-403\\Ordonnancement de systèmes à criticité mixte et méthodes formelles}
 \author{Simon \textsc{Picard}}
@@ -742,18 +780,469 @@ Une fois la modélisation terminée, une implémentation logicielle du problème
 
 \chapter{Algortihme d'ordonnancement}
 \section{Introduction}
-Les but de ce chapitre est de présenter différents algorithmes d'ordonnancement de système à criticité mixte. Cette approche est nécessaire est pour pouvoir les utiliser dans le futur modèle et surtout pour voir s'il est possible de trouver des conditions d'utilisation plus permissive que les présente.
+Les but de ce chapitre est de présenter différents algorithmes d'ordonnancement d'ensemble de tâche CM sporadique. Cette approche est nécessaire est pour pouvoir les utiliser dans le futur modèle et surtout pour voir s'il est possible de trouver des conditions d'utilisation plus permissive que les présente.
 
 \section{CAPA}
-\section{EDF-VD}
+
+L'algorithme le plus simple est définir la priorité des tâches en fonction de leur criticité, d'où le nom de cette méthode \textit{Criticality As Priority Assignment, CAPA}. L'idée intuitive de l'algorithme est que l'on souhaite éviter de donner du temps d'accès à la ressources à des tâches qui pourrait ne plus être considéré, de criticité inférieure. Cependant cette algorithme peut mener à l'échec d'ordonnancement d'ensemble de tâches même avec une utilisation très faible. Cette faible performance vient de la rigidité de l'assignation des priorité.\cite{de2009scheduling} 
+
+\begin{exem}[\cite{santy2012ordonnancement}]
+Considérons l'ensemble de tâches $\tau$ composé de :
+\begin{itemize}
+\item $\tau_1 = \{0,3,3,1,[1,1]\}$
+\item $\tau_2 = \{0,5,5,2,[3,4]\}$
+\end{itemize}
+
+L'algorithme \textit{CAPA} assignera statiquement la priorité $\pi(\tau_2) > \pi(\tau_1)$ car $\chi_2 > \chi_1$.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.25]{images/capa.png}
+\label{ordo:capa}
+\caption{Non optimalité de CAPA \cite{santy2012ordonnancement}}
+\end{figure}
+
+Dans la \autoref{ordo:capa}, il est apparent que \textit{CAPA} mène à un ordonnancement erroné, alors qu'il est possible d'ordonnancer $\tau$.
+
+\end{exem}
+
+\section{Vestal}
+Vestal propose un autre approche\cite{vestal2007preemptive}, basée sur la méthode d'Audsley\cite{audsley1991optimal}. L'algorithme se base sur deux observations, Vestal annonce qu'elles sont maintenue en criticité mixte.
+
+\begin{lem}[\cite{vestal2007preemptive}]
+\label{ordo:vestal:low}
+Le pire temps de réponse pour un tâche peut être déterminé en sachant quel sous-ensemble de tâche ont une priorité supérieure à elle mais sans avoir besoin de savoir quelle elle l'assignation spécifique de priorité.
+\end{lem}
+
+\begin{lem}[\cite{vestal2007preemptive}]
+\label{ordo:vestal:higher}
+Si un tâche $\tau_i$ est ordonnançable selon une certaine assignation de priorité, elle reste ordonnançable avec une priorité supérieure (les priorités des autres tâches restent identique).
+\end{lem}
+
+L'algorithme commence avec l'ensemble de tâche sans priorité. Les priorité sont ensuite assignées de plus faible à la plus forte, de sorte que la première tâche assignée sera le plus fiable prioritaire. À chaque étape, l'algorithme sélectionne une la tâche plus faiblement prioritaire, lui assigne cette priorité et recommence avec l'ensemble des tâches sans cette dernière. Si à un moment aucune tâche n'est éligible à recevoir la priorité la plus faible, alors cette algorithme ne permet d'ordonnancé l'ensemble de tâche.\\
+
+Il est donc nécessaire de déterminer si une tâche peut recevoir la plus faible priorité. Pour ce faire, Vestal propose un test basé sur le temps de réponse qui est faisable par le \autoref{ordo:vestal:low}. 
+
+
+\begin{defin}[Pire temps de réponse CM \cite{vestal2007preemptive}]
+Le pire temps de réponse CM $R_i$ d'une tâche $\tau_i$ est la taille de l'intervalle maximale compris entre la génération d'un de ses travaux et sa complétion. Le temps de réponse ne peut s'obtenir trivialement. Il s'agit de la somme des WCETs des travaux de plus haute priorité de celui de la tâche durant l'intervalle $[t, t+R_i)$ où $t$ est l'instant où le travail est généré :
+\begin{equation}
+R_i=\underset{\tau_j \in hep(i)}{\sum} \lceil\dfrac{R_i}{T_j}\rceil C_j(\chi_i)
+\end{equation}
+Où $hep(i)$ est l'ensemble des tâche avec une priorité égale ou  plus élevé que $\tau_i$
+\end{defin}
+
+Cette équation récursive peut se résoudre à l'aide d'une itération de point fixe. Il faut comment assigner $R_i := C_i(\chi_i)$ et ensuite, évaluer la partie droite de l'équation jusqu'à stabilisation. A tout instant, si $R_i > D_i$ alors la tâche ne peut avoir la priorité qui lui a été assignée, sous peine d'un ordonnancement défaillant.\\
+
+\subsection{AMC}
+Baruah \textit{et al.} ont étendu les travaux de Vestal et ont trouvé un test pour la viabilité d'une tâche à une certaines priorité plus permissif.\cite{baruah2011response}\\
+
+Baruah \textit{et al.} distingue trois l'analyse en trois phase :
+
+\begin{itemize}
+\item Vérifier l'ordonnançabilité en criticité $LO$
+\item Vérifier l'ordonnançabilité en criticité $HI$
+\item Vérifier l'ordonnançabilité du changement de criticité
+\end{itemize}
+
+Pour effectuer ces test, une extension du pire temps de réponse CM est fait, prenant en compte la criticité.\\
+
+
+\begin{defin}[Pire temps de réponse CM en criticité $\ell$ \cite{baruah2011response}]
+Le pire temps de réponse CM $R_i$ d'une tâche $\tau_i$ au niveau $\ell$ est la taille de l'intervalle maximale compris entre la génération d'un de ses travaux et sa complétion lors ce que ce travail est généré dans un système de criticité $\ell$. Il s'agit de la somme des WCETs au niveau $\ell$ des tâches toujours présentes de plus haute priorité que celle de la tâche durant l'intervalle $[t, t+R_i)$ où $t$ est l'instant où le travail est généré, et de $C_i(\chi_i)$, le pire temps d'exécution de $\tau_i$ :
+\begin{equation}
+R_i= C_i(\chi_i) +\underset{\tau_j \in hp(i, \ell)}{\sum} \lceil\dfrac{R_i}{T_j}\rceil C_j(\ell)
+\end{equation}
+Où $hpH(i, \ell)$ est l'ensemble des tâches de criticité au moins $\ell$, avec une priorité plus élevé que $\tau_i$
+\end{defin}
+
+Pour vérifier l'ordonnançabilité en criticté $LO$ et $HI$, on utilise les tests standards : $R_i^{LO} \le D_i \wedge R_i^{HI} \le D_i$.\\
+
+
+Le temps de réponse CM d'une tâche $\tau_i$ lors d'un changement de criticité est noté $R_i*$. Pour le trouver, on définit l'interférence maximale d'une tâche $HI$-critique si il y a un changement de criticité, généré par une tâche $\tau_s$ à un instant $s$. Le passage au niveau de criticité supérieur est déclenché lors ce qu'un tâche $\tau_s$ s'exécute pour plus longtemps que $C_s(LO)$. Si cette événement impacte $\tau_i$, cela signifie que $s < R^{LO}_i$, et la priorité de $\tau_s$ est supérieure ou égale à celle de $\tau_i$; sinon $\tau_i$ se serait complétée avant le changement de criticité. On crée alors $R^s_i$, le temps de réponse de la tâche $\tau_i$, lors ce qu'un changement de criticité se passe au temps $s$, relativement au temps de génération de $\tau_i$.
+
+\begin{equation}
+R_i^s = C_i(HI) + I_L(s) + I_H(s)
+\end{equation}
+
+où $I_L(s)$ est l'interférence venant des tâches avec une criticité plus faile que $\tau_i$ et $I_H(s)$ est l'interférence venant des tâches avec une criticité supérieure ou égale à celle de $\tau_i$.\\
+
+Les tâches ce criticité plus faible sont abandonné après $s$ et donc leur interférence est bornée par :
+\begin{equation}
+I_L(s) = \underset{j \in hp(i, LO)}{\sum} (\left\lfloor \dfrac{s}{T_j} \right\rfloor + 1) C_j(LO)
+\end{equation}
+
+La valeur $plancher +1$ est utiliser car dés qu'une tâche est émise, il faut considéré son interférence.\\
+
+Pour l'interférence $I_H(s)$, on supposera que tout les travaux actif au temps $s$, s'exécute pour $C(HI)$ unité de temps. D'où, seule le travaux avec une échéance avant $s$ utilise leur estimation pour la criticité $LO$.\\
+Considérons l'interférence d'un tâche $\tau_k$ au temps $t$ avec $t > s$. Le nombre maximum d'émission que la tâche peut faire est $\lceil t / T_k \rceil$. Le nombre maximum d'émission qu'un tâche peut faire durant l'intervale $t$ - $s$ est borné par 
+\begin{equation}
+\label{amc:nbrel:pess}
+\left\lceil \dfrac{t-s-(T_k-D_k)}{T_k} \right\rceil +1
+\end{equation}
+
+Cependant, si $s$ et petit et $D_k$ trop proche de $T_k$ alors l'\autoref{amc:nbrel:pess} peut inclure plus de travaux qu'il n'y en a vraiment. On définit donc
+
+\begin{equation}
+M(k,s,t) = min \left\lbrace \left\lceil \dfrac{t-s-(T_k-D_k)}{T_k} \right\rceil +1, \left\lceil \dfrac{t}{T_k} \right\rceil \right\rbrace
+\end{equation}
+
+L'interférence au temps $t$ est alors
+
+\begin{equation}
+I_H(s) = \underset{k \in hp(i, HI)}{\sum} \left( M(k,s,t)C_k(HI) + \left(\left\lfloor \dfrac{t}{T_k} \right\rfloor - M(k,s,t)\right) C_j(LO) \right)
+\end{equation}
+
+Et donc 
+
+\begin{equation}
+R_i^s = C_i(HI) + \left( \underset{j \in hp(\i, LO)}{\sum} (\left\lfloor \dfrac{s}{T_j} \right\rfloor + 1) C_j(LO) \right) +$$\\$$\underset{k \in hp(i, HI)}{\sum} \left( M(k,s,R_i^s)C_k(HI) + \left(\left\lfloor \dfrac{R_i^s}{T_k} \right\rfloor - M(k,s,R_i^s)\right) C_j(LO) \right)
+\end{equation}
+
+Avec
+
+\begin{equation}
+R_i* = max(R_i^s) \forall s
+\end{equation}
+
+Il reste à trouver quelles sont les $s$ à tester. L'intervalle possible pour $s$ va de $0$ à $R^{LO}_i$. En analysant $R_i^s$, il faut remarque que le terme avec $hp(i, LO)$ augmente avec $s$, alors que le terme avec $hp(i, HI)$ diminue avec $s$. D'où, $R_i^s$ ne peut augmenter que lors ce qu'une tâche $LO$-critique génère un travail, il s'agit donc des points à prendre en compte.
+
+
 \section{OCBP}
-Dans cette algorithme, nous déterminons hors ligne une priorité pour chaque tâches, et à tout instant la tâche avec le plus grande priorité est exécutée.
+
+\textit{OCBP} est un algorithme d'ordonnancement basé sur priorités. Cet ordonnanceur fonctionne de manière récursive, en cherchant à assigner une priorité la plus basse à une des tâche et continuer jusqu'à ce que toutes les tâches ait une priorité, dans la même idée que l'algorithme d'Audsley\cite{audsley1991optimal} en ordonnancement temps réel classique. L'algorithme se base uniquement sur le WCET de la criticité d'une tâche, c'est pour ça qu'il s'appel \textit{Own Criticality Based Priority, OCBP}.\\
+Une première version de cette algorithme a été imaginée pour un ensemble te travaux, dans cette configuration, l'assignation de priorité se fait hors ligne.\cite{baruah2010towards} Il semble alors évident de simplement appliqué cette version de l'algorithme pour l'instance CM de travaux générée par un ensemble de tâche CM sporadique. Cependant, cette approche n'est pas possible. Premièrement, car la phase hors-ligne d'assignation des priorité peut être infinie car l'instance de travaux généré par l'ensemble de tâches CM sporadique est potentiellement infinie. Ensuite, et surtout, l'algorithme dans sa version sur instance CM requiert d'avoir une spécification précise des travaux, or avec des tâches CM sporadique, il n'est pas possible de savoir exactement quand les travaux seront généré, seul une borne inférieure est disponible.\\
+La suite de cette section présente l'algorithme OBCP pour des tâche sporadique présenté en dans le papier \cite{li2010algorithm} mais ne s'attardera pas sur la résolution de des problèmes énoncé, pour les découvrir, consultez ce même papier.\\
+
+\begin{defin}[Instant oisif \cite{goossens1999scheduling}]
+$x \in \mathbb{N}$ est un instant oisif de l'ordonnancement d'un système si toutes les requêtes émise strictement avant $x$ ont été complétée, avant ou au temps $x$.
+\end{defin}
+
+\begin{defin}[Période occupée \cite{goossens1999scheduling}]
+Une période occupée est un intervalle $[a, b)$, tel que $a$ et $b$ sont deux instant oisif, le processeur est occupé dedans et il n'y a pas d'instant oisif intermédiaire. 
+\end{defin}
+
+Supposons qu'une période occupée commence à un instant $t_0$, durant l'exécution. A cet instant, il faut assigner une priorité à tout les travaux qui pourrait potentiellement arrivé dans la période occupée commençant à $t_0$, comme si tout les travaux étaient émis au premier instant permis. Pour le bon fonctionnement de l'algorithme \textit{OCBP}, il faut considéré que tout ces travaux sont "généré-tôt". Ce principe est illustré avec un exemple.
+
+\begin{exem}
+Supposons q'un tâche $\tau_i$ peut généré trois travaux durant la période occupée commençant à $t_0$. Au plus tôt, cex travaux seront généré au temps $t_0, t_0+T_i, t_0+2*T_i$ respectivement et auront pour échéance $t_0+D_i, t_0+T_i+D_i, t_0+2*T_i+D_i$ respectivement. Considéré ces travaux comme généré-tôt signifie que leur temps d'arrivé sera $t_0$ pour chacun d'entre eux, leurs échéances restent inchangées.\\
+
+${J_i}^n_{i=1}$ dénote tout ces travaux à $t_0$; $J_i = (t_0, d_i, \chi_i, c_i$
+\end{exem}
+
+
+\subsection{Assignation des priorités}
+
+Il faut assigner les priorités aux travaux ${J_i}^n_{i=1}$ conformément à l'assignation de priorité \textit{OCBP}. Cet assignation de priorité est la fonction $\pi : {J_i}^n_{i=1} \rightarrow {1,2,...,n}$.\\
+
+L'assignation \textit{OCBP} fonctionne de la manière suivante :\\
+Déterminer au sein d'un instance CM $I$, le travail $J_i$ le plus faiblement prioritaire : un travail $J_i$ peut avoir la priorité la plus faible si
+\begin{itemize}
+\item c'est un travail $LO-critique$ ($\chi_i = LO$), et il y a au moins $c_i(LO)$ temps entre son émission et son échéance si tout les autres travaux $J_j$ ont une priorité plus élevé et sont exécuté pour $c_j(LO)$ unité de temps; ou
+\item c'est un travail $HI-critique$ ($\chi_i = HI$), et il y a au moins $c_i(HI)$ temps entre son émission et son échéance si tout les autres travaux $J_j$ ont une priorité plus élevé et sont exécuté pour $c_j(HI)$ unité de temps.
+\end{itemize}
+En général, il es possible que plusieurs travaux soit éligible pour être le travail le plus faiblement prioritaire, il faut alors en choisir arbitrairement un. Cet procédure est répétée pour l'ensemble des travaux, sans ce travail avec une priorité fraichement assigné, jusqu'à ce que tout les travaux ait une priorité assignée ou que le travail le plus faiblement prioritaire ne puisse êtres trouvé. Dans ce dernier cas, l'instance $I$ n'est pas \textit{OCBP}-ordonnançable et donc l'ensemble de tâche $\tau$ non plus.
+
+\subsection{Ordonnancement durant l'exécution}
+
+Durant l'exécution, à tout moment, le travail $J_i$ avec la valeur $\pi(J_i)$ la plus faible est qui a été généré mais pas encore signalé comme complété est sélectionné pour exécution. Ce procédé continue jusqu'à l'un des évènement suivant arrive :
+
+\paragraph{E-1}
+Un travail $J_i$ s'exécute pour plus que $c_i(LO)$ unité de temps sans signaler sa complétion. Ceci implique que le système est maintenant de criticité $HI$ et que les travaux de criticité $LO$ ne doivent plus être complétés d'ici leurs échéances. Il s'en suit, selon l'exactitude de l'assignation de de priorité \textit{OCBP} à $t_0$, que les travaux de criticité $HI$ qui arriveront durant la période occupée courante sont garantie d'être exécuté jusqu'à leur complétion.
+
+\paragraph{E-2}
+Sous not modèle d'ordonnancement basé sur priorité, le processeur est oisif à un certains instant $t$ seulement si tout les travaux qui ont été généré avant $t$ se sont complétés avant ou au temps $t$. Si c'est la cas, la période occupée courant est terminée et les priorité qui ont été au travaux qui n'ont pas été émis sont annulées. Il faut alors attendre la prochaine émission d'un travail, qui va signaler le début d'une nouvelle periode occupée. A ce moment là, il faut recalculer les priorité de tout les travaux qui pourrait arrivé durant cette nouvelle période occupée.
+
+\paragraph{E-3}
+L'exécution d'un travail $J_x$ moins prioritaire est préempté à cause de la génération d'un travail de plus haute priorité $J_y$ ($\pi(J_y) < \pi(J_x)$), à l'instant $t_1$. Il faut alors recalculer la fonction de priorité $\pi$ à ce moment précis. Les travaux ayant une priorité plus faible que celle de $J_x$ garderont leur priorité actuelle.\\
+
+Réassignation des priorité : pour tout $i$, soit $\Delta_i$ le nombre de temps d'exécution dont le travail $J_i$ a jouis durant l'intervalle $[t_0, t_1)$. Soit $c_i'(LO) = c_i(LO)-\Delta_i$, $c_i'(HI) = c_i(HI)-\Delta_i$ et $c_i' = [c_i'(LO), c_i'(HI)]$; ceux-ci dénotent le WCET restant pour $J_i$. Il est possible de considéré la charge de travail restant exécutée durant la période occupé comme l'instant 
+\begin{equation}
+\left\lbrace J_i' = (t_1, d_i, \chi_i, c'_i) \right\rbrace^n_{i=1}
+\end{equation}
+
+Supposons que $(n-n')$ travaux ont signalés leurs complétion, durant $[t_0, t_1)$ : ces sont les travaux $J_k$ avec $\pi(J_k) < \pi(J_x)$ car sinon, $J_x$ aurait eu été exécuté avant eux. Soit ${J_i'}^n_{i=1}$ les travaux restant. L'assignation de priorité
+\begin{center}
+$\pi' : {J_i'}^n_{i=1} \rightarrow {1,2,...n}$
+\end{center}
+est obtenu depuis $\pi$ comme suit :
+\begin{enumerate}
+\item Tout les travaux $J_k$ satisfaisant $\pi(J_k) < \pi(J_x)$ qui n'ont pas encore complété leur exécution ont les priorité \textit{OCBP} $\pi'(J_k)$ recalculée sous l'assomption de génération-tôt, qu'ils sont tous généré à l'instant $t_1$
+\item Pour tout les travaux $J_k$ satisfaisant $\pi(J_k) \geq \pi(J_x), \pi'(J_k) \leftarrow \pi(J_k) -(n-n')$
+\end{enumerate}
+
+L'algorithme est totalement présenté.
+
+\todo{exemple}
+
+\subsection{Test d'ordonnancement}
+Il existe une condition suffisante d'ordonnançabilité avec \textit{OCBP} venant de l'article \cite{ekberg2014bounding}, cette sous section la présente.\\
+
+Le test d'ordonnancement se base sur la charge de travaille. Dans les l'ordonnancement temps réel classique, il s'agit du maximum, sur tout les intervalle possible, du temps d'exécution requis cumulé par l'ensemble de tâche, normalisé par l'intervalle \cite{ekberg2014bounding}. Il s'agit donc d'une borne inférieure sur la portion de la capacité d'exécution requise par l'ensemble de tâche pour respecter toutes les échéances.\\
+Parallèlement à ce concept, il est possible de définir la charge de travail pour un ensemble de tâche MC à chaque niveau de criticité.
+
+\begin{defin}[Charge $\ell$-critique]
+La charge $\ell$-critique d'un ensemble de tâche MC $\tau$ est définie par 
+\begin{center}
+$Ld_\ell(\tau) = \underset{0\leq t_1 \leq t_2}{max} \left\lbrace \underset{\forall J_i:\chi_i \geq \ell \wedge t_1 \leq a_1\wedge d_1\leq t_2}{\sum} c_i(\ell)/(t_2-t_1) \right\rbrace$
+\end{center}
+\end{defin}
+
+Pour toute criticité $\ell$, $Ld_\ell(\tau)$ peut-être calculée avec des techniques pour déterminer les charge de travail d'ensemble de tâches traditionnels\cite{Baker05algorithmsfor}. Intuitivement, $Ld_\ell(\tau)$ représente une borne inférieure sur la portion de capacité d'exécution requise par cet ensemble de tâche CM avec lequel il peut respecter ses toutes échéances sujet seulement à la certification au niveau de criticité $\ell$. Pour exécuter correctement un ensemble de tâche CM sporadique, une condition nécéssaire es que cette portion de capacité d'exéctuion requise ne dépasse pas 1.\\
+
+Dans, cette section, \textit{OCBP} est présenté dans le contexte d'un système à criticité double uniquement. Cependant, cet algorithme peut être facilement étendu pour gérer un ensemble de tâche CM sporadique avec plus de deux niveau de criticité. Il est alors possible d'utiliser les connaissances veant de \cite{baruah2010mixed} pour obtenir le test d'ordonnancement CM suivant :
+
+\begin{equation}
+\label{test:ocbp}
+\forall \ell \in [1,K] : Ld_\ell \le LoadBound(K)
+\end{equation}
+
+Où $Ld_\ell$ est la charge au niveau de criticité $\ell$, et $LoadBound(K)$ est une fonction avec respect du nombre total de niveau criticité $K$ du système, qui est calculée récursivement :
+\begin{center}
+$LoadBound(1) = 1$\\
+$LoadBound(K) = \dfrac{2}{1+\sqrt{4\dfrac{1}{Loadbound(K-1)^2}+1}}$
+
+\end{center}
+
+Pour le cas spécial où $K = 2$, une condition sur la charge plus précise est disponible \cite{li2010load}
+\begin{equation}
+(Ld_2(\tau))^2+Ld_1(\tau) \le 1
+\end{equation}
+
+Voilà qui offre un test d'ordonnançabilité pour \textit{OCBP}.
+
+\subsection{Taille de la période occupée}
+
+Lors de l'ordonnancement, il est nécéssaire de connaître la taille de la période occupée pour assigner les priorité aux travaux qui y figure. \cite{li2010algorithm} propose une borne supérieure.\\
+
+La taille de période occupé est divisé en deux. Premièrement, $x_1$ est l'intervalle commençant au début le période occupée jusqu'au moment où un travail dépasse son WCET de criticité $LO$, s'il y en a un. Ensuite, $x_2$ est l'intervalle qui commence à la fin de $x_1$ et se termine à la fin de période occupée.\\
+
+Soit $D_{max} = max_i D_i$. Tout les travaux exécuté pendant $[0, x_1)$ ont leur temps de génération et leur échéance durant l'intervalle $[0, x_1+D_max]$, d'où
+\begin{equation}
+x_1 \le Ld_{LO}(\tau)(D_{max}+x_1)$$
+$$x_1(1-Ld_{LO}(\tau))\le LD_{LO} \times D_{max}$$
+$$x_1 <_le \dfrac{Ld_{LO}(\tau)}{1-Ld_{LO}(\tau)} \times D_{max}
+\end{equation}
+
+Vu que tout les travaux exécuté durant $[x_1, x_1+x_2)$ ont leurs temps de génération et leur échéance durant l'intervalle $[x_1, x_1+x_2+D_max]$, on en déduit que
+
+\begin{equation}
+x_2 \le Ld_{HI}(\tau)(D_{max} + x_1+x_2) $$
+$$x_2(1-Ld_{HI}(\tau)) \le Ld_{HI}(\tau)\times(D_{max}+x_1)$$\
+$$x_2 \le \dfrac{Ld_{HI}(\tau)}{1-Ld_{HI}(\tau)} \times (D_{max} +x_1)$$\
+$$x_2 \le \dfrac{Ld_{HI}(\tau)}{1-Ld_{HI}(\tau)} \times (D_{max} + \dfrac{Ld_{LO}(\tau)}{1-Ld_{LO}(\tau)} \times D_{max})$$
+$$x_2 \le \dfrac{Ld_{HI}(\tau)}{(1-Ld_{HI}(\tau))(1-Ld_{LO}(\tau))} \times D_{max}
+\end{equation}
+
+La taille de la plus grande période occupé est donc bornée par $x_1+x_2$. Une fois la que période occupé est bornée, il facile d'obtenir les travaux qui peuvent s'y générer.
+
+\section{PLRS et LPA}
+\textit{PLRS} est une extension d'\textit{OCBP}, mais considère les instants critique de manière plus abstraite pour alléger le temps calcul. \textit{LPA} est une extension de \textit{PLRS}, qui utilise notamment une taille maximale de période occupée plus restreinte. Ces deux algorithme étant fort proche de l'initial, cette sous-section ne fera que présenter leurs conditions suffisante d'ordonnancement.
+
+\paragraph{PLRS} commence par faire une assignation de priorité intial et la modifiera en ligne. S'il est possible d'assigner à un ensemble de tâche cette assignation initial, il est ordonnançable CM avec \textit{PLRS}\cite{guan2011effective}. Cette assignation est en fait la même que celle pour \textit{OCBP}. Guan \textit{et al.} propose d'utiliser la formulation : chaque tâche $\tau_k$ a un nombre $\delta_k$ représentant le nombre de ses travaux, qu'elle générera durant la période occupée au maximum, qui n'ont pas encore de priorité assigné. Initialement, $\delta_k$ vaut donc le nombre de travaux que la tâche $\tau_k$ générera durant la période occupée au maximum L'algorithme commence par décider quelle travail ayant l'index le plus élevé peux recevoir la priorité la plus faible. Le travail $J^{\delta_k}_k$ est éligible à recevoir la priorité la plus faible si
+
+\begin{equation}
+\underset{\tau_j \in \tau}{\sum} (\delta_j \times C_j(\chi_k)) \le (\delta_k-1) \times T_k + D_k
+\end{equation}
+
+La partie gauche de l'inéquation représente la charge de travail restante des travaux présent dans l'instance CM composé des travaux généré par les tache présente dans $\tau$ durant la période occupée maximale, si le système est de criticité $\chi_k$. La partie de droite de l'inéquation est la distance minimale entre l'échéance absolue de $J^{\delta_k}_k$ et le début la période occupée considérée. Si plusieurs travaux peuvent recevoir la priorité la plus faible, il faut en choisir un arbitrairement. Une fois ce travail le plus faiblement prioritaire désigné, il faut décrément $\delta_k$ d'une unité pour exclure ce travail lors des prochaines étape. La période occupée maximale est la même que celle dans \textit{OCBP}.\\
+Par la suite, l'algorithme itère jusqu'à ce que tout les travaux aient un priorité. Si ce n'est pas possible, alors l'ensemble de tâche n'est pas ordonnançable avec \textit{PLRS}. Attention, bien que si un ensemble de tâche passe cette assignation signifie qu'il est ordonnançable avec \textit{PLRS}, cette assignation en tant que tel ne fonctionnera pas forcément. En effet, l'algorithme modifiera les priorité en ligne, cette partie est consultable en \cite{guan2011effective}.
+
+
+\paragraph{LPA} , en fidèle succèsseur d'\textit{OCBP}, commence par faire une assignation de priorité hors ligne. Il s'agit de la même que \textit{PLRS}. A nouveau, si une ensemble de tâche passe cette assignation, alors il est ordonnançable avec \textit{LPA} \cite{gu2013improving}. Ici, Gu \textit{et al.} propose une nouvelle façons de calculer la taille de la période maximale.\\
+
+Gu \textit{et al.} définissent la charge $\ell$-critique comme la borne supérieure de la charge total des tâches dont la criticité n'est pas supérieure à $\ell$, dans toute les période occupée, où la criticité ne dépasse pas $\ell$. D'où $Ld_K$ est la borne supérieure pour la tailles des périodes occupés pour l'ensemble de tâche $\tau$. Et ils posent $Ld_0 = 0$.\\
+
+Ensuites, ils prouvent le théorème suivant.
+
+\begin{theo}[\cite{gu2013improving}]
+Etant donnée un ensemble de tâches CM sporadiques $\tau$ et la charge $\ell-1$-critique $Ld_{\ell-1}$, on a:
+\begin{equation}
+\phi_\ell = \dfrac{Ld_{\ell-1} + \sum_{\chi_i \ge \ell} C_i(\ell)}{1 - \sum_{\chi_i \ge \ell} \dfrac{C_i(\ell)}{T_i}}
+\end{equation}
+\begin{equation}
+Ld_\ell = Ld_{\ell-1} + \underset{\chi_i \ell}{\sum}C_i(\ell) \times \left( 1 + \left\lfloor \dfrac{\phi_\ell}{T_i} \right\rfloor \right)
+\end{equation}
+\end{theo}
+
+Depuis ce théoreme, Gu \textit{et al.} propose l'agorithme suivant pour calculer la charge et ensuite réutilise la manière de créer la période occupé d'\textit{OCBP}, en utilisant leur nouvelle façons de calculer la charge.
+
+
+\begin{algorithm}[caption={Calcul la charge $\ell$-critique}, label={alg1},mathescape=true]
+ComputeGamma($\ell$)
+ if $\ell = 0$ then
+  return 0
+ endif
+ $\displaystyle Ld_\ell \gets $ComputeGamma($\ell-1$)
+ $\displaystyle \gamma \gets \dfrac{Ld_\ell + \sum_{\chi_i \geq \ell} C_i(\ell)}{1-\sum_{\chi_i \geq \ell} \dfrac{C_i(\ell)}{T_i}}$
+ 
+ return $\displaystyle Ld_{\ell-1} + \sum_{\chi_i = \ell}C_i(\ell) \times \left( 1 + \left\lfloor \dfrac{\gamma_\ell}{T_i} \right\rfloor \right)$
+       
+\end{algorithm}
+
+\section{EDF-VD}
+babruah \textit{et al.} propose un algorithme\cite{BaruahBDMSS11} qui est une variant de \textit{EDF}, appelé \textit{EDF} à échéance virtuel, \textit{EDF-VD}, pour \textit{Virtual Deadlines}.
+
+Pour la compréhension de l'algorithme, l'explication qui suit considère un ensemble de tâche avec une criticité double. Il faut distinguer deux cas.
+
+\begin{itemize}
+\item Cas 1. $U_1(1) + U_2(2) \le 1$ : appliquer \textit{EDF} avec les échéances des tâches non modifiée. Dès que le système passe au niveau 2, abandonné les tâches de niveau 1.
+
+\item Cas 2. $U_1(1) + \dfrac{U_2(1)}{1-U_2(2)} \le 1$ et le cas 1 n'est pas satisfait : $\lambda = \dfrac{U_2(1)}{1-U_1(1)}$. Lors ce que le système est en criticité 1 : pour tout tâches $\tau_i$ avec $\chi_i = 2, \widehat{p}_i = \lambda p_i$. Redéfinir les les échéances des tâche tel que $\chi_i = 2$ en y ajoutant $\widehat{p}_i$ au temps des génération de chacun de leurs travails. Ne pas modifier les échéance de tâche avec $\chi _i =1$ et appliquer \textit{EDF}. Lors ce que le système atteint la criticité de niveau 2, abandonner les tâche de criticité de niveau 1 et réinitialiser les échéances des tâches encore considérés et appliquer \textit{EDF} sur ces échéances initiales.
+\end{itemize}
+
+Baruah \textit{et al.} donne ensuite un condition suffisante d'ordonnançabilité :
+
+\begin{theo}[\cite{BaruahBDMSS11}]
+Si $\tau$ satisfait
+\begin{center}
+$U_1(1) + min \left( U_2(2), \dfrac{U_2(1)}{1-U_2(2)} \right) \le 1$
+\end{center}
+Alors $\tau$ est ordonnançable avec \textit{EDF-VD}.
+\end{theo}
+
+\section{Greedy}
+Ekberg \textit{et al.} ont proposé un algorithme sur l'analyse de la demande des tâches CM\cite{ekberg2014bounding}, cette le section présente.\\
+
+Une approche connue pour être dans l'analyse de l'ordonnancement de charge temps réel est d'utiliser une fonction de borne de demande \cite{baruah1990preemptively}. Une fonction de borne de demande capture la demande d'exécution maximale  d'une tâche durant un intervalle d'un taille donnée.
+
+\begin{defin}[Fonction de borne de demande \cite{ekberg2014bounding}]
+Une fonction de borne de demande $dbf(\tau_i, \Delta)$ donne une borne supérieure pour la demande d'exécution maximale possible d'un tâche $\tau_i$ dans tout les intervalle de temps d'une taille $\Delta$, où la demande est calculée comme le temps d'exécution requis total des travaux avec leur fenêtre d'ordonnancement complètement dans l'intervalle.
+\end{defin}
+
+Un concept similaire est la fonction de borne d'approvisionnement $sbf(\Delta)$ qui borne inférieurement la quantité de temps d'exécution fournie par le processeur dans tous intervalles de taille $\Delta$. Par exemple, sur un processeur à vitesse unitaire, $sbf(\Delta) = \Delta$.\\
+
+Ce qui rend les fonction de borne de demande et d'approvisionnement intéressante est la proposition suivante :
+
+\begin{prop}
+\label{greedy:class:dbfsbf}
+Un ensemble de tâche $\tau$ (sans criticité mixte) est ordonnançable par \textit{EDF} sur monoprocesseur avec la fonction de borne inférieure $sbf$ si :
+\begin{center}
+$ \forall \Delta \ge 0 : \underset{\tau_i \in \tau}{\sum}dbf(\tau_i, \Delta) \le sbf(\Delta)$
+\end{center}
+\end{prop}
+
+Ekbeg \textit{et al.} étendent l'idée de la fonction de borne de demande à la criticité mixte, avec double criticité. Pour toutes tâche, ils construisent deux fonctions de borne de demande, $dbf_{LO}$ et $dbf_{HI}$, pour les mode de critcité bas et haut respectivement. La \autoref{greedy:class:dbfsbf} est étendue :
+
+\begin{prop}
+\label{greedy:mc:dbfsbf}
+Un ensemble de tâche $\tau$ (sans criticité mixte) est ordonnançable par \textit{EDF} sur un processeur avec la fonction de borne inférieure $sbf_{LO}$ dans le mode à criticité basse et $sbf_{HI}$ dans le mode à criticité haute si les deux conditions suivante son satisfaite :
+\begin{center}
+\textbf{\textit{Condition A:}}$\quad \forall \Delta \ge 0 : \underset{\tau_i \in \tau}{\sum}dbf_{LO}(\tau_i, \Delta) \le sbf_{LO}(\Delta)$\\
+\textbf{\textit{Condition B:}}$\quad \forall \Delta \ge 0 : \underset{\tau_i \in \tau}{\sum}dbf_{HI}(\tau_i, \Delta) \le sbf_{HI}(\Delta)$
+\end{center}
+\end{prop}
+
+Les conditions A et B s'assure de l'ordonnançabilité de l'ensemble de tâche en basse et haute criticité. Bien que ces deux modes puissent être analysé séparément avec les conditions ci-dessus, la demande en haute criticité dépend de ce qui se passe en basse criticité.\\
+
+Pour trouver ces fonctions de borne de demande, on suppose, sans perte de généralité, que $sbf_{LO}$ est de vitesse unitaire au maximum.\\
+Dans le cas de la criticité basse, l'exercice est simple. Dans ce mode, les tâche $\tau_i$ se comporte comme des tâche sporadique normale, et tout leurs travaux finissent, au pire, après $C_i(LO)$ unités de temps. Il est donc possible d'utiliser des méthodes standard pour calculer les fonctions de borne de demande pour tâche sporadique \cite{baruah1990preemptively}.\\
+
+Avec $dbf_{HI}$, c'est plus compliqué  car il faut considérer les travaux de criticité haute qui ont été actif durant le changement de criticité.
+
+\begin{defin}[Travaux transféré \cite{ekberg2014bounding}]
+Un travail émis par une tâche à haute criticité  qui est actif (généré mais non terminé) au moment du changement de criticité est appelé un travail transféré.
+\end{defin}
+
+\subsection{Analyser la demande des travaux transférés}
+En haute criticité, il faut finir l'exécution restante des travaux transférés avant leur échéance. La demande de ces travaux transféré doit donc être prise en considération dans chaque $dbf_{HI}$ des tâches de haute criticité. Conceptuellement, lors de l'analyse de l'ordonnançabilité en haute criticité, on peut considérer les travaux transféré comme des travaux ayant été généré lors du changement de criticité. Cependant, la fenêtre d'ordonnancement devient l'intervalle entre le changement de criticité et l'échéance du travail, et peut donc être plus courte que d'autres travaux généré par la même tâche. Parceque ces travaux ont pu déjà être pour quelques unités de temps, le temps restant de calcul peut être inférieure à ceux des autres travaux.\\
+
+%fig 1
+
+Pour borner la demande en haute criticité (condition B), on suppose que la demande en basse criticité est approvisionné, sinon l'ensemble de tâche ne peut être ordonnançable. Il s'agit donc de prouver $A \wedge (A \rightarrow B)$, ce qui permettra d'affirmer $A\wedge B$.\\
+
+Analysons les informations disponible sur les travaux transférés. Au moment du passage vers la criticité supérieure, un travail transféré d'un tâche à haute criticité $\tau_i$ a $n\ge 0$ unité de temps restantes avant son échéance. La fenêtre d'ordonnancement restante du travail est de taille $n$. Puisque le travail aurait respecté son échéance en basse criticité, si le changement n'avait pas eu lieu, il peut y avoir au maximum $n$ unité de temps restante de son WCET de bas niveau $C_i(LO)$ au moment du changement. Le travail aura donc été exécuté duran au moins $C_i(LO) -n$ unités de temps avant le changement de criticité. Comme le système est maintenant en haute criticité, le travail doit accomplir jusqu'à $C_i(HI)$ unité de temps au total. Après le changement de criticité, le temps restant d'exécution total pour un travail transféré, après le changement est au plus $C_i(HI) - (C_I(LO)-n)$. Malheureusement, quand $n$ devient petit, la demande est de plus en plus difficile à respecter et mène à $dbf_{HI}(\tau_i,0) = C_i(HI) - C_I(LO)$ dans le cas extrême. Clairement, un tel fonction de borne de demande ne peut satisfaire la condition B.
+
+\subsection{Ajuster la demande des travaux transférés}
+
+Le problème ci-dessus vient du fait que \textit{EDF} peut exécuter des travaux de haute criticité tard lors ce que le système est en basse criticité. Quand le passage à la haute criticité est déclenché, un travail transféré peut avoir un petite fenêtre d'ordonnancement dans laquelle il doit terminer sa demande de haute criticité. Pour augmenter la taille de sa fenêtre d'ordonnancement restante, Ekberg \textit{et al.} propose de séparer les échéances relatives en basse et haute criticité. Pour un tâche $\tau_i$, \textit{EDF} utilisera alors l'échéance relative $D_i(LO)$ et $D_i(HI)$, tel que si un travail est émis au temps $t$, la priorité assigné par \textit{EDF} est basé sur la valeur de $t+D_i(LO)$ pendant la basse criticité et $t+D_i(HI)$ durant la haute criticité.\\
+
+Diminuer l'échéance d'une tâche ne pose pas de problème car respecté une échéance plus strict que l'initial garantie que cette dernière est respectée aussi. En diminuant $D_i(LO)$, il est possible de gagner du temps supplémentaire dans la fenêtre d'ordonnancement des travaux transférés au pris d'empirer la demande en basse criticité. Il faut donc $D_i(LO) = D_i$ si $\chi_i = LO$ et $D_i(LO) \le D_i(HI) = D_i$ si $\chi_i = HI$. Aussi, il est nécessaire que $C_i(LO) \le D_i(LO)$, comme pour l'échéance initial. $D_i(LO)$ n'est pas une vrais échéance dans le sens où son non respect n'entraîne pas un échec d'ordonnancement. Cependant elle est appelé échéance car elle permet de construire $dbf_{LO}$ et elle est utilisé par \textit{EDF} en basse criticité comme s'il s'agissait de l'échéance relative.
+
+\begin{lem}[La demande des travaux transférés \cite{ekberg2014bounding}]
+\label{greedy:dtt}
+En supposant qu'\textit{EDF} utilise les échéance $D_i(LO)$ et $D_i(HI)$ avec $D_i(LO) \le D_i(HI) = D_i$ pour une tâche $\tau_i$ à haute criticité, et qu'il est garantie que la demande en basse criticité est fournie (en utilisant $D_i(LO)$). Si le changement de criticité se passe lors ce qu'un travail de $\tau_i$ a $n$ unités de temps avant son échéance réelle, alors on sait que :
+
+\begin{enumerate}
+\item  Si $n < D_i(HI) - D_i(LO)$, le travail a été terminé avant le passage à la haute criticité.
+\item Si $n \ge D_i(HI)-D_i(LO)$, le travail peut être un travail transféré, et a au moins $max \left(0, C_i(LO) - n + D_i(HI) - D_i(LO)\right)$ unités de temps de son exécution ont été finie avant le passage à haute criticité.
+\end{enumerate}
+\end{lem}
+
+La preuve du lemme est disponible dans l'article dont il vient. Pour la suite il faut maintenant monter comment définir $dbf_{LO}(\tau_i, \Delta)$ et $dbf_{HI}(\tau_i, \Delta)$ avec un $D_i(LO)$ donné.
+
+\subsection{Formulation des fonction de borne de demande}
+
+Il est déjà établi que lors ce que le système est en basse criticité se toute taches $\tau_i$ comporte comme une tâche sporadique classique, avec les paramètres $C_i(LO), D_i(LO), T_i$. La fonction de borne de demande serrée est 
+\begin{equation}
+dbf_{LO}(\tau_i, \Delta) \overset{def}{=} max \left( 0, \left( \left\lfloor \dfrac{\Delta-D_i(LO)}{T_i} \right\rfloor +1 \right) \times C_i(LO) \right)
+\end{equation}
+
+La fonction de borne de demande pour les tâches en haute criticité, $dbf_{HI}(\tau_i, \Delta)$, doit borner supérieurement la demande d'exécution maximale des travaux de $\tau_i$ avec une fenêtre d'ordonnancement dans un des intervalle de taille $\Delta$. Il peut donc y avoir un travail transféré. Par le \autoref{greedy:dtt}, on sait que la fenêtre restante d'ordonnancement d'un travail transféré de $\tau_i$ est au moins de taille $D_i(HI) - D_i(LO)$ unités de temps. L'intervalle de temps $D_i(HI) - D_i(LO)$ est donc l'intervalle minimal dans lequel un fenêtre d'ordonnancement d'un travail de $\tau_i$ peut rentrer. Plus généralement, la taille du plus petit intervalle dans lequel peuvent rentrer $k$ travaux de $\tau_i$ est $(D_i(JI)-D_i(LO))+(k-1)*T_i$. La demande d'exécution de $\tau_i$ durant un intervalle de taille $\Delta$ est donc bornée par :
+\begin{center}
+$full(\tau_i, \Delta) \overset{def}{=} max \left(0,  \left( \left\lfloor \dfrac{\Delta - (D_i(HI) - D_i(LO))}{T_i}\right\rfloor +1 \right) \times C_i(Hi) \right)$
+\end{center}
+
+La fonction $full(\tau_i, \Delta)$ ne tient pas compte qu'un travail transféré ait pu être exécuté pour quelque unités de temps durant la basse criticité. Il est possible de vérifier si tout les travaux qui contribuent à la demande d'exécution $full(\tau_i, \Delta)$ peuvent inséré leur fenêtre d'ordonnancement dans un intervalle de taille $\Delta$ sans considéré un éventuel travail transféré. Pour ce faire, il faut soustraire le temps d'exécution effectué en basse criticité à $full(\tau_i, \Delta)$.\\
+
+Pour un temps d'intervalle $\Delta$, il peut y avoir au plus $n = \Delta mod T_i$ unités de temps restante pour le premier travail, potentiellement un travail transféré. Si $n \ge D_i(HI)$, il y a assez de place pour la fenêtre d'ordonnancement d'un travail complet et rien ne peut être soustrait de $full(\tau_i, \Delta)$. Si $n < D_i(HI) - D_i(LO)$, alors les travaux contribuant à $full(\tau_i, \Delta)$ peuvent placer leur période entière dan l'intervalle, donc rien n'est à soustraire. Sinon, on utilise le \autoref{greedy:dtt} pour quantifier le temps de calcul a soustraire :
+\begin{center}
+$$
+done(\tau_i, \Delta) = \left\{
+    \begin{array}{ll}
+        max(0, C_i(LO)-n+D_i(HI) - D_i(LO) & si\ D_i(HI) > n \ge D_i(HI) - D_i(LO) \\
+        0 & \mbox{sinon.}
+    \end{array}
+\right.
+$$
+\end{center}
+avec $n = \Delta\ mod\ T_i$.\\
+Les deux termes peuvent maintenant être combiné pour obtenir $dbf(\tau_i, \Delta)$ :
+\begin{equation}
+dbf(\tau_i, \Delta) = full(\tau_i, \Delta) - done(\tau_i, \Delta)
+\end{equation}
+
+\subsection{Réglage efficient des échéance relative}
+
+A présent, il faut définir $D_i(LO)$ pou les tâches. Il n'est pas envisageable de tester tout les combinaisons de leur valeurs, car, bien que borné, cet ensemble est exponentiel. Ekberg \textit{et al.} propose une heuristique pour régler ces échéance relative.\\
+
+Leur algorithme se base sur le lemme qui suit :
+
+\begin{lem}[\cite{ekberg2012outstanding}]
+Si deux tâches $\tau_i$ et $\tau_j$ de haute criticité sont identique sauf que $D_i(LO) = D_j(LO) - \delta$ pour $\delta \in \mathbb{Z}$ alors :
+\begin{center}
+
+$dbf_{LO}(\tau_i, \Delta) = dbf_{LO}(\tau_j, \Delta + \delta) $\\
+$dbf_{HI}(\tau_i, \Delta) = dbf_{HI}(\tau_j, \Delta - \delta)$
+
+\end{center} 
+\end{lem}
+
+Ce lemme signifie qu'en diminuant $D_i(LO)$ de $\delta$, il est permis de bouger $dbf_{HI}(\tau_i, \Delta)$ par $\delta$ pas vers la gauche au prix de bouger $dbf_{LO}(\tau_i, \Delta)$ par $\delta$ pas vers la droite. En d'autre terme, il s'agit de déplacer $dbf_{LO}$ et $dbf_{HI}$ en espérant trouver une configuration où la demande totale de l'ensemble de tâche est fournie en basse et haute criticité.\\
+
+L'algorithme complet est disponible dans \cite{ekberg2012outstanding}.
+
 \section{LWLF}
+Dans la littérature, en ordonnancement temps réel, il existe encore un type d'algorithme qui n'a pas encore utilisé pour l'ordonnancement en criticité mixte. Il s'agit de \textit{LLF, Least Laxity First}.\\
+
+\textit{LLF} est un algorithme d'ordonnancement DP. Il assigne aux travaux une priorité proportionnelle à leur laxité.
+
+\begin{defin}[Laxité\cite{goossens1999scheduling}]
+La laxité d'un travail est le temps maximale durant lequel il peut se permettre d'être oisif sans dépasser son échéance.
+\end{defin}
+
+Pour la criticité mixte, il faut définir la notion de pire laxité.
+
+\begin{defin}[Pire laxité]
+La pire laxité d'un travail est le temps maximale durant lequel il peut se permettre d'être oisif sans dépasser son échéance, pour son pire WCET.
+\end{defin}
+
+\textit{LWLF, Least Worst Laxity First}, ordonnance donc les travaux en leur attribuant un une priorité inversement proportionnelle à leur pire laxité.
 
 
 \chapter{Sémantique sous forme d'automate}
 
-Dans cette section
+Dans cette section...
 
 \section{Tache Périodique}
 
@@ -784,6 +1273,7 @@ Avant de pouvoir définir les transitions de l'automate, il faut établir des no
 La première de celles-ci est l'ensemble des tâche active, il s'agit des tâches qui souhaitent prendre possession de processeur. De plus, l'ensemble des tâches abandonné dans le scénario. 
 
 \begin{defin}[Tâches actives et abandonnés]
+\label{per:actdisc}
 Une tâche est dite abandonné lors ce que sa criticité est inférieure à celle de l'état du système. De par la définition de l'ordonnancement en criticité mixte, ces tâches ne font plus partie de celles à ordonnancer. Les tâches abandonnées sont représentées dans le système comme venant de soumettre un travail ne nécessitant aucune ressource..
 
 $Discarded(S) = \{\tau_i | at_S(\tau_i) == 0 \wedge rct_S(\tau_i) == 0\}$\\
@@ -799,6 +1289,7 @@ Deux cas seront possible, soit le temps d'arrivé est dans le futur et donc la t
 En ordonnancement en criticité mixte, les tâches signalent leur complétion. Ce type d'ordonnancement fait l'hypothèse que les tâche n'excède pas leur pire WCET estimé. Une tâche qui aurait été exécuté pour temps égal à son pire WCET se signalera toujours comme complétée. De cette observation, en découle l'ensemble des tâches implicitement terminées.
 
 \begin{defin}[Tâche implicitement terminée]
+\label{per:impdone}
 Une tâche qui aurait un niveau de criticité équivalent à celui de l'état du système sera implicitement terminé si elle a soumise un travail et qu'il a été accompli pour toute la durée de son estimation.
 
 $ImplicitelyDone(S) = \{\tau_i | rct_S == 0 \wedge\ at_S(\tau_i) < 0\wedge crit_S=\chi_i\}$\\
@@ -873,10 +1364,12 @@ L'ordonnanceur $work-conserving$ ordonnancera toujours une tâche s'il y a des t
 Il est maintenant possible de de définir les transition de l'automate. L'automate aura une transition depuis un état du système vers tout ceux qu'il peut générer. Il peut y en avoir plusieurs car une tâche peut signaler ou non sa complétion.\\
 Pour définir cet ensemble de transition, l'automate utilisera des transitions intermédiaire pour représenter différentes action au cours d'une unité de temps.\\
 
-Durant une unité de temps, une tâche est exécutée, ensuite elle signale on non sa complétion et enfin, s'il y a lieu, la criticité de l'état du système peut passer  au niveau supérieur.
+Durant une unité de temps, une tâche est exécutée, ensuite elle signale on non sa complétion et enfin, s'il y a lieu, la criticité de l'état du système peut passer  au niveau supérieur.\\
+
+La première transition établie est la transition d'exécution. Cette transition permet à une tâche de profiter de la ressource partagée pendant un coup d'horloge
 
 \begin{defin}[Transition d'exécution]
-Soit $S = (at_S, rct_S, crit_S)$ un état du système et $Run$ un $ordonnanceur$ pour $\tau$. On dit que l'état du système $S^+ = (at_S^+, rct_S^+, crit_S^+)$ est un $successeur\ horloge$ de $S$ avec $Run$, noté $S\xrightarrow{Run}S^+$ ssi:
+Soit $S = (at_S, rct_S, crit_S)$ un état du système et $Run$ un $ordonnanceur$ pour $\tau$. On dit que l'état du système $S^+ = (at_S^+, rct_S^+, crit_S^+)$ est un $successeur\ exécuté$ de $S$ avec $Run$, noté $S\xrightarrow{Run}S^+$ ssi:
 \begin{itemize}
 \item Pour tout $\tau_i \in Run(S) : rct_S^+(\tau_i) = rct_S(\tau_i)-1$\\
 \item Pour tout $\tau_i \not \in Run(S) : rct_S^+(\tau_i) = rct_S(\tau_i)$\\
@@ -891,8 +1384,10 @@ $$\\
 \item $crit_{S}^{+} = crit_{S}$
 
 \end{itemize}
-Cette transition permet à une tâche de profiter de la ressource partagée pendant un coup d'horloge, ce qui signifie que la tâche ordonnancée verra son temps restant d'exécution décrémentée d'une unité et le temps d'arrivé de toutes les tâches sera lui aussi décrémenté d'une unité, sauf pour les tâches qui ne sont plus considérées de par la criticité de l'état du système.
+La tâche ordonnancée verra son temps restant d'exécution décrémentée d'une unité et le temps d'arrivé de toutes les tâches sera lui aussi décrémenté d'une unité, sauf pour les tâches qui ont été abandonnées. Cette transition ne modifie pas la criticité de l'état du système.
 \end{defin}
+
+Après avoir été exécutée, une tâche peut signaler sa complétion. La transition de terminaison se charge de représenté cette modification dans l'état du système
 
 \begin{defin}[Transition de terminaison]
 Soit $S = (at_S, rct_S, crit_S)$ un état du système et $\tau' \subseteq Active(S)$ un ensemble de tâches actives pouvant signaler leur complétion. On dit que l'état du système $S' = (at_S', rct_S', crit_S')$ est un $successeur\ \tau'-terminaison$ de $S$, noté $S\xrightarrow{\tau'}S'$ ssi:
@@ -909,8 +1404,12 @@ Soit $S = (at_S, rct_S, crit_S)$ un état du système et $\tau' \subseteq Active
 \item $crit_{S'} = crit_{S}$
 
 \end{itemize}
-Cette transition représente les complétions signalée ou implicite de travaux de tâches. Pour les tâches qui ne se termine pas, rien ne change. Pour les tâche se complétant le temps restant de calcul est mit au WCET de la tâche pour le niveau de criticité de l'état. Le temps d'arrivé de la tâche est incrémenté de sa période, s'il est positif alors la tâche ne sera pas active directement.
+Cette transition prend se base sur un ensemble de tâche qui vont signaler leur complétion. Cette ensemble peut être vide, dans ce cas aucune tâche ne se termine. En plus de ces tâches, les tâches qui sont implicitement terminées seront elles aussi compléter. Comme il s'agit d'ensemble, une tâche peut faire partie des deux groupes et leurs union ne considérera qu'une seule fois.\\
+
+Pour les tâches qui ne se termine pas, rien ne change. Pour les tâches se complétant le temps restant de calcul est mit au WCET de la tâche pour le niveau de criticité de l'état. Il s'agit du temps de calcul dont la tâche aura besoin lors de sa prochaine arrivée. Le temps d'arrivé de la tâche est incrémenté de sa période, s'il devient positif alors la tâche ne sera pas active directement.
 \end{defin}
+
+Enfin, il est nécéssaire de fixer la transition critique. Celle-ci ajuste le niveau de criticité si une tâche n'a pas signalé sa complétion bien qu'elle ai utiliser ton son temps de calcul prévu au niveau actuel.
 
 \begin{defin}[Transition critique]
 Soit $S = (at_S, rct_S, crit_S)$ un état du système. On dit que l'état du système $S^C = (at_S^C, rct_S^C, crit_S^C)$ est un $successeur\ critique$ de $S$, noté $S\xrightarrow{C}S^C$, ssi :
@@ -919,7 +1418,8 @@ Soit $S = (at_S, rct_S, crit_S)$ un état du système. On dit que l'état du sys
 \item Pour tout $\tau_i \in \tau :$
 $$ rct_S^C(\tau_i) = \left\{
     \begin{array}{ll}
-        rct_S+c_i(Critical_S)-c_i(crit_S) & si\ X_i\geq Critical_S \\
+        rct_S+c_i(Critical_S)-c_i(crit_S) & si\ X_i\geq Critical_S \wedge \tau_i \in Active(S) \\
+        rct_S & si\ X_i\geq Critical_S \wedge \tau_i \notin Active(S) \\
         0 & \mbox{sinon.}
     \end{array}
 \right.
@@ -932,10 +1432,15 @@ $$ at_S^C(\tau_i) = \left\{
 \right.
 $$\\
 \end{itemize}
-Cette transition met à jour la criticité du système et augmente les temps restants d'exécution si nécessaire. Si la criticité dépasse celle de certaines tâches, leur temps d'arrivé et leur temps d'exécution sont mis à zéro et elles rejoignent donc bien l'ensemble $Discarded(S^C)$.
+Cette transition commence par met à jour la criticité du système. Ensuite, elle augmente les temps restants d'exécution des tâche active s'il y a effectivement un changement de criticité. Pour ce faire, il faut ajouté le temps d'exécution établi pour le niveau mais ne pas ré-allouer le temps qui a déjà été utiliser par la tâche.\\
+La temps d'arrivé n'est pas modifié sauf si la criticité dépasse celle de certaines tâches. Alors, leurs temps d'arrivés et leur temps d'exécution restant sont mis à zéro et elles rejoignent donc bien l'ensemble $Discarded(S^C)$. Si la criticité réel d'un état est identique à sa criticité, cette transition ne fera aucune modification.
 \end{defin}
 
-\begin{defin} Étant donné un ensemble de tâches $\tau$ et un ordonnanceur $Run$, l'automate $A(\tau,Run)$ est le tuple $(V, E, S_0, F)$ où:
+Il est maintenant possible de définir l'automate simulant l'ordonnancement CM de tâche périodique.
+
+\begin{defin} 
+\label{per:auto}
+Étant donné un ensemble de tâches CM périodique $\tau$ et un ordonnanceur $Run$, l'automate $A(\tau,Run)$ est le tuple $(V, E, S_0, F)$ où:
 \begin{itemize}
 \item  $V=State(\tau)$
 \item $(S_1,S_2) \in E$ ssi il existe les états intermédiaires $S'$ et $S'' \in State(\tau)$ et $\tau' \subseteq Run(S) $ tel que : $S_1\xrightarrow{Run}S'\xrightarrow{\tau'}S''\xrightarrow{C}S_2$
@@ -947,14 +1452,131 @@ Cette transition met à jour la criticité du système et augmente les temps res
 \item $F = Fail_\tau$
 \end{itemize}
 
-On remarque les tâche pouvant signaler leur complétion sont celle qui ont été ordonnancées. En effet, il faut qu'une tâche soit exécuté pour pouvoir signaler qu'elle a terminée son travail.
+Les état sont tout les état du système qu'il est possible de généré depuis l'ensemble de tâche avec une pire laxité minimum de -1.\\
+Les transitions relie un états vers ceux dont il peut être le prédécesseur selon les trois transition d'exécution, de terminaison et critique en série. On remarque les tâche pouvant signaler leur complétion sont celle qui ont été ordonnancées. En effet, il faut qu'une tâche soit exécuté pour pouvoir signaler qu'elle a terminée son travail. Il s'agit des tâche ordonnancé dans l'état initial et non dans l'état intermédiaire, après exécution.\\
+Pour l'état initial, les temps d'arrivés sont les décalage des tâche. Le temps restant de calcul est le WCET pour le niveau de criticité le plus bas. Enfin, la criticité de l'état du système est la criticité initiale.\\
+Enfin, les état erronées sont ceux qui ont une pire laxité négative.
 
 \end{defin} 
 
-Cette première modélisation 
+\begin{exem}
+Cet exemple présentera la construction partiel d'un automate défini sur un ensemble de tâche CM périodique.
 
+\begin{table}[h]
+
+    \centering
+
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+i &O & T & D & C & $\chi$\\
+\hline
+0 & 0 & 3 & 3 & [2, 3]& 2\\
+\hline
+\end{tabular}
+    
+\caption{L'ensemble de tâche utilisé pour l'exemple.}
+\label{per:exe}
+
+\end{table}
+
+Considérons l'ensemble tâche $\tau$ présenter en \autoref{per:exe}. Cet ensemble contient une seule tâche avec échéance sous requête et un criticité double.\\
+
+Cet exemple présente la construction d'un automate et illustre les états intermédiaire et les transitions.
+
+\begin{figure}[h]
+
+    \centering
+    \def\svgwidth{\columnwidth}
+    \input{graphes/per-inter.pdf_tex}
+    
+\caption{Construction partiel de l'automate de l'automate basé sur $\tau$ en \autoref{per:exe} avec et $Run$ = EDF}
+\label{per:inter}
+
+\end{figure}
+
+
+Dans la \autoref{per:inter}, les état du système sont représenté par les noeuds. Le inscrit dans le noeuf est le couple $(at_S(\tau_0), rct_S(\tau_0))$ et le nombre le suivant est $crit_S$.\\
+Les flèches continue représente une transition d'un état vers un autre. Les flèches rouge représente la transition d'exécution. Les flèches noire sont les transitions de terminaison. Enfin, les flèches bleues sont les transitions critiques.\\
+
+Le noeud initial est celui avec la flèche pointé sur lui. Cet état du système correspond bien à $S_0$ tel que définis en \autoref{per:auto}, $at_{S_0}(\tau_0) = O_0,\ rct_{S_0}(\tau_0) = C_0(1),\ crit_{S_0} = 1$.\\
+
+Depuis l'état initial, s'en suit une transition d'exécution où l'unique tâche 0 est ordonnancé. La tâche $\tau_0$ est bel et bien active car $at_{S_0}(\tau_0) == 0 \wedge rct_{S_0}(\tau_0) > 0$ par \autoref{per:actdisc}. Comme attendu par \autoref{per:exe}, le temps restant de calcul et le temps d'arrivé sont décrémenté d'une unité. Ensuite, il y a deux transitions de terminaison possible. Soit la tâche $\tau_0$ signale sa complétion, soit elle ne le fait pas. Si elle la signale, il faut suivre la flèche de gauche. Dans cet état fraichement atteins, le temps restant de calcul est remis à son maximum pour la criticité du système et le temps d'arrivé est placé dans le futur, en corrélation avec la période de la tâche. En revanche, si la tâche ne signale pas sa complétion, l'état est alors identique au précédent. S'en suit la transition critique, depuis ces deux dernier états, elle ne change rien. En effet, aucun de ces état ne déclenche une criticité plus élevé car aucune tâche n'a été exécuté jusqu'au bout de WCET sans signaler sa complétion. Une soit cette série de trois transition passée, il faut relier les états entre eux, c'est que représente la flèche discontinue verte.\\
+
+Pour l'état $(2, 2) 1$, le temps d'arrivé de $\tau_0$ va décrémenté, de par le transition d'exécution. Les autres transition ne modifieront rien. Finalement, le temps de calcul de la tâche $\tau_0$ arrivera jusqu'à zéro et il s'agira alors de l'état initial.\\
+
+L'état $(-1, 1) 1$ va se comporté comme l'état initial sauf lors de la transition critique. En effet, si la tâche $\tau_0$ ne signale pas sa complétion elle déclenchera un passage à criticité supérieure.\\
+Si $\tau_0$ s'est effectivement terminé, l'état du système se comportera de la même manière que si elle s'était signalé complète lors de son exécution précédent sauf que prochain temps d'arrivé sera déjà décrémenté d'une unité.\\
+
+Si $\tau_0$ n'est s'est pas déclarée comme finie, alors il est nécéssaire d'indiquer la criticité du système comme étant supérieur et d'ajouter le temps de calcul nécéssaire en plus. C'est ainsi que l'état $(-2, 1) 2$ est atteins. Celui ci va alors ordonnancé $\tau_0$ et son temps restant de calcul sera alors nul. S'en suit la transition de terminaison. Dans les deux cas, la tâche se termine. Dans cette configuration, $ImplicitelyDone(S) = \{\tau_0\}$ par \autoref{per:impdone} et $\tau' \subseteq \{\tau_0\}$ et donc, dans tout les cas, $\tau' \cup ImplicitelyDone(S) = \{\tau_0\}$.\\
+
+Le reste de l'automate n'est pas présenté ici mais il devra être contruit, c'est que réprésente les flèche rouge en pointillé. Au final, il faut remarquer que dans l'automate, seul les états avec un fond gris sont atteins, et son relié par les transitions discontinue vertes.
+
+\begin{figure}[h]
+
+    \centering
+    \def\svgwidth{\columnwidth}
+    \input{graphes/per-concat.pdf_tex}
+    
+\caption{Automate de l'automate basé sur $\tau$ en \autoref{per:exe} avec et $Run$ = EDF}
+\label{per:concat}
+
+\end{figure}
+
+La \autoref{per:concat} présente l'automate complètement construit, sans les états intermédiaire. La scission entre les deux niveau de criticité est flagrante.
+
+\end{exem}
+
+Maintenant que le principe de l'automate a été illustré clairement, il possible de prendre pour exemple un nouvel ensemble de tâche.
+
+\begin{exem}
+
+Cet exemple illustre le comportement de tâche avec des criticités différentes et non ordonnançable.
+
+\begin{table}[h]
+
+    \centering
+
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+i &O & T & D & C & $\chi$\\
+\hline
+0 & 0 & 3 & 3 & [2, 3]& 2\\
+\hline
+1 & 0 & 3 & 3 & [2, 2]& 1\\
+\hline
+\end{tabular}
+    
+\caption{L'ensemble de tâche utilisé pour l'exemple 2.}
+\label{per:exe:fail}
+
+\end{table}
+
+La figure \autoref{per:exe:failimg} construit partiellement l'automate basé sur l'ensemble de tâche en \autoref{per:exe:fail}. Dans celui-ci, les noeud compte deux couple $(at_S, rct_S)$, le premier est pour la tâche $\tau_0$ et le second pour $\tau_1$.
+
+\begin{figure}[h]
+
+    \centering
+    
+    \resizebox{\textwidth}{!}{\input{graphes/per-fail.pdf_tex}}
+    
+\caption{Automate partiel de l'automate basé sur $\tau$ en \autoref{per:exe:fail} avec et $Run$ = EDF-VD}
+\label{per:exe:failimg}
+
+\end{figure}
+
+Dans ce nouvelle automate, deux nouveau comportement sont présent.\\
+Premièrement, quand l'automate est en criticité supérieure, la tâche $\tau_1$ ayant une criticité inférieure à celle du système n'est plus considéré. En effet, $\tau_1$ se retrouve dans l'ensemble $Discarded(S)$.\\
+Ensuite, il y a un état erroné, représenté en orange dans le graphe. Il est erroné car l'une des laxité de ses tâches est négative. Il s'agit de la tâche $\tau_1$, $Laxity_{S_{Fail}}(\tau_1) = at_{S_{Fail}}(\tau_1) + D_1 - rct_{S_{Fail}}(\tau_1) = -2 +3-2 = -1$. L'ensemble de tâche $\tau$ n'est effectivement pas ordonnançable. C'est détectable en regardant la faisabilité CM de $\tau$, $U_{\tau, 1}(1) + U_{\tau, 2}(1)= 4/3 >1$.
+
+\end{exem}
+
+La création d'un automate pour représenter l'ordonnancement CM de tâches périodique est maintenant connu. Ce modèle est interréssant et est une bonne entré en la matière. Cependant, supposer que les tâches sont périodique est une forte abstraction de la réalité.
 
 \section{Tâche Sporadique}
+
+Cette section présente la modèlisation de l'ordonnancement de tâches CM sporadiques.\\
+
+Il faut commencer par la représentation de l'état du système, qui seront les états de l'automate. Dans ce nouveau modèle, un tâche est caractérisé par son temps de restant de calcul, temps d'arrivée de sa prochaine émission et sa complétion. Le système est aussi défini par sa criticité.\\
 
 
 \begin{defin}[État du système]
@@ -969,29 +1591,50 @@ Soit $\tau = \tau_1, \tau_2, \tau_3 ...$ un ensemble de tâches périodiques en 
 
 \end{itemize}
 
+Le temps de calcul restant est borné entre $0$ et le maximum des pires WCETs des tâches. La criticité du système est comprise entre $1$ et $K$, la criticité de l'ensemble de tâches CM à ordonnancer. Les complétions des tâches sont des booléans. Le prochain temps d'arrivé est borné supérieurement, par la période maximal dans l'ensemble de tâche. Comme $nat$ n'a pas de planché, l'automate semble infini. Cependant, comme l'objectif est détecté la présence d'états qui font échouer un ordonnancement CM, il n'est pas nécessaire d'explorer tout ces états. Cette observation capital sera prouvée par la suite.\\
+Il aussi apparent que des états seront contradictoires. Par exemple, il est possible d'avoir un tâche avec un temps restant de calcul positif alors qu'elle est indiquée comme complétée. Ce genre d'état ne seront pas accédé depuis l'état initial et les transitions de l'automate.
+
 \end{defin}
 
+Les état de l'automate sont définis. La prochaine étapes et de définir ses transitions. Pour se faire, il est nécessaire de définir certaines notions auxiliaires sur les quelles les transitions seront basée.\\
+
+En premier lieu, il est souhaitable de savoir quelles sont les tâches actives dans l'état du système. Il s'agit des tâches qui on besoin de temps de calcul.
+
 \begin{defin}[Tâches actives]
-\label{active}
-$Active(S) = \{\tau_i | !done_S(\tau_i)\}$
+\label{spo:act}
+Une tâche est active dans l'état $S$ si elle ne s'est pas signalé comme complétée dans celui-ci.
+
+$Active(S) = \{\tau_i | done_S(\tau_i) = False \}$
+
+Ici les tâches active sont simplement celle qui sont défini comme tel dans l'état de part leur attribut $done$. Il n'est pas possible de considéré simplement le temps de calcul restant, et dire qu'il doit être positif pour qu'une tâche soit active. En effet, ce n'est pas parceque le temps restant de calcul d'une tâche est nul qu'elle est terminée. La tâche doit signaler sa complétion et ce temps restant de calcul peut être nul pour la criticité actuel mais pas pour la suivante.
 \end{defin}
+
+Bien que les tâches se terminent sur signale, elles ne dépasse jamais leur pire WCET. C'est-à-dire qu'une tâche qui été a exécuté pour temps égal à sa pire estimation, se signalera toujours comme étant finie.
 
 
 \begin{defin}[Tâche implicitement terminée]
-\label{impdone}
+\label{spo:impdone}
+Une tâche qui aurait un niveau de criticité équivalent à celui de l’état du système sera
+implicitement terminé si elle est active et qu’elle a été accomplie pour toute la
+durée de son estimation.
 
-$ImplicitelyDone(S) = \{\tau_i | rct_S(\tau_i) == 0 \wedge\ !done_S(\tau_i)\wedge crit_S=\chi_i\}$\\
+$ImplicitelyDone(S) = \{\tau_i | rct_S(\tau_i) == 0 \wedge\ done_S(\tau_i) = False \wedge crit_S=\chi_i\}$\\
 \end{defin}
 
+Automate se base sur des tâches sporadiques, il sera donc utile de savoir quelles tâches peuvent soumettre un travail dans un certain état du système.
 
-\begin{defin}[Tâche éligible à la submission d'un travail]
-\label{eligible}
+\begin{defin}[Tâche éligible à la soumission d'un travail]
+\label{spo:eligible}
+Un tâche est éligible pour soumettre un travail dans un état $S$ si elle n'est pas active, son prochain temps d'arrivé est nul ou négatif et elle n'a pas été abandonné à cause de sa criticité.
 $Eligibile(S) = \{\tau_i | rct_S(\tau_i) == 0 \wedge\ nat_S(\tau_i) \leq 0 \wedge\ done_S(\tau_i)\wedge\ crit_S\geq\chi_i\}$\\
 \end{defin}
 
+Les état du système ne sont pas tous des état qui seront réellement possible durant l’ordonnancement d’un ensemble de tâche CM. Par exemple il n’y a aucune contrainte sur la criticité de l’état du système. En revanche, il est possible de détecter qu’un état doit passer au niveau de criticité supérieur. C’est le but la notion de criticité réelle d’un état du système.
 
-\begin{defin}[Criticité d'un état]
-\label{critical}
+
+\begin{defin}[Criticité réelle d'un état]
+\label{spo:critical}
+Pour détecter un passage à criticité supérieure, il faut qu'une tâche ait été exécuté complètement pour con WCET actuel sans avoir signaler sa complétion.\\
 La criticité réelle d'un état $S$ est celle de l'état si aucune tâche n'a été exécutée complètement sans avoir signalé sa complétion, celle de l'état incrémentée d'un sinon.
 $$
 Critical_S = \left\{
@@ -1003,48 +1646,49 @@ Critical_S = \left\{
 $$
 \end{defin}
 
+Il faut rappeler que le but de ce modelisme est de déterminer l'ordonnançabilité CM d'un ensemble de tache. Il s'agit donc de s'assurer qu'aucune tâche ne manque son échéance. La laxité d'un tâche permet de savoir durant combien d'unité de temps la tâche peut être oisive avant de manquer son échéance. A tout moment, si laxité d'une tâche est négative, fatalement, elle ne parviendra pas à être exécuté pour son temps restant de calcul total.
+
 \begin{defin}[Laxité]
-\label{laxity}
+\label{spo:laxity}
 La laxité d'une tâche $\tau_i$ dans l'état $S$ est :
 
 $Laxity_S(\tau_i) = nat_S(\tau_i) -T_i + D_i - rct_S(\tau_i)$\\
 
-La laxité d'une tâche est donc le nombre d'unités de temps où la tâche peut être oisive avant de manquer son échéance. Dès lors, si la laxité d'une des tâches d'un état est négative, une tâche manquera son échéance. Cette définition permet de donner celle des états erronés.
+Pour obtenir la laxité d'une tâche dans l'état du système, il faut en premier obtenir nombre d'unité de temps qu'il reste avant son échéance. Pour ce faire, il est nécéssaire de savoir quand la tâche a été émise, ce qui s'obtient par la différence entre le prochain temps d'arrivé et la période de la tâche. Par après, il faut suffit d'y ajouter l'échéance relative de la tâche, pour finalement en soustraire le temps de calcul restant.
 \end{defin}
+
+Cette définition de la laxité est valide pour l'ordonnancement CM mais aussi pour le classique. En mixité critique, il est possible d'aller plus loin. En effet, la laxité ici tiens compte du temps restant de calcul maximal pour le niveau de criticité actuel, mais il faut aussi à tout moment pouvoir exécuter les tâche actives pour leurs pire WCET. C'est à partir de ce constat que l'idée de pire laxité a émergée.
 
 \begin{defin}[Pire laxité]
-\label{worstlaxity}
+\label{spo:worstlaxity}
 La pire laxité d'une tâche $\tau_i$ dans l'état $S$ est :
 
-$$
-WorstLaxity_S(\tau_i) =\left\{
-    \begin{array}{ll}
-        nat_S(\tau_i) -T_i + D_i - (rct_S(\tau_i) + (C_i(K)-C_i(crit_S)) & \tau \in Active(S) \\
-        Laxity_S(\tau_i) & \tau \notin Active(S)
-    \end{array}
-\right.
-$$
+$ WorstLaxity_S(\tau_i) = nat_S(\tau_i) -T_i + D_i - (rct_S(\tau_i) + (C_i(K)-C_i(crit_S))
+$
 
-La laxité d'une tâche est donc le nombre d'unités de temps où la tâche peut être oisive avant de manquer son échéance. Dès lors, si la laxité d'une des tâches d'un état est négative, une tâche manquera son échéance. Cette définition permet de donner celle des états erronés.
+La définition reprend celle de la laxité classique, sauf qu'elle ajoute au temps restant de calcul, celui qui pourrait s'y additionné en cas de criticité supérieure.
 \end{defin}
 
+Comme il est maintenant possible de savoir quand un ordonnancement CM n'est pas possible selon un ordonnanceur, et que le but est justement de déterminer si c'est le cas, la définition des états erronés se construit facilement.
+
 \begin{defin}[États erronés]
-\label{failstate}
-Un état $S$ est erroné si l'une des laxités des tâches est négative, on obtient alors l'ensemble :
+\label{spo:failstate}
+Un état $S$ est erroné si l'une des pire laxités des tâches est négative, on obtient alors l'ensemble :
 
 $Fail_\tau = \{S|\exists \tau_i \in \tau : WorstLaxity_S(\tau_i) < 0  \}$\\
 \end{defin}
 
-Grâce à ces états erronés, nous pouvons à présent borner inférieurement $at_S$. En effet, puisque dès que la laxité d'un état est négative, il est érroné, il n'est pas nécéssaire d'inclure dans l'automate les état où $\exists\ \tau_i \in \tau\ tq\ Laxity_S(\tau_i) < -1$.\\
-Dés lors : $nat_S(\tau_i) -T_{min} + D_{max} - rct_S(\tau_i) \geq -1$\\
-d'où $nat_S(\tau_i) \geq rct_S(\tau_i) - (D_{max}+1) + T_{min} \geq T_{min}-(D_{max}+1)$\\
-et donc $T_{min}-(D_{max}+1) \leq nat_S(\tau_i) \leq R_{max}$\\
-avec $D_{max} = max_i\ D_i$ et $R_{max} = max(max_i\ (T_i),\ max_i\ (O_i))$\\
+Grâce à ces états erronés, il est à présent possible de borner inférieurement $nat_S$. En effet, puisque dès que la pire laxité d'un état est négative, il est erroné, il n'est pas nécessaire d'inclure dans l'automate les état où $\exists\ \tau_i \in \tau\ tq\ WorstLaxity_S(\tau_i) < -1$.\\
 
-Nous pouvons à présent définir les transitions de l'automate. Pour ce faire nous devons choisir un $ordonnanceur$, une fonction sur un état vers une tâche à ordonnancer.
+Dés lors : $nat_S(\tau_i) -T_{min} + D_{max} - (rct_S(\tau_i) + (C_{min}(K)-C_{max}(1)) \geq -1$\\
+d'où $nat_S(\tau_i) \geq (rct_S(\tau_i) + (C_{min}(K)-C_{max}(1))) - (D_{max}+1) + T_{min} \geq T_{min}-(D_{max}+1) + (C_{min}(K)-C_{max}(1))$\\
+et donc $T_{min}-(D_{max}+1)+ (C_{min}(K)-C_{max}(1)) \leq nat_S(\tau_i) \leq R_{max}$\\
+avec $D_{max} = max_i\ D_i$, $C(1)_{max} = max_i\ C_i(1)$, $C(K)_{min} = min_i\ C_i(K)$, $T_{min} = min_i\ (T_i)$ et $R_{max} = max(max_i\ (T_i), max_i\ (O_i))$\\
+
+L’automate qui se construit ici est basé sur et un ensemble de tâche mais aussi sur un ordonnanceur. Il est donc nécessaire de choisir un tel ordonnanceur, c’est-à-dire une fonction sur un état du système vers une tâche à ordonnancer.
 
 \begin{defin}[Ordonnanceur]
-\label{run}
+\label{spo:run}
 Un $ordonnanceur$ monoprocesseur pour $\tau$ est une fonction $Run : State(\tau) \rightarrow \tau$ telle que $Run(S) \subseteq Active(S)$ et $0 \leq |Run(S)| \leq 1$.
 De plus :
 \begin{itemize}
@@ -1053,10 +1697,19 @@ De plus :
 $\forall \tau_i \in Active(S_1) : (nat_{S_1} == nat_{S_2} \wedge rct_{S_1} == rct_{S_2} done_{S_1} == done_{S_2} \wedge crit_{S_1} == crit_{S_2} )$ implique $Run(S_1) == Run(S_2)$
 \end{itemize}
 
+L'ordonnanceur $work-conserving$ ordonnancera toujours une tâche s'il y a des tâches actives dans l'état du système. Un ordonnanceur $sans\ memoire$ signifie qu'il se base uniquement sur l'état du système pour choisir la tâche la plus prioritaire. C'est-à-dire qu'il ne va pas prêter attention à ce qu'il s'est passé avant.
+
 \end{defin}
 
+Il est maintenant possible de de définir les transition de l'automate. L'automate aura une transition depuis un état du système vers tout ceux qu'il peut générer. Il peut y en avoir plusieurs car une tâche active peut signaler ou non sa complétion et une tâche oisive peut généré ou non un travail.\\
+Pour définir cet ensemble de transition, l'automate utilisera des transitions intermédiaire pour représenter différentes action au cours d'une unité de temps.\\
+
+Durant une unité de temps, une tâche est exécutée, ensuite elle signale on non sa complétion et, s'il y a lieu, la criticité de l'état du système peut passer au niveau supérieur. Enfin, les tâches qui sont éligible à la soumission d'un travail peut décider d'émettre un travail.
+
+La première transition établie est la transition d'exécution. Cette transition permet à une tâche de profiter de la ressource partagée pendant un coup d'horloge
+
 \begin{defin}[Transition d'exécution]
-\label{texec}
+\label{spo:texec}
 Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $Run$ un $ordonnanceur$ pour $\tau$. On dit que l'état du système $S^+ = (nat_S^+, rct_S^+, done_S^+, crit_S^+)$ est un $successeur\ horloge$ de $S$ avec $Run$, noté $S\xrightarrow{Run}S^+$ ssi:
 \begin{itemize}
 \item Pour tout $\tau_i \in Run(S) : rct_S^+(\tau_i) = rct_S(\tau_i)-1$\\
@@ -1064,79 +1717,92 @@ Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $Run$ un $ordo
 \item Pour tout $\tau_i \in \tau :$
 $$ nat_S^+(\tau_i) = \left\{
     \begin{array}{ll}
-        max(nat_S(\tau_i)-1, 0) & si\ done_S(\tau_i) \\
-        nat_S(\tau_i)-1 & si\ !done_S(\tau_i) \\
+        max(nat_S(\tau_i)-1, 0) & si\ \tau_i \in Active(S) \\
+        nat_S(\tau_i)-1 & si\ \tau_i \notin Active(S) \\
     \end{array}
 \right.
 $$
-\begin{center}
-$done_{S}^{+}(\tau_i) = done_{S}(\tau_i)$
 
-\end{center}
+\item $done_{S}^{+} = done_{S}$
 \item $crit_{S}^{+} = crit_{S}$
 
 \end{itemize}
-Cette transition permet à une tâche de profiter de la ressource partagée pendant un coup d'horloge, ce qui signifie que la tâche ordonnancée verra son temps restant d'exécution décrémentée d'une unité et le temps d'arrivé de toutes les tâches sera lui aussi décrémenté d'une unité, sauf pour les tâches qui ne sont plus considérées de par la criticité de l'état du système.
+La tâche ordonnancée verra son temps restant d'exécution décrémentée d'une unité.\\
+Les tâches active verront leur prochain temps d'arrivé décrémenté d'une unité. Les tâches oisives verront elles aussi leur prochain temps d'arrivé décrémenté mais si celui si devient négatif, il est fixé à $0$. En effet, une fois que le temps d'arrivé d'une tâche oisives est nul, elle est éligible à la soumission d'un travail et donc il n'est pas utilie de continuer à le décrémenter. Ici il n'est pas nécéssaire de dissocier les tâches abandonné et celles toujours en course. C'est le cas car les tâches abandonné seront marquées comme terminée.\\
+Cette transition ne modifie pas la criticité de l'état du système ni la complétion des tâches.
 \end{defin}
 
+Après avoir été exécutée, une tâche peut signaler sa complétion. La transition de terminaison se charge de représenté cette modification dans l'état du système
+
 \begin{defin}[Transition de terminaison]
-\label{tterm}
+\label{spo:tterm}
 Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $\tau^T \subseteq Run(S)$ un ensemble de tâches actives pouvant signaler leur complétion. On dit que l'état du système $S^T = (nat_S^T, rct_S^T, done_S^T, crit_S^T)$ est un $successeur\ \tau^T-terminaison$ de $S$, noté $S\xrightarrow{\tau^T}S^T$ ssi:
 \begin{itemize}
 \item Pour tout $\tau_i \in \tau^T \cup ImplicitelyDone(S)$ :\begin{itemize}
 \item $rct_{S}^T(\tau_i) = 0$
-\item $nat_{S}^T(\tau_i) = nat_{S}(\tau_i)$
 \item $done_{S}^T(\tau_i) = True$
 \end{itemize}
 
 \item Pour tout $\tau_i\ not\ \in \tau^T \cup ImplicitelyDone(S)$ :\begin{itemize}
 \item $rct_{S}^T(\tau_i) = rct_{S}(\tau_i)$
-\item $nat_{S}^T(\tau_i) = nat_{S}(\tau_i)$
 \item $done_{S}^T(\tau_i) = done_{S}(\tau_i)$
 \end{itemize}
+\item $nat_{S}^T = nat_{S}$
 \item $crit_{S}^T = crit_{S}$
 
 \end{itemize}
-Cette transition représente les complétions signalée ou implicite de travaux de tâches.
+Cette transition se base sur un ensemble de tâche qui vont signaler leurs complétion. Cet ensemble peut être vide, dans ce cas aucune tâche ne se termine. En plus de ces tâches, les tâches qui sont implicitement terminées seront elles aussi compléter. Comme il s'agit d'ensembles, une tâche peut faire partie des deux groupes et leurs union ne la considérera qu'une seule fois.\\
 
-Pour un état $S$, on note l'ensemble de ses $successeur\ \tau^T-terminaison$ $S^{\tau^T}$
+Pour les tâches qui ne se termine pas, rien ne change. Pour les tâches se complétant, elle sont signalé comme tel. De plus, leur temps restant de calcul est fixé à zéro. Le prochain temps d'arrivé reste le même.\\
+Dans les deux cas, la transition de complétion ne modifie pas la criticité de l'état.
 \end{defin}
 
+Ensuite, il est nécéssaire de fixer la transition critique. Celle-ci ajuste le niveau de criticité si une tâche n'a pas signalé sa complétion bien qu'elle ai utiliser ton son temps de calcul prévu au niveau actuel.
+
 \begin{defin}[Transition critique]
-\label{tcrit}
+\label{spo:tcrit}
 Soit $S = (at_S, rct_S, done_S, crit_S)$ un état du système. On dit que l'état du système $S^C = (at_S^C, rct_S^C, done_S^C, crit_S^C)$ est un $successeur\ critique$ de $S$, noté $S\xrightarrow{C}S^C$, ssi :
 \begin{itemize}
 \item $crit_S^C = Critical_S$
 \item Pour tout $\tau_i \in \tau :$
-$$ rct_S^C(\tau_i) = \left\{
+$$
+\begin{array}{rl}
+
+rct_S^C(\tau_i) =  &\left\{
     \begin{array}{ll}
         rct_S(\tau_i)+c_i(Critical_S)-c_i(crit_S) & si\ X_i\geq Critical_S \wedge \tau_i \in Active(S)\\
         rct_S(\tau_i) & si\ X_i\geq Critical_S \wedge \tau_i \notin Active(S)\\
         0 & \mbox{sinon.}
     \end{array}
-\right.
-$$
-$$ nat_S^C(\tau_i) = \left\{
+\right.\\
+
+ nat_S^C(\tau_i) = &\left\{
     \begin{array}{ll}
         nat_S(\tau_i) & si\ X_i\geq Critical_S \\
         0 & \mbox{sinon.}
     \end{array}
-\right.
-$$
-$$ done_S^C(\tau_i) = \left\{
+\right.\\
+
+ done_S^C(\tau_i) = &\left\{
     \begin{array}{ll}
         done_S(\tau_i) & si\ X_i\geq Critical_S \\
         True & \mbox{sinon.}
     \end{array}
 \right.
-$$\\
+
+\end{array}
+$$
 \end{itemize}
-Cette transition met à jour la criticité du système et augmente les temps restants d'exécution si nécessaire. Si la criticité dépasse celle de certaines tâches, leur temps d'arrivé et leur temps d'exécution sont mis à zéro et rejoigne donc bien l'ensemble $Discarded(S^C)$.
+Cette transition commence par mettre à jour la criticité du système. Ensuite, elle augmente les temps restants d'exécution des tâche active s'il y a effectivement un changement de criticité. Pour ce faire, il faut ajouté le temps d'exécution établi pour le niveau mais ne pas ré-allouer le temps qui a déjà été utiliser par la tâche.\\
+Le prochain temps d'arrivé et les complétion des tâches ne sont pas modifié sauf si la criticité dépasse celle de certaines tâches. Alors, leurs prochain temps d'arrivés et leur temps d'exécution restant sont mis à zéro, de plus, elles sont signalé comme terminées.\\ 
+Si la criticité réel d'un état est identique à sa criticité, cette transition ne fera aucune modification.
 \end{defin}
+
+Pour terminé, les tâches éligible à la soumission d'un travail peuvent en émettre un. C'est la transition de requête qui représente ces générations de travaux.
 
 
 \begin{defin}[Transition de requête]
-\label{treq}
+\label{spo:treq}
 Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $\tau^R \subseteq Eligible(S)$ un ensemble de tâches eligible. On dit que l'état du système $S^R = (nat_S^R, rct_S^R, done_S^R, crit_S^R)$ est un $successeur\ \tau^R-request$ de $S$, noté $S\xrightarrow{\tau^R}S^R$ ssi:
 
 \begin{itemize}
@@ -1145,26 +1811,30 @@ Soit $S = (nat_S, rct_S, done_S, crit_S)$ un état du système et $\tau^R \subse
     \item $rct_S^R(\tau_i)=C_i(crit_S)$
     \item $done_S^R(\tau_i) = False$
 \end{itemize}
-\item Pour tout $\tau_i\ not \in \tau^R$ :\begin{itemize}
+\item Pour tout $\tau_i\ \notin \tau^R$ :\begin{itemize}
     \item $nat_S^R(\tau_i)=nat_S(\tau_i)$
     \item $rct_S^R(\tau_i)=rct_S(\tau_i)$
     \item $done_S^R(\tau_i) = done_S(\tau_i)$
 \end{itemize}
 \item $crit_S^R = crit_S$
 \end{itemize}
+Cette transition se base sur un ensemble de tâche qui vont générer un travail. Cet ensemble est un sous-ensemble des tâche éligible à la soumission d'un travail. La transition ne modifie que les tâches qui souhaite émettre un travail. Celles-ci son signalé comme non complétée, leur temps restant de calcul est placé à leur WCET pour la criticité de l'état du systeèm. Enfin, leur prochain temps d'arrivé est compris entre le l'addition du prochain temps d'arrivé du travail généré ici et de la période de la tâche et juste la période de la tâche.\\
+Il faut se rappeler que pour qu'un tâche soit éligible à la soumission d'un travail, elle doit avoir un prochain temps d'arrivé nul ou négatif. Si le temps d'arrivé est nul, cela signifie que la tâche à terminer de complété son travail précédent avant la génération du suivant. Dans ce cas, il n'y a qu'un seul successeur. En revanche, si le travail précédent s'est terminé après le temps d'arrivé minimal du prochain travail, alors il est nécéssaire de simuler que ce travail soit arrivé au premier instant où il pouvait être émis ainsi que les suivants, en générant un voisin à l'état en question pour chaque temps possible.\\
 
-Pour un état $S$, on note l'ensemble de ses $successeur\ \tau^R-request$ $S^{\tau^R}$
+Pour un état $S$ et $\tau^R \subseteq Eligible(S)$ un ensemble, on note l'ensemble de ses $successeur\ \tau^R-request$ $S^{\tau^R}$.
 
 \end{defin}
 
+Il est maintenant possible de définir l'automate simulant l'ordonnancement CM de tâche sporadiques.
+
 \begin{defin} 
-\label{autospo}
-Étant donné un ensemble de tâches $\tau$ et un ordonnanceur $Run$, l'automate $A(\tau,Run)$ est le tuple $(V, E, S_0, F)$ où:
+\label{spo:auto}
+Étant donné un ensemble de tâches CM sporadique $\tau$ et un ordonnanceur $Run$, l'automate $A(\tau,Run)$ est le tuple $(V, E, S_0, F)$ où:
 \begin{itemize}
 \item  $V=State(\tau)$
-\item $(S_1,S_2) \in E$ ssi il existe les états intermédiaires $S^{+}, S^{T}$ et $S^{C} \in State(\tau)$ et $\tau^T \subseteq Active(S^{+}),\tau^R \subseteq Eligilbe(S^{T}) $ tel que : \\$S_1\xrightarrow{Run}S^{+}\xrightarrow{\tau^T}S^{T}\xrightarrow{C}S^{C}\xrightarrow{\tau^R}S_2$
+\item $(S_1,S_2) \in E$ ssi il existe les états intermédiaires $S^{+}, S^{T}$ et $S^{C} \in State(\tau)$ et $\tau^T \subseteq Run(S),\tau^R \subseteq Eligilbe(S^{T}) $ tel que : \\$S_1\xrightarrow{Run}S^{+}\xrightarrow{\tau^T}S^{T}\xrightarrow{C}S^{C}\xrightarrow{\tau^R}S_2$
 \item $S_0 = (nat_{S_0}, rct_{S_0}, done_{S_0}, crit_{S_0})$ :\begin{itemize}
-\item $nat_{S_0}(\tau_i) = 0\ \forall \tau_i \in \tau$
+\item $nat_{S_0}(\tau_i) = O_i\ \forall \tau_i \in \tau$
 \item $rct_{S_0}(\tau_i) = 0\ \forall \tau_i \in \tau$
 \item $done_{S_0}(\tau_i) = True\ \forall \tau_i \in \tau$
 \item $crit_{S_0} = 1$
@@ -1172,10 +1842,148 @@ Pour un état $S$, on note l'ensemble de ses $successeur\ \tau^R-request$ $S^{\t
 \item $F = Fail_\tau$
 \end{itemize}
 
+Les état sont tout les état du système qu'il est possible de généré.\\
+Les transitions relie un états vers ceux dont il peut être le prédécesseur selon les quatre transition d'exécution, de terminaison, critique et de requête en série pour tout les sous-ensemble $\tau^T$ et $\tau^R$ possible. On remarque que les tâche pouvant signaler leur complétion sont celles qui ont été ordonnancées. En effet, il faut qu'une tâche soit exécuté pour pouvoir signaler qu'elle a terminée son travail. Il s'agit des tâche ordonnancé dans l'état initial et non dans l'état intermédiaire, après exécution.\\
+Pour l'état initial, les prochain temps d'arrivés sont les décalage des tâche. Le temps restant de calcul sont nul car il faut qu'une tâche fasse une requête pour généré un travail et réserver du temps de calcul pour lui. Enfin, la criticité de l'état du système est la criticité initiale.\\
+Enfin, les état erronées sont ceux qui ont une pire laxité négative.
+
 \end{defin} 
 
+\begin{exem}
+Cet exemple présentera la construction partiel d'un automate défini sur un ensemble de tâche CM sporadique.
 
-\subsection{Simulation de tâche oisive}
+\begin{table}[h]
+
+    \centering
+
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+i &O & T & D & C & $\chi$\\
+\hline
+0 & 0 & 3 & 3 & [2, 3]& 2\\
+\hline
+\end{tabular}
+    
+\caption{L'ensemble de tâche utilisé pour l'exemple.}
+\label{spo:exem}
+
+\end{table}
+
+Considérons l'ensemble tâche $\tau$ présenter en \autoref{spo:exem}. Cet ensemble contient une seule tâche avec échéance sous requête et un criticité double.\\
+
+Cet exemple présente la construction d'un automate et illustre les états intermédiaire et les transitions.
+
+\begin{figure}[h]
+
+    \centering
+    \def\svgwidth{\columnwidth}
+    \input{graphes/spo-inter-1.pdf_tex}
+    
+\caption{Création des transition de l'automate basé sur $\tau$ en \autoref{spo:exem} avec et $Run$ = EDF}
+\label{spo:inter}
+
+\end{figure}
+
+
+Dans la \autoref{spo:inter}, les état du système sont représenté par les noeuds. Le test inscrit dans le noeud est le couple $(nat_S(\tau_0), rct_S(\tau_0))$ et le nombre le suivant est $crit_S$. De plus, le couple $(nat_S(\tau_0), rct_S(\tau_0))$ est souligné si la tâche n'est pas finie, autrement il n'est pas souligné.\\
+Les flèches continue représente une transition d'un état vers un autre. Les flèches rouge représente la transition d'exécution. Les flèches noire sont les transitions de terminaison. Les flèches bleues sont les transitions critiques. Enfin, les flèches mauves sont les transition de requête.\\
+
+Le noeud initial est celui avec la flèche pointé sur lui. Cet état du système correspond bien à $S_0$ tel que définis en \autoref{spo:auto}, $nat_{S_0}(\tau_0) = O_0,\ rct_{S_0}(\tau_0) = 0,\ crit_{S_0} = 1$.\\
+
+Depuis l'état initial, rien ne se passe jusqu'à la transition de requête. Le comportement est normal car, à ce moment là, aucune tâche n'est active. Lors de la transition de requête, la tâche $\tau_0$ est éligible. Deux cas sont alors possible, soit la tâche ne souhaite pas généré un travail et dans ce cas l'état du système reste identique, soit elle émet un travail. Si la tâche a généré un travail, le noeud mène à l'état $\langle \underline{(3, 2)} 1\rangle$, respectant bien la définition de la transition de requête. Le temps restant de calcul est fixé par le WCET de la tâche pour la criticité, le prochain temps de calcul est la période et la tâches est active.\\
+Une fois cette série de quatre transitions passée, il faut relier les états entre eux, c'est que représente les flèches discontinues vertes.\\
+
+Depuis l'état où la tâche à soumis sont premier travail, il s'en suit une transition d'exécution où l'unique tâche $\tau_0$ est ordonnancée. La tâche $\tau_0$ est bel et bien active car $done_{S_0}(\tau_0) == False$ par \autoref{spo:act}. Comme attendu par \autoref{spo:texec}, le temps restant de calcul et le temps d'arrivé sont décrémenté d'une unité. Ensuite, il y a deux transitions de terminaison possible. Soit la tâche $\tau_0$ signale sa complétion, soit elle ne le fait pas. Si elle la signale, il faut suivre la flèche de gauche. Dans cet état fraichement atteins, le temps restant de calcul est remis à zéro et le prochain temps d'arrivé reste identique. En revanche, si la tâche ne signale pas sa complétion, l'état est alors identique au précédent. S'en suit la transition critique, depuis ces deux dernier états, elle ne change rien. En effet, aucun de ces état ne déclenche une criticité plus élevée car aucune tâche n'a été exécuté jusqu'au bout de WCET sans signaler sa complétion. Enfin, les deux états doivent passer par la transition de requête, mais aucune tâche n'est éligible et donc elles ne modifie pas les deux descendants.\\
+
+Pour l'état $\langle (2, 0) 1 \rangle$, le prochain temps d'arrivé de $\tau_0$ va décrémenté, de par le transition d'exécution. Les autres transition ne modifieront rien. Finalement, le prochain temps d'arrivé de la tâche $\tau_0$ arrivera jusqu'à zéro et il s'agira alors de l'état initial.\\
+
+L'état $\langle \underline{(2, 1)} 1 \rangle$ va se comporté comme l'état initial sauf lors de la transition critique. En effet, si la tâche $\tau_0$ ne signale pas sa complétion elle déclenchera un passage à criticité supérieure.\\
+Si $\tau_0$ s'est effectivement terminé, l'état du système se comportera de la même manière que si elle s'était signalé complète lors de son exécution précédent sauf que prochain temps d'arrivé sera déjà décrémenté d'une unité.\\
+Il faut remarqué que les deux $successeur-terminé$ mène à des états où le couple $nat_S(\tau_0), rct_S(\tau_0)$ est identique. C'est la caractéristique $done_S(\tau_0)$ qui permet de savoir si la tâche s'est complétée.\\
+
+Si $\tau_0$ n'est s'est pas déclarée comme finie, alors il est nécessaire d'indiquer la criticité du système comme étant supérieur et d'ajouter le temps de calcul requis en plus. C'est ainsi que l'état $ \langle \underline{(1, 1)} 2 \rangle $ est atteins.
+
+\begin{figure}[h]
+
+    \centering
+    \def\svgwidth{\columnwidth}
+    \input{graphes/spo-inter-2.pdf_tex}
+    
+\caption{Suite de la création des transition de l'automate basé sur $\tau$ en \autoref{spo:exem} avec et $Run$ = EDF}
+\label{spo:inter2}
+
+\end{figure}
+
+
+
+La génération des succèsseur de $\langle \underline{(1, 1)} 2 \rangle $ est illustrée en \autoref{spo:inter2}.\\
+Celui ci va alors ordonnancé $\tau_0$ et son temps restant de calcul sera nul. S'en suit la transition de terminaison. Dans les deux cas, la tâche se termine. Dans cette configuration, $ImplicitelyDone(S) = \{\tau_0\}$ par \autoref{spo:impdone} et $\tau' \subseteq \{\tau_0\}$ et donc, dans tout les cas, $\tau' \cup ImplicitelyDone(S) = \{\tau_0\}$. De ces deux états identiques, sorte deux transition requête. En effet, dans cet états, $\tau_0$ est éligible : sa criticité la maintient en course son prochain temps d'arrivé est nul. L'état mène alors soit à un état identique où la tâche est oisive, soit dans un état où la tâche reste active avec un temps de calcul valant son WCET pour la criticité supérieure, et son prochain temps d'arrivé est sa période.\\
+
+Le reste de l'automate n'est pas présenté ici mais il devra être construit, c'est que représente les flèche rouge en pointillé. Au final, il faut remarquer que dans l'automate, seul les états avec un fond gris sont atteins, et son relié par les transitions discontinue vertes. De plus, certains états sont identiques, dans l'automate il s'agit du même, le choix a été fait de les illustrer séparément pour rendre l'exemple plus clair.
+
+\begin{figure}[h]
+
+    \centering
+    \def\svgwidth{\columnwidth}
+    \input{graphes/spo-concat.pdf_tex}
+    
+\caption{Automate de l'automate basé sur $\tau$ en \autoref{spo:exem} avec et $Run$ = EDF}
+\label{spo:concat}
+
+\end{figure}
+
+La \autoref{spo:concat} présente l'automate complètement construit, sans les états intermédiaire. La scission entre les deux niveau de criticité est flagrante. Le sporadisme de l'automate est représenté grâce aux état $\langle (0,0)1 \rangle $ et $\langle (0,0)2 \rangle $. En effet, l'automate peut boucler sur ceux-ci avant de généré une tâche d'arrivé aux états $\langle (3,2)1 \rangle $ et $\langle (3,3)2 \rangle $ respectivement.
+\end{exem}
+
+Maintenant que le principe de l'automate a été illustré clairement, il possible de prendre pour exemple un nouvel ensemble de tâche.
+
+\begin{exem}
+\label{spo:exem:fail}
+
+Cet exemple illustre le comportement d'un ensemble de tâches CM sporadique non ordonnançable avec des criticités différentes.
+
+\begin{table}[h]
+
+    \centering
+
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+i &O & T & D & C & $\chi$\\
+\hline
+0 & 0 & 2 & 3 & [1, 2]& 2\\
+\hline
+0 & 0 & 1 & 1 & [1, 1]& 1\\
+\hline
+\end{tabular}
+    
+\caption{L'ensemble de tâche utilisé pour l'exemple 2.}
+\label{spo:fail}
+
+\end{table}
+
+La figure \autoref{spo:failimg} construit partiellement l'automate basé sur l'ensemble de tâche en \autoref{spo:fail}. Dans celui-ci, les noeuds comptent deux couple $(at_S, rct_S)$, le premier est pour la tâche $\tau_0$ et le second pour $\tau_1$.
+
+\begin{figure}[h]
+
+    \centering
+    \def\svgwidth{\columnwidth}
+    \input{graphes/spo-fail.pdf_tex}
+    
+\caption{Automate de l'automate basé sur $\tau$ en \autoref{spo:fail} avec et $Run$ = EDF-VD}
+\label{spo:failimg}
+
+\end{figure}
+
+Dans ce second exemple, il est clair que sporadisme des tâches génère beaucoup de comportement différent possible. Le noeud initial a quatre voisin dont lui même. Dans chacun de ceux-ci représente une cominaition de génération de travaux différente. Lors ce que la tpache $\tau_0$ émet un travail, elle est ordonnancé et puis peut mener à la criticité à la critcité supérieur si elle ne se complète pas. Dans cas, la tpache $\tau_1$ est abandonné et ne peut plus émettre de travaux. Retour à la criticité de niveau un, lors ce que les deux tâche émettent un travail, alors l'ordonnancement mène à un état erroné, en organe sur le graphe. Cet état à effectivement une pire laxité inférieur, $WorstLaxity_{S_{Fail}} = nat_{S_{Fail}}(\tau_1)-T_1+D_1-(rct{S_{Fail}}(\tau_1) +C_1(2) - C_1(1) = 0 -1+1 -(1 +1 -1) = -1 <0$. L'ensemble de tâche $\tau$ n'est effectivement pas ordonnançable CM. C'est détectable en regardant la faisabilité CM de $\tau$, $U_{\tau, 1}(1) + U_{\tau, 2}(1)= 3/2 >1$.
+
+\end{exem}
+
+Comme présenté dans l'état de l'art, il peut exister des relation de simulation qui permettent de réduire le temps d'exploration dans un automate. La section suivante présente une relation de simulation pour l'automate basée sur l'ordonnancement CM de tâche sporadique. La simulation jouera sur l'oisiveté des tâche.
+
+
+\section{Simulation de tâche oisive}
+
+Dans cette section, la relation de simulation de tâche oisive $succeq_{idle}$ est définie. La relation se base sur l'inspection de caractéristiques de l'état d'un système, c'est-à-dire $cirt, done, rct$ et $nat$.
 
 \begin{defin}[Simulation de tâche oisive]
 \label{idle:sim}
@@ -1188,15 +1996,23 @@ Soit $\tau$ un ensemble de tâche sporadique de criticité mixte. Le préordre d
 \item Pour tout $\tau_i$ tel que $done_{S_1}(\tau_i) = False : nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$
 \end{itemize}
 Cette relation est transitive et réflexive, il s'agit donc bien d'un préordre. La relation défini aussi un ordre partiel sur $Active(S)$ car celle ci est anti-symétrique.
-Remarquons que $Active(S_1) = Active (S_2)$ puisque $done_{S_1} = done_{S_2}$
+Remarquons que $Active(S_1) = Active (S_2)$ puisque $done_{S_1} = done_{S_2}$.\\
+
+La relation annonce qu'un état du système en simule un autre s'il a la même la criticité, que les tâches active sont identique et que pour les tâche oisives, le prochain temps d'arrivé est égal ou plus proche.
 \end{defin}
+
+La relation étant maintenant définie, il va falloir prouver que ce préordre est effectivement une relation de simulation. Il va falloir prouvé que si un état en simule un autre, alors tout les successeur de l'état simulé devront être simulé par des successeurs de l'état simulant. Il va donc falloir s'assuré que ces simulations sont présentes pour chacune des transition intermédiaire. Pour se faire, la démonstration s'appuiera sur des lemmes qui vont être définis maintenant.\\
+
+Le premier lemme qui sera utile, pose l'égalité de la tâche ordonnancée lors d'une simulation entre deux états. Cette information sera importante lors de phase de la démonstration sur la transition d'exécution et de complétion.
 
 \begin{lem}
 \label{idle:runeq}
 Si $S_1$ et $S_2$ sont est états tel que $S_2 \succeq_{idle}S_1$ et $Run$ un ordonnanceur sans mémoire alors $Run (S_2) = Run(S_1)$.
 \end{lem}
-\begin{proof} Par \autoref{idle:sim}: $S_2 \succeq_{idle} S_1$ implique que $Active(S_2) = Active(S_1)$. Soit $\tau_i$ un tâche faisant partie de $Active(S_1)$, d'où $done_{S_1}(\tau_i) = False$. Dans ce cas, et puisque $S_2 \succeq_{idle} S_1$, on en conclu que $done_{S_2}(\tau_i) = done_{S_1}(\tau_i)$, $nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$, $rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i)$ et que $crit_{S_2} = crit_{S_1}$ pour tout $\tau_i \in Active(S_1)$. Donc, comme $Run$ est sans mémoire par hypothèse, $Run(S_1) = Run(S_2)$.
+\begin{proof} Par \autoref{idle:sim}: $S_2 \succeq_{idle} S_1$ implique que $Active(S_2) = Active(S_1)$. Soit $\tau_i$ un tâche faisant partie de $Active(S_1)$, d'où $done_{S_1}(\tau_i) = False$. Dans ce cas, et puisque $S_2 \succeq_{idle} S_1$, on en conclu que $done_{S_2}(\tau_i) = done_{S_1}(\tau_i)$, $nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$, $rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i)$ et que $crit_{S_2} = crit_{S_1}$ pour tout $\tau_i \in Active(S_1)$. Donc, comme $Run$ est sans mémoire par hypothèse et qu'il s'agit d'un sous-ensemble des tâches actives, $Run(S_1) = Run(S_2)$.
 \end{proof}
+
+Ensuite, il est nécessaire que les tâches implicitement terminée soit les même dans le couple d'états simulant, simulé. En effet, cette égalité doit être présente sinon la transition de complétion ne pourrait générer des états qui se simulent.
 
 \begin{lem}
 \label{idle:impdoneeq}
@@ -1205,6 +2021,8 @@ Si $S_1$ et $S_2$ sont est états tel que $S_2 \succeq_{idle} S_1$ alors $Implic
 \begin{proof} Par \autoref{idle:sim}: $S_2 \succeq_{idle} S_1$ implique que $done_{S_2}(\tau_i) = done_{S_1}(\tau_i)$, $rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i)$ et que $crit_{S_2} = crit_{S_1}$ pour tout $\tau_i \in \tau$. D'où $ImplicitelyDone(S_2) = ImplicitelyDone(S_1)$.
 \end{proof}
 
+Il faut aussi que si un état génère un passage à criticité supérieure, l'état qui le simule le fasse aussi. C'est pour cette raison qu'il est obligatoire que la criticité réelle de état simulant soit identique à celle de l'état simulé.
+
 \begin{lem}
 \label{idle:criteq}
 Si $S_1$ et $S_2$ sont est états tel que $S_2 \succeq_{idle} S_1$ alors $Critical_{S_2} = Critical_{S_1}$.
@@ -1212,9 +2030,7 @@ Si $S_1$ et $S_2$ sont est états tel que $S_2 \succeq_{idle} S_1$ alors $Critic
 \begin{proof} Par \autoref{idle:sim}: $S_1 \succeq_{idle} S_2$ implique que $Active(S_2) = Active(S_1)$, $crit_{S_2} = crit_{S_1}$ et que $rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i)$ pour tout $\tau_i \in \tau$. D'où $Critical_{S_2} = Critical_{S_1}$.
 \end{proof}
 
-
-
-
+Pour terminer, il faut prouver que les tâches éligible à la soumission d'un travail d'un simulant englobe celles de l'état simulé. Vu que les prochains temps d'arrivées sont en avance dans l'état simulant, il peut y avoir des tâche éligible en plus, mais pas en moins. Comme le transition de requête se base sur un sous-ensemble de tâches éligible à la soumission d'un travail, pour l'état simulant, il sera toujours possible d'avoir les même tâches qui génèrent un travail que dans l'état simulé.
 
 \begin{lem}
 \label{idle:elisuper}
@@ -1222,6 +2038,8 @@ Si $S_1$ et $S_2$ sont deux états tel que $S_2 \succeq_{idle}S_1$ alors $Eligib
 \end{lem}
 \begin{proof} Prouvons que toute tâche $\tau_i \in Eligible(S_1) \rightarrow \tau_i \in Eligible(S_2)$. Puisque $\tau_i \in Eligible(S_1)$, on a $done_{S_1}(\tau_i) = True$,  $crit_{S_1} \leq \chi_i$, et $nat_{S_1}(\tau_i) \leq 0$ par définition de $Eligible$. Donc, puisque $S_2 \succeq_{idle}S_1$, $done_{S_2}(\tau_i) = done_{S_1}(\tau_i) = True$,  $crit_{S_2} = crit_{S_1} \leq \chi_i$ et $nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i) \leq 0$ par définition de $\succeq_{idle}$. D'où $\tau_i \in Eligible(S_2)$.
 \end{proof}
+
+Pour comprendre l'objectif de la définition et du lemme suivant il faut se rappeler que quand $nat$ est négatif, il est nécéssaire de représenté les cas la tâches à émise un travail à chaque temps possible. Le modèle attend d'abord que le travail courant soit terminé et puis il va généré un travail pour chaque temps d'arrivé prochain compris dans l'intervalle $[nat(\tau_i)+T_i, T_i]$. Comme un état simulant simulant peut avoir un temps d'arrivé prochain inférieure, il va falloir prouver qu'il générera un état où les prochains temps d'arrivé des tâches fraichement généré sont identique à ceux de l'état simulant. Identique car, à ce moment là, il s'agira de tâches active.
 
 \begin{defin}
 \label{idle:reqanalogue}
@@ -1236,7 +2054,7 @@ $\forall \tau_i \in \tau^R : nat_{\overline{S}_2}(\tau_i) = nat_{\overline{S}_1}
 Soit $S_1$ et $S_2$ deux états tel que $S_2 \succeq_{idle} S_1$ et $\tau^R \subseteq Eligible(S_1)$ un sous-ensemble de tache. Alors, pour tout $\overline{S}_1 \in S_1^{\tau^R}$ il y a un $analogue\ \tau^R-oisif\ \overline{S}_2 \in S_2^{\tau^R}$ de $\overline{S}_1$.
 \end{lem}
 \begin{proof}
-\autoref{treq} et \autoref{idle:sim} pose que pour tout $\tau_i \in \tau^R \subseteq Eligible(S_1)$ on a $nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i) \leq 0$, $rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i) = 0$, $done_{S_2}(\tau_i) = done_{S_1}(\tau_i) = True$ et que $crit_{S_2} = crit_{S_1}$. Par définition, tout $\overline{S}_1 \in S^{\tau^R}_1$ satisfait :
+\autoref{spo:treq} et \autoref{idle:sim} pose que pour tout $\tau_i \in \tau^R \subseteq Eligible(S_1)$ on a $nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i) \leq 0$, $rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i) = 0$, $done_{S_2}(\tau_i) = done_{S_1}(\tau_i) = True$ et que $crit_{S_2} = crit_{S_1}$. Par définition, tout $\overline{S}_1 \in S^{\tau^R}_1$ satisfait :
 \begin{center}
 $\forall \tau_i \in \tau^R : nat_{\overline{S}_1}(\tau_i) \in I^i_1=[nat_{S_1}(\tau_i)+T_i, T_i] $
 \end{center}
@@ -1247,13 +2065,13 @@ De manière similaire, par définition $X$, pour tout vecteur $(k_1, k_2, ..., k
 Prouvons maintenant que $\succeq_{idle}$ est bien une relation de simulation lors ce qu'on considère un ordonnanceur sans mémoire.
 
 \begin{theo}
-Soit $\tau$ un ensemble de tâche sporadique à mixité critique and $Run$ un ordonnanceur sans mémoire (déterminé) pour $\tau$ sur un processeur. Alors, $\succeq_{idle}$ est une relation de simulation pour $A(\tau, Run)$.
+Soit $\tau$ un ensemble de tâche CM sporadique et $Run$ un ordonnanceur sans mémoire (déterminé) pour $\tau$ sur un processeur. Alors, $\succeq_{idle}$ est une relation de simulation pour $A(\tau, Run)$.
 \end{theo}
 
 \begin{proof}
 Soit $S_1, S'_1$ et $S_2$ trois état dans $States(\tau)$ tel que $(S_1, S_1') \in E$ et $S_2 \succeq_{idle}S_1$, montrons qu'il existe $S_2' \in States(\tau)$ avec $(S_2, S_2') \in E$ and $S_2' \succeq_{idle} S_1'$.\\
 
-Puisque $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Run(S_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1'$.\\
+Puisque $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Run(S_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1^R=S_1'$.\\
 
 Par \autoref{idle:sim} et \autoref{idle:runeq}, $S_2 \succeq_{idle} S_1$ implique que $Active(S_2) = Active(S_1)$ et $Run(S_2) = Run(S_1)$. Soit $S^+_1$ l'état unique tel que $S_1\xrightarrow{Run}S^{+}_1$, montrons qu'il existe $S^+_2$ tel que $S_2\xrightarrow{Run}S^{+}_2$ et que $S^+_2 \succeq_{idle} S^+_1$.
 \begin{enumerate}
@@ -1272,19 +2090,19 @@ Pour une tâche $\tau_1 \notin Run(S_1) = Run(S_2) : rct_{S_1}^+(\tau_i) = rct_{
 \end{enumerate}
 
 
-Par \autoref{texec}. Il est maintenant établi que $S^+_2 \succeq_{idle} S^+_1$.\\
+Par \autoref{spo:texec}. Il est maintenant établi que $S^+_2 \succeq_{idle} S^+_1$.\\
 
 Par le \autoref{idle:runeq} et le \autoref{idle:impdoneeq}, nous obtenons que $Run(S_1) = Run(S_2)$ et que $ImplicitelyDone(S^+_1) = ImplicitelyDone(S_2^+)$.
 Prouvons maintenant que, pour tout $\tau^T\subseteq Run(S_1) \cup ImplicitelyDone(S_1^+)$ menant à $S_1^+ \xrightarrow{\tau^T} S_1^T$, il existe un $S_2^T$ tel que $S_2^+ \xrightarrow{\tau^T} S_2^T$ et $S_2^T \succeq_{idle} S_1^T$.
 \begin{enumerate}
 
-\item Par la \autoref{tterm} on a $crit_{S_1}^T = crit_{S_1}^+$ et $crit_{S_2}^T = crit_{S_2}^+$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $crit_{S_2}^+= crit_{S_1}^+$. On en conclu que $crit_{S_2}^T= crit_{S_1}^T$.
+\item Par la \autoref{spo:tterm} on a $crit_{S_1}^T = crit_{S_1}^+$ et $crit_{S_2}^T = crit_{S_2}^+$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $crit_{S_2}^+= crit_{S_1}^+$. On en conclu que $crit_{S_2}^T= crit_{S_1}^T$.
 
-\item \label{idle:term:done} Par la \autoref{tterm}, pour tout $\tau_i \in Run(S_1^+) \cup ImplicitelyDone(S_1^+) : done_{S_1}^T(\tau_i) = True = done_{S_2}^T(\tau_i)$.\\ Pour tout $\tau_i \notin Run(S_1^+) \cup ImplicitelyDone(S_1^+)$ on a $done_{S_1}^T(\tau_i) = done_{S_1}^+(\tau_i)$ et $done_{S_2}^T(\tau_i) = done_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $done_{S_2}^+(\tau_i)= done_{S_1}^+(\tau_i)$. D'où $done_{S_2}^T(\tau_i) = done_{S_1}^T(\tau_i)$. On en conclu que $done_{S_2}^T = done_{S_1}^T$.
+\item \label{idle:term:done} Par la \autoref{spo:tterm}, pour tout $\tau_i \in Run(S_1^+) \cup ImplicitelyDone(S_1^+) : done_{S_1}^T(\tau_i) = True = done_{S_2}^T(\tau_i)$.\\ Pour tout $\tau_i \notin Run(S_1^+) \cup ImplicitelyDone(S_1^+)$ on a $done_{S_1}^T(\tau_i) = done_{S_1}^+(\tau_i)$ et $done_{S_2}^T(\tau_i) = done_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $done_{S_2}^+(\tau_i)= done_{S_1}^+(\tau_i)$. D'où $done_{S_2}^T(\tau_i) = done_{S_1}^T(\tau_i)$. On en conclu que $done_{S_2}^T = done_{S_1}^T$.
 
-\item Par la \autoref{tterm}, pour tout $\tau_i \in Run(S_1^+) \cup ImplicitelyDone(S_1^+) : rct_{S_1}^T(\tau_i) = 0 = rct_{S_2}^T(\tau_i)$.\\ Pour tout $\tau_i \notin Run(S_1^+) \cup ImplicitelyDone(S_1^+)$ on a $rct_{S_1}^T(\tau_i) = rct_{S_1}^+(\tau_i)$ et $rct_{S_2}^T(\tau_i) = rct_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $rct_{S_2}^+(\tau_i)= rct_{S_1}^+(\tau_i)$. D'où $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$. On en conclu que $rct_{S_2}^T = rct_{S_1}^T$.
+\item Par la \autoref{spo:tterm}, pour tout $\tau_i \in Run(S_1^+) \cup ImplicitelyDone(S_1^+) : rct_{S_1}^T(\tau_i) = 0 = rct_{S_2}^T(\tau_i)$.\\ Pour tout $\tau_i \notin Run(S_1^+) \cup ImplicitelyDone(S_1^+)$ on a $rct_{S_1}^T(\tau_i) = rct_{S_1}^+(\tau_i)$ et $rct_{S_2}^T(\tau_i) = rct_{S_2}^+(\tau_i)$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $rct_{S_2}^+(\tau_i)= rct_{S_1}^+(\tau_i)$. D'où $rct_{S_2}^T(\tau_i) = rct_{S_1}^T(\tau_i)$. On en conclu que $rct_{S_2}^T = rct_{S_1}^T$.
 
-\item Par la \autoref{tterm}, pour tout $\tau_i \in \tau$ :
+\item Par la \autoref{spo:tterm}, pour tout $\tau_i \in \tau$ :
 
 \begin{equation}
 nat_{S_1}^T(\tau_i) = nat_{S_1}^+(\tau_i)\ et\ nat_{S_2}^T(\tau_i) = nat_{S_2}^+(\tau_i)
@@ -1308,17 +2126,17 @@ Par le \autoref{idle:criteq}, nous obtenons que $Critical_{S_2^T} = Critical_{S_
 
 \begin{enumerate}
 
-\item Par la \autoref{tcrit} on a $crit_{S_1}^C = Critical_{S_1^T}$ et $crit_{S_2}^C = Critical_{S_2^T}$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $Critical_{S_1^T} = Critical_{S_2^T}$. On en conclu que $crit_{S_2}^C= crit_{S_1}^C$.
+\item Par la \autoref{spo:tcrit} on a $crit_{S_1}^C = Critical_{S_1^T}$ et $crit_{S_2}^C = Critical_{S_2^T}$. Et puisque $S^+_2 \succeq_{idle} S^+_1$ on a $Critical_{S_1^T} = Critical_{S_2^T}$. On en conclu que $crit_{S_2}^C= crit_{S_1}^C$.
 
 
-\item Par \autoref{tcrit}, pour toute tâche $\tau_i \in \tau$ avec $\chi_i < Critical_{S_1^T}$ :
+\item Par \autoref{spo:tcrit}, pour toute tâche $\tau_i \in \tau$ avec $\chi_i < Critical_{S_1^T}$ :
 \begin{enumerate}[label=(\alph*)]
 \item $done_{S_1}^C(\tau_i) = True = done_{S_2}^C(\tau_i)$
 \item $rct_{S_1}^C(\tau_i) = 0 = rct_{S_2}^C(\tau_i)$
 \item $nat_{S_1}^C(\tau_i) = 0 = nat_{S_2}^C(\tau_i)$
 \end{enumerate}
 
-\item Par \autoref{tcrit}, pour toute tâche $\tau_i \in \tau$ avec $\chi_i \geq Critical_{S_1^T}$ :
+\item Par \autoref{spo:tcrit}, pour toute tâche $\tau_i \in \tau$ avec $\chi_i \geq Critical_{S_1^T}$ :
 \begin{enumerate}[label=(\alph*)]
 
 %done
@@ -1331,7 +2149,7 @@ Par le \autoref{idle:criteq}, nous obtenons que $Critical_{S_2^T} = Critical_{S_
 
 
 %nat
-\item Par la \autoref{tcrit}, pour tout $\tau_i \in \tau$ :
+\item Par la \autoref{spo:tcrit}, pour tout $\tau_i \in \tau$ :
 
 \begin{equation}
 nat_{S_1}^C(\tau_i) = nat_{S_1}^T(\tau_i)\ et\ nat_{S_2}^C(\tau_i) = nat_{S_2}^T(\tau_i)
@@ -1350,7 +2168,7 @@ nat_{S_1}^C(\tau_i) = nat_{S_1}^T(\tau_i)\ et\ nat_{S_2}^C(\tau_i) = nat_{S_2}^T
 \end{enumerate}
 Il est maintenant établi que $S^C_2 \succeq_{idle} S^C_1$.\\
 
-Rappelons que comme $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Run(S_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1^R=S_1'$ par la \autoref{autospo}. Soit $S_2^R$, un $analogue\ \tau^R-oisif$ de $S_1^R$ (qui existe de par le \autoref{reqanalogueeq}), prouvons que $S_2^R \succeq_{idle} S_1^R$.
+Rappelons que comme $(S_1, S_1') \in E$, il existe $S^{+}_1, S^{T}_1$ et $S^{C}_1 \in State(\tau)$ et $\tau^T \subseteq Run(S_1),\tau^R \subseteq Eligilbe(S^{T}_1) $ tel que : $S_1\xrightarrow{Run}S^{+}_1\xrightarrow{\tau^T}S^{T}_1\xrightarrow{C}S^{C}_1\xrightarrow{\tau^R}S_1^R=S_1'$ par la \autoref{spo:auto}. Soit $S_2^R$, un $analogue\ \tau^R-oisif$ de $S_1^R$ (qui existe de par le \autoref{reqanalogueeq}), prouvons que $S_2^R \succeq_{idle} S_1^R$.
 
 \begin{enumerate}
 \item Pour tout $\tau_i \in \tau^R : rct_{S_1}^R(\tau_i) = C_i(\chi_i) = rct_{S_2}^R(\tau_i)$.\\
@@ -1377,11 +2195,11 @@ done_{S_1}^R(\tau_i) = done_{S_1}^C(\tau_i)\ et\ done_{S_2}^R(\tau_i) = done_{S_
 
 \end{enumerate}
 
-Par \autoref{treq}. On considère deux autres cas :
+Par \autoref{spo:treq}. On considère deux autres cas :
 \begin{enumerate}[label=(\alph*)]
 \item Si $done_{S_1}^R(\tau_i) = True$ alors $done_{S_2}^R(\tau_i) = True$ par \autoref{idle:req:done}. Cependant, par \autoref{idle:eqidleproofdone}, $done_{S_1}^C(\tau_i) = True$. Donc, comme $S^C_2 \succeq_{idle} S^C_1 : nat_{S_2}^C \leq nat_{S_1}^C$, par \autoref{idle:sim}. D'où $nat_{S_2}^R(\tau_i) \leq nat_{S_1}^R(\tau_i)$ par \autoref{idle:eqidleproofnat}.
 
-\item Si $done_{S_1}^R(\tau_i) = False$ alors $done_{S_2}^R(\tau_i) = False$ par \autoref{idle:req:done}. Cependant, par \autoref{idle:eqidleproofdone}, $done_{S_1}^C(\tau_i) = False$. Donc, comme $S^C_2 \succeq_{idle} S^C_1 : nat_{S_2}^C = nat_{S_1}^C$, par \autoref{idlesim}. D'où $nat_{S_2}^R(\tau_i) = nat_{S_1}^R(\tau_i)$ par \autoref{idle:eqidleproofnat}.
+\item Si $done_{S_1}^R(\tau_i) = False$ alors $done_{S_2}^R(\tau_i) = False$ par \autoref{idle:req:done}. Cependant, par \autoref{idle:eqidleproofdone}, $done_{S_1}^C(\tau_i) = False$. Donc, comme $S^C_2 \succeq_{idle} S^C_1 : nat_{S_2}^C = nat_{S_1}^C$, par \autoref{idle:sim}. D'où $nat_{S_2}^R(\tau_i) = nat_{S_1}^R(\tau_i)$ par \autoref{idle:eqidleproofnat}.
 \end{enumerate}
 
 
@@ -1389,14 +2207,34 @@ Il est maintenant établi que $S^R_2 \succeq_{idle} S^R_1$ ce qui prouve bien qu
 
 Pour terminer la démonstration il reste à prouver que si $S_2 \succeq_{idle} S_1$ et $S_1 \in Fail_\tau$ alors $S_2 \in Fail_\tau$ aussi.  Soit $\tau_i$ tel que  $WorstLaxity_{S_1}(\tau_i) < 0$.\\
 
-Si $\tau_i \notin Active(S) : WorstLaxity_{S_1}(\tau_i) = nat_{S_1}(\tau_i) -T_i + D_i - rct_{S_1}(\tau_i)$\\
-Puisque $S_2 \succeq_{idle} S_1 : rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i), nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i)$. D'où $WorstLaxity{S_2}(\tau_i) = nat_{S_2}(\tau_i) -T_i + D_i - rct_{S_2}(\tau_i) \leq WorstLaxity{S_1}(\tau_i) < 0$ et donc $S_2 \in Fail_\tau$.\\
-
-Si $\tau_i \in Active(S) : WorstLaxity_{S_1}(\tau_i) = nat_{S_1}(\tau_i) -T_i + D_i - (rct_{S_1}(\tau_i) + (C_i(K)-C_i(crit_{S_1}))$\\
-Puisque $S_2 \succeq_{idle} S_1 : crit_{S_2}(\tau_i) = crit_{S_1}(\tau_i),  rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i), nat_{S_2}(\tau_i) = nat_{S_1}(\tau_i)$. D'où $WorstLaxity{S_2}(\tau_i) = nat_{S_2}(\tau_i) -T_i + D_i - (rct_{S_2}(\tau_i) + (C_i(K)-C_i(crit_{S_2})) = WorstLaxity{S_1}(\tau_i) < 0$ et donc $S_2 \in Fail_\tau$.
+Si $\tau_i \in \tau : WorstLaxity_{S_1}(\tau_i) = nat_{S_1}(\tau_i) -T_i + D_i - (rct_{S_1}(\tau_i) + (C_i(K)-C_i(crit_{S_1}))$\\
+Puisque $S_2 \succeq_{idle} S_1 : crit_{S_2}(\tau_i) = crit_{S_1}(\tau_i),  rct_{S_2}(\tau_i) = rct_{S_1}(\tau_i), nat_{S_2}(\tau_i) \leq nat_{S_1}(\tau_i)$. D'où $WorstLaxity{S_2}(\tau_i) = nat_{S_2}(\tau_i) -T_i + D_i - (rct_{S_2}(\tau_i) + (C_i(K)-C_i(crit_{S_2})) \leq WorstLaxity{S_1}(\tau_i) < 0$ et donc $S_2 \in Fail_\tau$.
 
 \end{proof}
 
+
+\begin{exem}
+En regardant \autoref{spo:exem:fail}, on s'aperçoit que certains état sont simulé par d'autre selon $\succeq_{idle}$. L'exemple dse base sur l'ensemble de tâche présenté en \autoref{spo:exem:fail}. Analysons les simulation présente.
+
+\begin{figure}[h]
+
+\centering
+
+\def\svgwidth{\columnwidth}
+\input{graphes/idle-fail.pdf_tex}
+\label{idle:exem:fail}
+
+
+\end{figure} 
+
+Dans la \autoref{idle:exem:fail}, le noeud en orange est un état erroné, et les noeuds coloré de la même la couleur sont un couple d'état simulé simulant.\\
+
+Les transitions sortantes des noeuds qui se simulent sont coloré de manière à représenté que  chaque état atteignable depuis le noeud simulé le sont aussi depuis le noeud simulant. Comme c'est le cas pour la paire d'état bleue, $\langle (1,0) \underline{(1,1)} 1 \rangle$ et $\langle (0,0) \underline{(1,1)} 1 \rangle$. Selon la relation de simulation de tâche oisive, le premier est bien simulé par le deuxième. Donc, si le noeud $\langle (0,0) \underline{(1,1)} 1 \rangle$, il ne sera pas nécéssaire de visite $\langle (1,0) \underline{(1,1)} 1 \rangle$. En revanche, l'inverse est incorrecte.\\
+
+Le principe est le même pour la paire d'état verte, dans le niveau de criticité supérieur. C'est bien l'état $\langle (0,0) (0,0) 2 \rangle$ qui simule $\langle (1,0) (0,0) 2 \rangle$, en effet il possède les même transition et une en plus.
+
+
+\end{exem}
 
 
 \subsection{Autre relations de simulations infructueuses}
@@ -1461,7 +2299,42 @@ Test avec : $P_{HI} = 0.5, R_{HI} = 4, C^{MAX}_{LO} = 10, T^{MAX} = 200$
 
 \section{Analyse de la complexité}
 
-\section{Résultats}
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{./results/timeSpoIdle.pdf}
+\caption{Analyse de la performance de la relation de simulation}
+\end{figure}
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{./results/timePerIdle.pdf}
+\caption{Analyse de la performance de la relation de simulation}
+\end{figure}
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{./results/taskvssize.pdf}
+\caption{Taille de l'automate en fonction du nombre de tâches}
+\end{figure}
+
+\section{Analyse de l'ordonnancement}
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{./results/perfAMCVestal.pdf}
+\caption{Ordonnançabilité de Vestal et AMC-max}
+\end{figure}
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{./results/perfOCBPetc.pdf}
+\caption{Ordonnançabilité de OCBP et extensions}
+\end{figure}
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{./results/perfEDFVD.pdf}
+\caption{Ordonnançabilité de EDF-VD}
+\end{figure}
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{./results/perfComp.pdf}
+\caption{Comparaison des algorithmes}
+\end{figure}
 
 
 

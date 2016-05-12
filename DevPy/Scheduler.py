@@ -1,13 +1,23 @@
 
-
+EDFVD = 0
+LWLF = 1
 
 class Scheduler:
-    def __init__(self, taskSet):
+    def __init__(self, taskSet, sched=EDFVD):
         self.taskSet = taskSet
+        self.sched = sched
+
+        if self.getUtilisation(1,1) + self.getUtilisation(2,2) <= 1:
+            self.relativity = 1
+        else:
+            self.relativity = self.getRelativity()
 
 
     def run(self, systemState):
-        return self.EDFVD(systemState)
+        if self.sched == EDFVD :
+            return self.EDFVD(systemState)
+        elif self.sched == LWLF:
+            return self.LWLF(systemState)
 
     def getUtilisation(self, K, l):
         ut = 0.0
@@ -22,11 +32,7 @@ class Scheduler:
 
 
     def EDFVD(self, systemState):
-        if self.getUtilisation(1,1) + self.getUtilisation(2,2) <= 1:
-            relativity = 1
-        else:
-            relativity = self.getRelativity()
-        return self.EDF(systemState, relativity)
+        return self.EDF(systemState, self.relativity)
 
 
     def EDF(self, systemState, relativity=1):
@@ -45,5 +51,16 @@ class Scheduler:
             return []
         else:
             return [toRun]
+
+    def LWLF(self, systemState):
+        active = systemState.getActive()
+        if len(active) == 0:
+            return []
+
+        WL = systemState.getWorstLaxity(self.taskSet.getC())
+        activeWL = [WL[i] for i in active]
+        LWL = min(activeWL)
+
+        return [active[activeWL.index(LWL)]]
 
 

@@ -1,6 +1,3 @@
-
-
-
 class Job:
     def __init__(self, R, D, C, X):
         self.R = R

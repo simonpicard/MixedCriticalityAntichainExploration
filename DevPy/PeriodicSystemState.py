@@ -28,6 +28,14 @@ class SystemState:
            laxity.append(self.at[i]-self.rct[i]+D[i])
         return laxity
 
+    def getWorstLaxity(self, C):
+        D = self.hashInfo[0]
+        T = self.hashInfo[1]
+        laxity = []
+        for i in range(len(self.nat)):
+           laxity.append(self.at[i]-(self.rct[i] +(C[i][-1]-C[i][self.crit-1])*(not self.done[i]) )+D[i])
+        return laxity
+
     def isFail(self, D):
         laxity = self.getLaxity(D)
         for t in laxity:
@@ -72,6 +80,7 @@ class SystemState:
         critP = self.getCrit()
         rctP = list(self.rct)
         atP = list(self.at)
+        
         for i in range(len(self.at)):
             if X[i] >= self.getCrit():
                 rctP[i] += C[i][self.getCrit()-1]-C[i][self.crit-1]
@@ -81,11 +90,30 @@ class SystemState:
         return SystemState(atP, rctP, critP, self.hashInfo)
 
 
+    def getRelativeDeadline(self, D, T, i):
+        return self.at[i]+D
+
+    def isWCSimulation(self, ss):
+        if self.crit != ss.crit or self.at != ss.at:
+            return False
+        for i in range(len(self.rct)):
+            if self.rct[i] == 0:
+                if ss.rct[i] != 0:
+                    return False
+            else:
+                if self.rct[i] < ss.rct[i]:
+                    return False
+        return True
+
+
     def __repr__(self):
         return("at :"+str(self.at)+"\n rct :"+str(self.rct)+"\n crit :"+str(self.crit))
 
     def __eq__(self, other):
-        return (self.at == other.at and self.rct == other.rct and self.crit == other.crit)
+        #print("eq")
+        return True
+        #return (self.at == other.at and self.rct == other.rct and self.crit == other.crit)
+        #return self.isWCSimulation(other)
 
     def __hash__(self):
         #hashinfo = D, T, Cmax, K
@@ -103,7 +131,7 @@ class SystemState:
         factor = K
         for i in range(len(self.at)):
             h += self.rct[i]*factor
-            factor*=Cmax[i]
+            factor*=(Cmax[i]+1)
             h += (self.at[i]+D[i]+1)*factor
             factor*=(T[i]+D[i]+1)
         return h

@@ -1,0 +1,112 @@
+%% Creator: Inkscape 0.91_64bit, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'graphes/spo-inter.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{1340.67222427bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,1.12255541)%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{graphes/spo-inter.pdf}}%
+    \put(0.0964721,1.05395463){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(0, 0) 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{graphes/spo-inter.pdf}}%
+    \put(0.0964721,0.94793725){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(0, 0) 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{graphes/spo-inter.pdf}}%
+    \put(0.0964721,0.84191988){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(0, 0) 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{graphes/spo-inter.pdf}}%
+    \put(0.0964721,0.7359025){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(0, 0) 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{graphes/spo-inter.pdf}}%
+    \put(0.0964721,0.62988512){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(0, 0) 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{graphes/spo-inter.pdf}}%
+    \put(0.41452423,1.05395463){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\underline{(3, 2)} 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{graphes/spo-inter.pdf}}%
+    \put(0.41452423,0.94793725){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\underline{(2, 1)} 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{graphes/spo-inter.pdf}}%
+    \put(0.49933813,0.84191988){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\underline{(2, 1)} 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{graphes/spo-inter.pdf}}%
+    \put(0.32971033,0.84191988){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(2, 0) 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{graphes/spo-inter.pdf}}%
+    \put(0.32971033,0.7359025){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(2, 0) 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{graphes/spo-inter.pdf}}%
+    \put(0.32971033,0.62988512){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(2, 0) 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{graphes/spo-inter.pdf}}%
+    \put(0.49933813,0.7359025){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\underline{(2, 1)} 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{graphes/spo-inter.pdf}}%
+    \put(0.79618678,1.05395463){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\underline{(2, 1)} 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=14]{graphes/spo-inter.pdf}}%
+    \put(0.79618678,0.94793725){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\underline{(1, 0)} 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=15]{graphes/spo-inter.pdf}}%
+    \put(0.71137288,0.84191988){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(1, 0) 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=16]{graphes/spo-inter.pdf}}%
+    \put(0.88100068,0.84191988){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\underline{(1, 0)} 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=17]{graphes/spo-inter.pdf}}%
+    \put(0.71137288,0.7359025){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(1, 0) 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=18]{graphes/spo-inter.pdf}}%
+    \put(0.71137288,0.62988512){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(1, 0) 1}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=19]{graphes/spo-inter.pdf}}%
+    \put(0.88100068,0.7359025){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\underline{(1, 1)} 2}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=20]{graphes/spo-inter.pdf}}%
+    \put(0.50619532,0.50866166){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\underline{(1, 1)} 2}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=21]{graphes/spo-inter.pdf}}%
+    \put(0.50619532,0.40264428){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\underline{(0, 0)} 2}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=22]{graphes/spo-inter.pdf}}%
+    \put(0.33656752,0.2966269){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(0, 0) 2}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=23]{graphes/spo-inter.pdf}}%
+    \put(0.67582315,0.2966269){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(0, 0), 2}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=24]{graphes/spo-inter.pdf}}%
+    \put(0.33656752,0.19060953){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(0, 0) 2}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=25]{graphes/spo-inter.pdf}}%
+    \put(0.67582315,0.19060953){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(0, 0), 2}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=26]{graphes/spo-inter.pdf}}%
+    \put(0.23055016,0.08459215){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(0, 0) 2}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=27]{graphes/spo-inter.pdf}}%
+    \put(0.42138142,0.08459215){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\underline{(3, 3)} 2}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=28]{graphes/spo-inter.pdf}}%
+    \put(0.56980574,0.08459215){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{(0, 0) 2}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=29]{graphes/spo-inter.pdf}}%
+    \put(0.76063705,0.08459215){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\underline{(3, 3)} 2}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=30]{graphes/spo-inter.pdf}}%
+  \end{picture}%
+\endgroup%
