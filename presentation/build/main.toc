@@ -1,0 +1,8 @@
+\beamer@endinputifotherversion {3.36pt}
+\select@language {french}
+\beamer@sectionintoc {1}{Ordonnancement en criticit\IeC {\'e} mixte}{3}{0}{1}
+\beamer@sectionintoc {2}{Accessibilit\IeC {\'e} dans un automate}{6}{0}{2}
+\beamer@sectionintoc {3}{Algorithme d\IeC {\textquoteright }ordonnancement}{8}{0}{3}
+\beamer@sectionintoc {4}{S\IeC {\'e}mantique sous forme d'automate}{13}{0}{4}
+\beamer@sectionintoc {5}{R\IeC {\'e}sultats}{25}{0}{5}
+\beamer@sectionintoc {6}{Conclusion}{34}{0}{6}

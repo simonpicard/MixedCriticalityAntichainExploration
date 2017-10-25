@@ -1,0 +1,58 @@
+Sommmaire
+    Test d'ordonnacabilité
+    sommaire
+
+Ordonnancement temps reel
+    Partager une ressource
+    Contrainte de temps
+    Représenter par des travaux
+    Hierachisé par des tâche
+    Ordonner grâce à une fonction de priorité
+
+Ordonnancement criticité mixte (1)
+    Extension ordonnacement temps reel
+    Exemple drone de reconnaissance
+    Actions divisé en deux
+    Cas usuelle, cas extreme/defaillant
+
+Ordonnancement criticité mixte (2)
+    Reutilisation travail étendu
+    Tache aussi
+    
+Ordonnancement criticité mixte (3)
+    Faisabilité
+    Ordonnancabilité
+        Probleme complexe car en ligne
+        Probleme NP
+    
+Test d'ordonnacabilité
+    faisabilité
+    ordonnancabilité
+    test
+    faisabilité OK test utilisation
+    deux dernier cas indissocié actuellement
+    solution, recherche exhaustive
+    Reduction vers accessibilité
+    
+Problème d'accessibiltié
+    graphe sommet arrete
+    automate = graphe + depart arrivé
+    Reach
+        Etat accessible depuis le depart
+        Il existe une chemin
+            succession de transition emprunter successive
+    recherche en largeur
+    lineaire en la taille de l'automate
+    
+Antichaine
+    automate tres grand, tester reduire
+    Sous ensembles état incomparable selon preordre
+    Preordre -> relation de simulation
+    exemple relation de simulation images
+    exemple recherche en largeur
+    exemple recherche en largeur + antichai,e iage
+    
+Contribution
+    reduction criticité mixte vers automate
+    identifier relation de simulation
+    implémentation et analyse
