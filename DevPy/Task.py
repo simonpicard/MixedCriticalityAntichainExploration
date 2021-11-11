@@ -1,23 +1,26 @@
-from Job import *
+import pandas as pd
 
 
 class Task:
     def __init__(self, O, T, D, X, C):
-        self.O = O
-        self.T = T
-        self.D = D
-        self.X = X
-        self.C = tuple(C)
 
+        self.task = pd.Series(
+            [O, T, D, X] + list(C), ["O", "T", "D", "X"] + list(range(len(C)))
+        )
+        U = pd.Series(
+            (self.task[range(len(C))] / self.task["T"]).values,
+            index=["U" + str(i) for i in range(len(C))],
+        )
+        self.task = self.task.append(U)
 
     def getUtilisation(self, l):
-        return self.C[l-1]/self.T
+        return self.execution_time.loc[l, "U"]
 
     def getWorstC(self):
-        return self.C[self.X-1]
+        return self.execution_time["C"].min()
 
     def __repr__(self):
-        return "Task("+str(self.O)+", "+str(self.T)+", "+str(self.D)+", "+str(self.X)+", "+str(self.C)+")"
+        return str(self.task)
 
     def generateJobForItv(self, itv):
         nb = 0
@@ -27,7 +30,7 @@ class Task:
         return nb
 
     def __hash__(self):
-        return hash((self.O, self.T, self.D, self.X, self.C))
+        return hash(self.task)
 
     def __eq__(self, other):
-        return self.O == other.O and self.T == other.T and self.D == other.D and self.X == other.X and self.C == other.C
+        return self.get_settings() == other.get_settings()
