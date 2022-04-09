@@ -158,6 +158,9 @@ int64_t* GraphSporadic::acbfs(std::vector<int> (*schedule)(State*)) {
     auto duration =
         std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
+    if (!res)
+        for (auto* elem : leaf_states) delete elem;
+
     arr[0] = int64_t(res);
     arr[1] = visited_count;
     arr[2] = duration.count();

@@ -6,7 +6,6 @@ std::vector<State*> GraphPeriodic::get_neighbors(
     std::vector<State*> new_states;
 
     for (State* current_state_uncasted : leaf_states) {
-        // for (int i = 0; i < states.size(); ++i)
         auto* current_state =
             static_cast<StatePeriodic*>(current_state_uncasted);
 

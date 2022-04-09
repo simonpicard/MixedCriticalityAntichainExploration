@@ -63,6 +63,9 @@ int64_t* Graph::bfs(std::vector<int> (*schedule)(State*)) {
     // std::cout << step_i << " " << leaf_states.size() << " " << visited_count
     // << std::endl;
 
+    if (!res)
+        for (auto* elem : leaf_states) delete elem;
+
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration =
         std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);

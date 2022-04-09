@@ -17,12 +17,12 @@ void experiment_sched(std::vector<Job*> jobs_sporadic) {
     GraphSporadic gs(ss);
 
     res = gs.acbfs(&Scheduler::lwlf);
-    std::cout << "SPO AC LWLF " << res[0] << " " << res[1] << " " << res[2]
-              << " " << res[3] << std::endl;
+    std::cout << "SPO AC LW " << res[0] << " " << res[1] << " " << res[2] << " "
+              << res[3] << std::endl;
 
     res = gs.acbfs(&Scheduler::edfvd);
-    std::cout << "SPO AC EDFVD " << res[0] << " " << res[1] << " " << res[2]
-              << " " << res[3] << std::endl;
+    std::cout << "SPO AC ED " << res[0] << " " << res[1] << " " << res[2] << " "
+              << res[3] << std::endl;
 }
 
 void experiment(std::vector<Job*> jobs_sporadic,
@@ -36,16 +36,16 @@ void experiment(std::vector<Job*> jobs_sporadic,
     GraphPeriodic gp(sp);
 
     res = gp.bfs(&Scheduler::lwlf);
-    std::cout << "PER BF LWLF " << res[0] << " " << res[1] << " " << res[2]
-              << " " << res[3] << std::endl;
+    std::cout << "PER BF LW " << res[0] << " " << res[1] << " " << res[2] << " "
+              << res[3] << std::endl;
 
     res = gs.acbfs(&Scheduler::lwlf);
-    std::cout << "SPO AC LWLF " << res[0] << " " << res[1] << " " << res[2]
-              << " " << res[3] << std::endl;
+    std::cout << "SPO AC LW " << res[0] << " " << res[1] << " " << res[2] << " "
+              << res[3] << std::endl;
 
     res = gs.bfs(&Scheduler::lwlf);
-    std::cout << "SPO BF LWLF " << res[0] << " " << res[1] << " " << res[2]
-              << " " << res[3] << std::endl;
+    std::cout << "SPO BF LW " << res[0] << " " << res[1] << " " << res[2] << " "
+              << res[3] << std::endl;
 }
 
 int main(int argc, char** argv) {
@@ -66,15 +66,19 @@ int main(int argc, char** argv) {
             infile >> c1 >> c2;
             Job* job_spo =
                 new JobSporadic(O, T, D, X, std::vector<int>{c1, c2});
-            Job* job_per =
-                new JobPeriodic(O, T, D, X, std::vector<int>{c1, c2});
+            // Job* job_per =
+            //     new JobPeriodic(O, T, D, X, std::vector<int>{c1, c2});
 
             jobs_sporadic.push_back(job_spo);
-            jobs_periodic.push_back(job_per);
+            // jobs_periodic.push_back(job_per);
         }
         // experiment(jobs_sporadic, jobs_periodic);
 
         experiment_sched(jobs_sporadic);
+
+        // for (auto elem : jobs_sporadic) delete elem;
+
+        // for (auto elem : jobs_periodic) delete elem;
     }
 
     return 0;
