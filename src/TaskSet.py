@@ -60,3 +60,16 @@ class TaskSet:
 
     def __len__(self):
         return self.getSize()
+
+    def getWorstC(self, i):
+        t = self.getTask(i)
+        return t[1]
+
+    def getD(self):
+        return self.tasks["D"]
+
+    def getT(self):
+        return self.tasks["T"]
+
+    def getK(self):
+        return int(self.tasks["X"].max())

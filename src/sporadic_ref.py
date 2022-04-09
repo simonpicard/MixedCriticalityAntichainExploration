@@ -342,6 +342,42 @@ def LWLF(ss):
     return ss
 
 
+def get_relativity(ts):
+    if (
+        ts.getUtilisationOfLevelAtLevel(0, 0) + ts.getUtilisationOfLevelAtLevel(1, 1)
+        > 1
+    ):
+        relativity = ts.getUtilisationOfLevelAtLevel(1, 0) / (
+            1 - ts.getUtilisationOfLevelAtLevel(0, 0)
+        )
+    else:
+        relativity = 0
+    return relativity
+
+
+def get_virtual_deadline(ss, relativity):
+    vdl = ss["nat"] - ss["T"] + ss["D"]
+    vdl += (
+        (ss["crit"] == 0).apply(int) * (ss["X"] == 1).apply(int) * ss["T"] * relativity
+    )
+    return vdl
+
+
+def EDFVD(ss, relativity=1):
+    ss["vdl"] = get_virtual_deadline(ss, relativity)
+
+    active_scope = get_active_scope(ss)
+
+    sched_loc = ss.loc[active_scope].groupby("ss_id")["vdl"].idxmin()
+    sched_ids = ss.loc[sched_loc, ["ss_id", "t_id"]].rename(
+        columns={"t_id": "sched_id"}
+    )
+    ss = ss.drop("sched_id", axis=1).merge(sched_ids, on="ss_id", how="left")
+
+    ss["sched_id"] = ss["sched_id"].fillna(-1)
+    return ss
+
+
 ### HASHING ###
 
 
@@ -480,8 +516,11 @@ def get_initial_state(tasks):
     return ss
 
 
-def get_neighbours(ss, simulation=False):
-    ss = LWLF(ss)
+def get_neighbours(ss, sched, simulation=False, relativity=None):
+    if sched == "LWLF":
+        ss = LWLF(ss)
+    elif sched == "EDFVD":
+        ss = EDFVD(ss, relativity)
     ss = get_execution_transition(ss)
     ss = get_termination_transitions(ss)
     ss = get_critical_transition(ss)
@@ -619,10 +658,12 @@ def remove_visited_simulation(ss, visited, n_tasks):
 ### SEARCH ###
 
 
-def bfs_simulation(ts):
+def bfs_simulation(ts, sched):
 
     ss = get_initial_state(ts.get_df())
     ss = set_hashes_idle(ss)
+
+    relativity = get_relativity(ts)
 
     n_tasks = len(ts)
 
@@ -633,7 +674,7 @@ def bfs_simulation(ts):
 
     while ss.shape[0] > 0:
 
-        ss = get_neighbours(ss, True)
+        ss = get_neighbours(ss, sched, simulation=True, relativity=relativity)
 
         if fail(ss):
             print("fail")
@@ -643,12 +684,12 @@ def bfs_simulation(ts):
         ss = remove_self_simulated(ss, n_tasks)
         ss, visited = remove_visited_simulation(ss, visited, n_tasks)
 
-        print(
-            i,
-            len(ss) / n_tasks,
-            len(visited) / n_tasks,
-            visited.groupby("hash_idle").count().max().max(),
-        )
+        # print(
+        #     i,
+        #     len(ss) / n_tasks,
+        #     len(visited) / n_tasks,
+        #     visited.groupby("hash_idle").count().max().max(),
+        # )
         i += 1
     return True, len(visited)
 
