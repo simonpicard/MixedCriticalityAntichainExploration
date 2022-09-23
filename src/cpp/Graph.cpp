@@ -1,4 +1,5 @@
 #include "Graph.h"
+#include "util.cpp"
 
 Graph::Graph() = default;
 
@@ -18,16 +19,21 @@ void Graph::repr(std::vector<State*> states) {
     std::cout << std::endl;
 }
 
-int64_t* Graph::bfs(std::vector<int> (*schedule)(State*)) {
+int64_t* Graph::bfs(std::vector<int> (*schedule)(State*), bool use_pruning) {
     int64_t visited_count = 0;
     static int64_t arr[4];
 
     int step_i = 0;
     std::vector<State*> leaf_states{copy_initial_state()};
     std::vector<State*> neighbors;
-    std::unordered_set<int> visited_hash;
+    std::unordered_set<uint64_t> visited_hash;
 
     bool res = true;
+
+    if (plot_graph) {
+        graphiz_setup(graph_output_path);
+    }
+    ac_hash = false;
 
     visited_hash.insert(leaf_states[0]->get_hash());
 
@@ -50,7 +56,12 @@ int64_t* Graph::bfs(std::vector<int> (*schedule)(State*)) {
         leaf_states.clear();
 
         for (State* neighbor : neighbors) {
-            int state_hash = neighbor->get_hash();
+            if (use_pruning && neighbor->is_safe()) {
+                delete neighbor;
+                continue;
+            }
+
+            uint64_t state_hash = neighbor->get_hash();
             if (visited_hash.find(state_hash) == visited_hash.end()) {
                 visited_hash.insert(state_hash);
                 leaf_states.push_back(neighbor);
@@ -62,6 +73,8 @@ int64_t* Graph::bfs(std::vector<int> (*schedule)(State*)) {
     visited_count = visited_count + leaf_states.size();
     // std::cout << step_i << " " << leaf_states.size() << " " << visited_count
     // << std::endl;
+
+    if (plot_graph) graphiz_teardown(graph_output_path);
 
     if (!res)
         for (auto* elem : leaf_states) delete elem;
@@ -77,3 +90,15 @@ int64_t* Graph::bfs(std::vector<int> (*schedule)(State*)) {
 
     return arr;
 }
+
+void Graph::graphiz_setup(std::string path) {
+    std::ofstream o_file;  // deleteme
+    o_file.open(path);     // deleteme
+    o_file << "digraph G "
+              "{\n"
+              "node[shape=\"box\",style=\"rounded,filled\"]"
+              "\n";
+    o_file.close();  // deleteme
+}
+
+void Graph::graphiz_teardown(std::string path) { append_to_file(path, "\n}"); }

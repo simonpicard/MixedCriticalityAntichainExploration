@@ -11,6 +11,8 @@ class Task:
             (self.task[range(len(C))] / self.task["T"]).values,
             index=["U" + str(i) for i in range(len(C))],
         )
+        if X == 0:
+            U["U1"] = 0
         self.task = self.task.append(U)
 
     def getUtilisation(self, l):

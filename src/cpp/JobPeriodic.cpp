@@ -49,15 +49,26 @@ std::string JobPeriodic::str() const {
     return ss.str();
 }
 
+std::string JobPeriodic::dot_node() const {
+    std::stringstream ss;
+    ss << "(" << at << ", " << rct << ")";
+    return ss.str();
+}
+
 int JobPeriodic::get_laxity() const { return at + D - rct; }
 
 int JobPeriodic::get_worst_laxity(int crit) const {
     return at + D - (rct + C[X - 1] - C[crit - 1]);
 }
 
-int JobPeriodic::get_hash() const {
-    int hash = rct;
-    int factor = C[1] + 1;
+float JobPeriodic::get_worst_utilisation(int current_crit,
+                                         int target_crit) const {
+    return (rct + C[X - 1] - C[current_crit - 1]) / (D + at);  // TODO
+}
+
+uint64_t JobPeriodic::get_hash() const {
+    uint64_t hash = rct;
+    uint64_t factor = C[1] + 1;
 
     hash = hash + (at + 1) * factor;
     factor = factor * (T + 2);
@@ -65,8 +76,8 @@ int JobPeriodic::get_hash() const {
     return hash;
 }
 
-int JobPeriodic::get_hash_factor() const {
-    int factor = C[1] + 1;
+uint64_t JobPeriodic::get_hash_factor() const {
+    uint64_t factor = C[1] + 1;
 
     factor = factor * (T + 2);
 

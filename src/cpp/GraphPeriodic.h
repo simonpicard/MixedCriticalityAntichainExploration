@@ -10,6 +10,9 @@
 class GraphPeriodic : public Graph {
    public:
     explicit GraphPeriodic(State* initial_state_) : Graph(initial_state_){};
+    explicit GraphPeriodic(State* initial_state_,
+                           std::string graph_output_path_)
+        : Graph(initial_state_, graph_output_path_){};
 
    private:
     std::vector<State*> get_neighbors(
@@ -17,6 +20,9 @@ class GraphPeriodic : public Graph {
         std::vector<int> (*schedule)(State*)) override;
 
     State* copy_initial_state() override;
+
+    void connect_neighbor_graphviz(StatePeriodic* from,
+                                   StatePeriodic* to) const;
 };
 
 #endif

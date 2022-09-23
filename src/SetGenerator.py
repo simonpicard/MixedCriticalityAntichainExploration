@@ -1,9 +1,8 @@
+from functools import reduce
+from random import expovariate, random, uniform
+
 import Task
 import TaskSet
-from random import uniform
-from random import random
-from random import expovariate
-from functools import reduce
 
 
 class SetGenerator:
@@ -49,29 +48,48 @@ class SetGenerator:
 
     def generateSetU(self):
         ts = TaskSet.TaskSet()
+
         done = False
         while not done:
             ts.clear()
-            sizeOk = True
-            while ts.getAverageUtilisation() < self.U - 0.005:
+            attempt = 0
+            while len(ts) < self.nbT:
                 ts.addTask(self.generateTaskUniform())
-                if ts.getSize() > self.nbT and self.nbT > 0 and ts.getSize() > 0:
-                    sizeOk = False
-                    break
-
-            if self.nbT > 0 and not sizeOk:
-                pass
-            elif ts.getAverageUtilisation() > self.U + 0.005:
-                # print(ts.getAverageUtilisation())
-                pass
-            elif ts.getUtilisationOfLevel(0) > 1:
-                pass
-            elif ts.getUtilisationOfLevel(1) > 1:
-                pass
-            elif (ts.tasks["X"] == ts.tasks.loc[0, "X"]).all():
-                pass
-            else:
+                # print(ts)
+                if (
+                    ts.getAverageUtilisation() > self.U + 0.005
+                    or ts.getUtilisationOfLevel(0) > 1
+                    or ts.getUtilisationOfLevel(1) > 1
+                ):
+                    ts.pop()
+                    attempt += 1
+                if attempt > 100:
+                    ts.clear()
+                    attempt = 0
+            if not (
+                (ts.tasks["X"] == ts.tasks.loc[0, "X"]).all()
+                or ts.getAverageUtilisation() < self.U - 0.005
+            ):
                 done = True
+        return ts
+
+    def generateAnySetU(self):
+        ts = TaskSet.TaskSet()
+
+        done = False
+        while not done:
+            ts.clear()
+            while len(ts) < self.nbT:
+                ts.addTask(self.generateTaskUniform())
+                # print(ts)
+                if (
+                    ts.getUtilisationOfLevel(0) > 1
+                    or ts.getUtilisationOfLevel(1) > 1
+                ):
+                    break
+            else:
+                if not ((ts.tasks["X"] == ts.tasks.loc[0, "X"]).all()):
+                    done = True
         return ts
 
     def generateSetPerformance(self, nbTask):

@@ -25,12 +25,14 @@ class State {
 
     void repr() const;
     std::string str() const;
+    std::string dot_node(std::string node_id) const;
+    std::string get_node_id() const { return std::to_string(get_hash()); };
 
     virtual void execute(std::vector<int> to_run);
     virtual void terminate(std::vector<int> explicitely_dones);
     virtual void critic();
 
-    int get_hash() const;
+    uint64_t get_hash() const;
 
     virtual int get_true_crit();
 
@@ -41,6 +43,14 @@ class State {
 
     float get_utilisation_of_level_at_level(int of_level, int at_level) const;
     float get_utilisation_of_level(int of_level) const;
+
+    int get_size() const { return jobs.size(); };
+
+    float get_current_utilisation() const;
+
+    bool is_single_criticality() const;
+    bool is_able_to_increase_crit() const;
+    bool is_safe() const { return !is_able_to_increase_crit(); };
 
    protected:
     std::vector<Job*> jobs;

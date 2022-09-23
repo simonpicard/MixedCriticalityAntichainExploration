@@ -9,6 +9,8 @@ std::vector<State*> GraphPeriodic::get_neighbors(
         auto* current_state =
             static_cast<StatePeriodic*>(current_state_uncasted);
 
+        auto* current_state_bkp = new StatePeriodic(*current_state);
+
         std::vector<int> to_run = schedule(current_state);
         current_state->execute(to_run);
 
@@ -32,9 +34,15 @@ std::vector<State*> GraphPeriodic::get_neighbors(
             terminate_critic_state->terminate(current_explicitely_dones);
             terminate_critic_state->critic();
             new_states.push_back(terminate_critic_state);
+
+            if (plot_graph) {
+                connect_neighbor_graphviz(current_state_bkp,
+                                          terminate_critic_state);
+            }
         }
 
         delete current_state;
+        delete current_state_bkp;
     }
 
     return new_states;
@@ -44,3 +52,23 @@ State* GraphPeriodic::copy_initial_state() {
     State* ptr = new StatePeriodic(*static_cast<StatePeriodic*>(initial_state));
     return ptr;
 }
+
+void GraphPeriodic::connect_neighbor_graphviz(StatePeriodic* from,
+                                              StatePeriodic* to) const {
+    std::string from_node_id;
+    std::string to_node_id;
+
+    from_node_id = from->get_node_id();
+    to_node_id = to->get_node_id();
+
+    std::string from_node_desc = from->dot_node(from_node_id);
+    std::string to_node_desc = to->dot_node(to_node_id);
+
+    std::stringstream edge_desc;
+
+    edge_desc << from_node_id << " -> " << to_node_id << std::endl;
+
+    append_to_file(graph_output_path, from_node_desc);
+    append_to_file(graph_output_path, to_node_desc);
+    append_to_file(graph_output_path, edge_desc.str());
+};

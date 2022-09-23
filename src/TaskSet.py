@@ -1,5 +1,6 @@
-import pandas as pd
 import itertools
+
+import pandas as pd
 
 
 class TaskSet:
@@ -8,6 +9,9 @@ class TaskSet:
 
     def addTask(self, task):
         self.tasks = self.tasks.append(task.task, ignore_index=True)
+
+    def pop(self):
+        self.tasks = self.tasks.iloc[:-1]
 
     def clear(self):
         self.tasks = self.tasks.iloc[0:0]
@@ -19,7 +23,7 @@ class TaskSet:
         return len(self.tasks)
 
     def getTask(self, i):
-        return self.tasks.loc[i]
+        return self.tasks.iloc[i]
 
     def getUtilisationOfLevelAtLevel(self, K, l):
         if len(self.tasks) == 0:

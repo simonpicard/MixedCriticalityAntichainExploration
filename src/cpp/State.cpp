@@ -48,6 +48,31 @@ std::string State::str() const {
     return ss.str();
 }
 
+std::string State::dot_node(std::string node_id) const {
+    std::stringstream ss;
+
+    ss << node_id << " [label=<";
+    for (Job* job : jobs) {
+        ss << job->dot_node();
+        ss << " ";
+    }
+    ss << crit;
+    ss << ">,";
+    // fillcolor=lightyellow
+    if (this->is_fail())
+        ss << "fillcolor=black,fontcolor=white";
+    else {
+        if (this->crit == 1)
+            ss << "fillcolor=lightcyan";
+        else
+            ss << "fillcolor=lightyellow";
+        ;
+    }
+    ss << "]" << std::endl;
+
+    return ss.str();
+}
+
 float State::get_utilisation_of_level_at_level(int of_level,
                                                int at_level) const {
     float res = 0;
@@ -58,9 +83,9 @@ float State::get_utilisation_of_level_at_level(int of_level,
     return res;
 }
 
-int State::get_hash() const {
-    int hash = crit - 1;
-    int factor = 2;
+uint64_t State::get_hash() const {
+    uint64_t hash = crit - 1;
+    uint64_t factor = 2;
 
     for (Job* job : jobs) {
         hash = hash + job->get_hash() * factor;
@@ -108,4 +133,47 @@ void State::critic() {
         job->critic(crit, true_crit);
     }
     crit = true_crit;
+}
+
+float State::get_current_utilisation() const {
+    float current_utlisation = 0;
+    for (Job* job : jobs) {
+        current_utlisation = current_utlisation +
+                             job->get_worst_utilisation(get_crit(), get_crit());
+    }
+    return current_utlisation;
+}
+
+// bool State::is_single_criticality() const {
+//     for (Job* job : jobs) {
+//         if (job->get_X() > get_crit()) {
+//             return false;
+//         }
+//     }
+//     if (get_current_utilisation() > 1) {
+//         return false;
+//     }
+//     return true;
+// }
+
+bool State::is_single_criticality() const {
+    for (Job* job : jobs) {
+        if (job->get_X() > get_crit()) {
+            return false;
+        } else if (job->get_X() == get_crit()) {
+            if (!job->is_single_criticality()) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool State::is_able_to_increase_crit() const {
+    for (Job* job : jobs) {
+        if (job->get_X() > get_crit() and job->is_active()) {
+            return true;
+        }
+    }
+    return false;
 }

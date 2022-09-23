@@ -23,9 +23,10 @@ class StateSporadic : public State {
 
     std::vector<int> get_eligibles();
 
-    int get_hash_idle() const;
-
+    uint64_t get_hash_idle() const;
     std::vector<int> get_ordered_idle_nats() const;
+
+    std::string get_node_id_idle() const;
 };
 
 #endif

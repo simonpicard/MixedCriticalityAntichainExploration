@@ -15,6 +15,11 @@ class JobSporadic : public Job {
         : Job(O_, T_, D_, X_, C_) {
         initialize();
     };
+    JobSporadic(int O_, int T_, int D_, int X_, std::vector<int> const& C_,
+                int p_)
+        : Job(O_, T_, D_, X_, C_, p_) {
+        initialize();
+    };
     JobSporadic(const JobSporadic& other);
     explicit JobSporadic(JobSporadic* other)
         : Job(other), nat(other->nat), done(other->done){};
@@ -27,6 +32,8 @@ class JobSporadic : public Job {
     void initialize() override;
     int get_laxity() const override;
     int get_worst_laxity(int crit) const override;
+    float get_worst_utilisation(int current_crit,
+                                int target_crit) const override;
 
     bool is_discarded(int crit) const { return X < crit; };
     bool is_active() const override { return not done; };
@@ -45,6 +52,7 @@ class JobSporadic : public Job {
 
     void repr() const override;
     std::string str() const override;
+    std::string dot_node() const override;
 
     void execute(bool run, int crit) override;
     void terminate(int crit) override;
@@ -52,13 +60,19 @@ class JobSporadic : public Job {
     void submit(int true_at, int crit);
 
     bool operator==(const JobSporadic& other) const;
-    int get_hash() const override;
-    int get_hash_factor() const override;
-    int get_hash_idle() const;
+    uint64_t get_hash() const override;
+    uint64_t get_hash_factor() const override;
+    uint64_t get_hash_idle() const;
 
-    int get_deadline() const override { return get_nat() + get_D(); };
+    int get_virtual_deadline(float relativity = 1) const override {
+        return get_nat() - get_T() + get_D() * relativity;
+    };
 
-   private:
+    bool is_single_criticality() const override {
+        return get_done() or get_nat() == get_T();
+    };
+
+    // private: uncomment me
     int nat;
     bool done;
 };

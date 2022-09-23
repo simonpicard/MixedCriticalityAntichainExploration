@@ -29,9 +29,9 @@ std::vector<int> StateSporadic::get_eligibles() {
     return vect;
 }
 
-int StateSporadic::get_hash_idle() const {
-    int hash = crit - 1;
-    int factor = 2;
+uint64_t StateSporadic::get_hash_idle() const {
+    uint64_t hash = crit - 1;
+    uint64_t factor = 2;
 
     for (Job* job : jobs) {
         hash = hash + static_cast<JobSporadic*>(job)->get_hash_idle() * factor;
@@ -50,4 +50,13 @@ std::vector<int> StateSporadic::get_ordered_idle_nats() const {
     }
 
     return nats;
+}
+
+std::string StateSporadic::get_node_id_idle() const {
+    std::stringstream ss;
+    ss << "n_" << this->get_hash_idle();
+    for (int nat : this->get_ordered_idle_nats()) {
+        ss << "_" << nat;
+    }
+    return ss.str();
 }
